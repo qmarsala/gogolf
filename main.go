@@ -47,4 +47,14 @@ func playGolf(golfer Golfer) {
 	// execute shot
 	//when hole is complete, move to next hole
 	//when course is complete, end game
+	golfer.PlayShot(
+		Shot{
+			Club: Club{
+				Name:          "Pitching Wedge",
+				Id:            10,
+				StockDistance: 100,
+			},
+			Shape: 0,
+			Power: 50,
+		})
 }
