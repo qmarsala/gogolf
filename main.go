@@ -47,6 +47,9 @@ func playGolf(golfer Golfer) {
 	// execute shot
 	//when hole is complete, move to next hole
 	//when course is complete, end game
+	hole := NewHole(1, 3, 100)
+	fmt.Println(hole)
+
 	golfer.PlayShot(
 		Shot{
 			Club: Club{
