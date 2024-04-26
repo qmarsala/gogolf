@@ -62,4 +62,36 @@ type Golfer struct {
 
 func (g *Golfer) PlayShot(shot Shot) {
 	fmt.Println(shot.String())
+	targetNumber := g.Skills.Wedges + g.Abilities.Accuracy
+	dice := Dice{
+		Sides: 6,
+	}
+	result, rolls := dice.rollN(3)
+	margin := targetNumber - result
+	success := margin >= 0
+
+	fmt.Println(success, targetNumber, result, margin, rolls)
+	if success {
+		// state changes somewhere
+		// we are now shot.distance closer to the hole
+	} else {
+		// how bad did we fail?
+		// critical fail? big margin fail? normal fail?
+		// how did we fail? alignment? chunky? thin?
+		// what is the consequence for the result?
+	}
+}
+
+type Score struct {
+	Hole    Hole
+	Strokes int
+}
+
+type ScoreCard struct {
+	Scores map[int]Score
+}
+
+type GolfBall struct {
+	Lie            string
+	DistanceToHole int
 }

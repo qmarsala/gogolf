@@ -45,12 +45,3 @@ type Course struct {
 	Par           int
 	TotalDistance int
 }
-
-type Score struct {
-	Hole    Hole
-	Strokes int
-}
-
-type ScoreCard struct {
-	Scores map[int]Score
-}
