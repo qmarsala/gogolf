@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 // have the following actions available in game
 // - inspecting a lie to know its quality (Recovery check)
 // - shaping a shot, or adding/removing spin (Any, except putting check)
@@ -30,6 +32,17 @@ type Golfer struct {
 	Name      string
 	Skills    Skills
 	Abilities Abilities
+	GolfBall  GolfBall
+}
+
+//todo: control power and stuff
+func (g *Golfer) Swing() {
+	//todo: what controls the target number?
+	targetNumber := g.Abilities.Control + g.Skills.Approach
+	d := NewD6()
+	result := d.SkillCheck(targetNumber)
+	fmt.Println(result)
+	g.GolfBall.Hit(result)
 }
 
 type Lie struct {
@@ -51,10 +64,16 @@ type GolfBall struct {
 // the ball will move to a location
 // eventually, the path of the ball needs to be considered
 // also need to consider lie (are we in the fairway? a bunker? the rough?)
-func (b *GolfBall) Hit() {
+func (b *GolfBall) Hit(swingResult SkillCheckResult) {
 	// skill check success
-	if true {
-		b.Location.Y += int(toFeet(300))
+	// where do we end up?
+	if swingResult.Success {
+		b.Location.Y += int(toFeet(102))
+		b.Lie = Lie{
+			Name:                 "Perfect",
+			TargetNumberModifier: 1,
+			Quality:              1,
+		}
 	} else {
 		// the failure could be a hook/straight if we were trying to draw
 		// a slice/straight if we were trying to fade
@@ -62,23 +81,12 @@ func (b *GolfBall) Hit() {
 		// and random if straight, plus maybe some other types of misses...
 		// golf is about playing your miss
 		// this would promote picking a shot shape, to know the miss.
-		b.Location.Y += int(toFeet(250))
+		b.Location.Y += int(toFeet(75))
 		b.Location.X -= int(toFeet(30))
-	}
-	// where do we end up?
-	b.Lie = Lie{
-		Name:                 "Perfect",
-		TargetNumberModifier: 1,
-		Quality:              1,
+		b.Lie = Lie{
+			Name:                 "Rough",
+			TargetNumberModifier: -1,
+			Quality:              .8,
+		}
 	}
 }
-
-// func skillCheck(targetNumber int) {
-// 	dice := Dice{
-// 		Sides: 6,
-// 	}
-// 	result, rolls := dice.rollN(3)
-// 	margin := targetNumber - result
-// 	success := margin >= 0
-// 	fmt.Println(success, targetNumber, result, margin, rolls)
-// }
