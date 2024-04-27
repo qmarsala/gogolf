@@ -1,7 +1,5 @@
 package main
 
-import "fmt"
-
 // have the following actions available in game
 // - inspecting a lie to know its quality (Recovery check)
 // - shaping a shot, or adding/removing spin (Any, except putting check)
@@ -32,31 +30,6 @@ type Golfer struct {
 	Name      string
 	Skills    Skills
 	Abilities Abilities
-	GolfBall  GolfBall
-}
-
-//todo: control power and stuff
-func (g *Golfer) Swing() {
-	//todo: what controls the target number?
-	targetNumber := g.Abilities.Control + g.Skills.Approach
-	d := NewD6()
-	result := d.SkillCheck(targetNumber)
-	fmt.Println(result)
-	g.GolfBall.Hit(result)
-}
-
-type Lie struct {
-	Name                 string
-	TargetNumberModifier int
-	// 'quality' - being based on rsk, do we want
-	// 'quality' to actually be more in line
-	// with that definition? rather than a multiplier to distance?
-	Quality float32
-}
-
-type GolfBall struct {
-	Lie      Lie
-	Location Point
 }
 
 // when we hit the ball
@@ -64,29 +37,11 @@ type GolfBall struct {
 // the ball will move to a location
 // eventually, the path of the ball needs to be considered
 // also need to consider lie (are we in the fairway? a bunker? the rough?)
-func (b *GolfBall) Hit(swingResult SkillCheckResult) {
-	// skill check success
-	// where do we end up?
-	if swingResult.Success {
-		b.Location.Y += int(toFeet(102))
-		b.Lie = Lie{
-			Name:                 "Perfect",
-			TargetNumberModifier: 1,
-			Quality:              1,
-		}
-	} else {
-		// the failure could be a hook/straight if we were trying to draw
-		// a slice/straight if we were trying to fade
-		// the shape/straight ration could be like 80/20 or maybe based on your skill?
-		// and random if straight, plus maybe some other types of misses...
-		// golf is about playing your miss
-		// this would promote picking a shot shape, to know the miss.
-		b.Location.Y += int(toFeet(75))
-		b.Location.X -= int(toFeet(30))
-		b.Lie = Lie{
-			Name:                 "Rough",
-			TargetNumberModifier: -1,
-			Quality:              .8,
-		}
-	}
-}
+// skill check success
+// where do we end up?
+// the failure could be a hook/straight if we were trying to draw
+// a slice/straight if we were trying to fade
+// the shape/straight ration could be like 80/20 or maybe based on your skill?
+// and random if straight, plus maybe some other types of misses...
+// golf is about playing your miss
+// this would promote picking a shot shape, to know the miss.
