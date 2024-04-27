@@ -68,9 +68,9 @@ func NewHole(number int, par int, teeBox TeeBox, fairway Fairway, green Green) *
 }
 
 func (h Hole) DistanceToHole(b GolfBall) Yards {
-	ballXY := math.Pow(float64(b.Location.X), 2) + math.Pow(float64(b.Location.Y), 2)
-	holeXY := math.Pow(float64(h.Green.HoleLocation.X), 2) + math.Pow(float64(h.Green.HoleLocation.Y), 2)
-	distanceInFeet := math.Sqrt(math.Abs(holeXY - ballXY))
+	xs := math.Pow(float64(b.Location.X-h.Green.HoleLocation.X), 2)
+	ys := math.Pow(float64(b.Location.Y-h.Green.HoleLocation.Y), 2)
+	distanceInFeet := math.Sqrt(math.Abs(xs + ys))
 	return toYards(float32(distanceInFeet))
 }
 
