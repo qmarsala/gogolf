@@ -45,13 +45,13 @@ func playGolf(golfer Golfer) {
 	//when hole is complete, move to next hole
 	//when course is complete, end game
 	hole := NewHole(1, 4, TeeBox{
-		Size:     Size{Length: 3, Width: 3},
+		Size:     Size{Length: 20, Width: 20},
 		Location: Point{X: 0, Y: 0},
 	}, Fairway{
-		Size:     Size{Length: 300, Width: 30},
+		Size:     Size{Length: 900, Width: 90},
 		Location: Point{X: 0, Y: 10},
 	}, Green{
-		Size:         Size{Length: 30, Width: 30},
+		Size:         Size{Length: 90, Width: 90},
 		Location:     Point{X: 0, Y: 910},
 		HoleLocation: Point{X: 0, Y: 916},
 	})
