@@ -9,7 +9,7 @@ type ScoreCard struct {
 	Scores map[int]int
 }
 
-func (sc ScoreCard) RecordStroke(h Hole) {
+func (sc *ScoreCard) RecordStroke(h Hole) {
 	sc.Scores[h.Number]++
 }
 
