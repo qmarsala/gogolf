@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 type GolfBall struct {
 	Location Point
 }
@@ -14,5 +16,7 @@ type GolfBall struct {
 // will be much better.
 func (ball *GolfBall) ReceiveHit(club Club, power float32, direction Vector) {
 	yards := Yard(float32(club.Distance) * power)
+	startingLocation := Point{ball.Location.X, ball.Location.Y}
 	ball.Location = ball.Location.Move(direction, float64(yards.Units()))
+	fmt.Printf("Ball traveled %f\n", startingLocation.Distance(ball.Location).Yards())
 }

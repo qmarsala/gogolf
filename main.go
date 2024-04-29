@@ -30,7 +30,7 @@ func main() {
 	//todo: collision detection
 	// for now the ball's receive hit could return a vector representing the path taken
 	// but it will eventually need to be an actually line that may curve
-	for ball.Location != hole1.HoleLocation {
+	for !hole1.CheckHoleForBall(ball) {
 		fmt.Printf("distance to hole: %f\n", ball.Location.Distance(hole1.HoleLocation).Yards())
 		c := readString("Select a club: ")
 		clubChoice, _ := strconv.ParseInt(strings.TrimSpace(c), 10, 8)
@@ -41,6 +41,7 @@ func main() {
 		ball.ReceiveHit(club, float32(power), directionToHole)
 		scoreCard.RecordStroke(holes[0])
 		fmt.Printf("%+v (%+v)\n", scoreCard.TotalStrokes(), scoreCard.Score())
+		fmt.Printf("ball: %+v | hole: %+v\n", ball.Location, hole1.HoleLocation)
 	}
 }
 
