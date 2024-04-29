@@ -12,7 +12,7 @@ type Hole struct {
 	HoleLocation Point
 }
 
-func (h Hole) CheckHoleForBall(b GolfBall) bool {
+func (h Hole) CheckForBall(b GolfBall) bool {
 	// this allows a ball to stop short and be counted, we will
 	// want to do collision checks on a path to be more accurate
 	grace := int(Foot(2).Units())
