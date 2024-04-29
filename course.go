@@ -17,9 +17,9 @@ func (h Hole) CheckForBall(b GolfBall) bool {
 	// want to do collision checks on a path to be more accurate
 	grace := int(Foot(2).Units())
 	holedOut := (b.Location.X == h.HoleLocation.X &&
-		(b.Location.Y+grace) <= h.HoleLocation.Y || b.Location.Y-grace >= h.HoleLocation.Y) ||
+		b.Location.Y >= (h.HoleLocation.Y-grace) && b.Location.Y <= (h.HoleLocation.Y+grace)) ||
 		(b.Location.Y == h.HoleLocation.Y &&
-			(b.Location.X+grace) <= h.HoleLocation.X || b.Location.X-grace >= h.HoleLocation.X)
+			b.Location.X >= (h.HoleLocation.X-grace) && b.Location.X <= (h.HoleLocation.X+grace))
 	fmt.Printf("holed out: %+v\n", holedOut)
 	return holedOut
 }
