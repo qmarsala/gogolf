@@ -1,36 +1,41 @@
 package main
 
-// have the following actions available in game
-// - inspecting a lie to know its quality (Recovery check)
-// - shaping a shot, or adding/removing spin (Any, except putting check)
-// - get out of thick rough (Recovery check)
-// - Normal shots (appropriate check)
-// - Flop shot (chipping check)
-// - Pitch (Approach or Chipping)
-// - TeeShot (Driving or Approach)
-type Skills struct {
-	Recovery int
-	Driving  int
-	Approach int
-	Chipping int
-	Putting  int
-}
-
-// have the following actions available in game
-// - inspecting a lie to know its quality (intellect check)
-// - shaping a shot, or adding/removing spin (control check)
-// - get out of thick rough (strength check)
-type Abilities struct {
-	Strength  int
-	Intellect int
-	Control   int
+type Club struct {
+	Name     string
+	Distance Yard
 }
 
 type Golfer struct {
-	Name      string
-	Skills    Skills
-	Abilities Abilities
+	Name   string
+	Target Point
 }
+
+// how do we want to do this?
+// we can have different types of shots
+// and use different clubs
+// hit it softer or harder
+// these types of decisions can affect the target number
+// func (g *Golfer) Swing(club Club) {
+// 	dice := NewD6()
+// 	//todo: Depending on the shot we will use a different skill/attribute
+// 	// we will also need to add mods such as lie boost/penalties
+// 	// for now, just something
+// 	targetNumber := g.Skills[club.DefaultSkill].Value() + g.Abilities[club.DefaultAbility].Value()
+// 	result := dice.SkillCheck(targetNumber)
+// 	if result.Success {
+// 		g.GolfBall.ReceiveHit(Club{}, 1)
+// 	} else {
+// 		g.GolfBall.ReceiveHit(Club{}, .65)
+// 	}
+// }
+
+//aiming
+// - thinking that by default you will be aiming at the flag
+// - to do this, we probably need to calculate the angle
+// from the y axis to the hole location and you. so we can do things
+// relative to your plane with the hole location.
+// - aiming would then rotate this plane?
+// - shots then fade/draw/hook/slice etc relative to this plane
 
 // when we hit the ball
 // based on shot shape, power, success, etc
