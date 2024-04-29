@@ -3,6 +3,21 @@ package main
 type Club struct {
 	Name     string
 	Distance Yard
+	// how to model this:
+	// something like a 'putter' will always go straight on success
+	// and deviate a little in a range on failure.  while a 'driver' has room for
+	// miss on success, and a greater margin on failure
+	Accuracy float32 //? this could represent a percentage. 1 meaning no error, 0 meaning full random
+	// 80% accuracy would mean success goes somewhere in a 20 degree, 10 degree angle left or right of target
+	// success/failure margin could add to this
+	// ie, succeed by 10 would make the accuracy 10 degrees, 5 degree angle left or right of target
+	// and failed by 10 would make it 2/3 accuracy - margin = 57 degrees, 28 degrees left or right of target
+
+	// the failure mod of 2/3 could maybe be determined by some 'forgiveness' factor of the club?
+	// this represents how much of the accuracy you keep on a failure
+	// 1 would mean that a miss hit's accuracy is only affected by the margin
+	// 0 would mean that it is basically a random shot
+	Forgiveness float32
 }
 
 type Golfer struct {
