@@ -38,3 +38,13 @@ func (v1 Vector) AngleBetween(v2 Vector) float64 {
 	}
 	return math.Acos(cosine)
 }
+
+func (v Vector) Rotate(angleDegrees float64) Vector {
+	angleRadians := angleDegrees * math.Pi / 180
+	cosTheta := math.Cos(angleRadians)
+	sinTheta := math.Sin(angleRadians)
+	return Vector{
+		X: v.X*cosTheta + v.Y*sinTheta,
+		Y: -v.X*sinTheta + v.Y*cosTheta,
+	}
+}

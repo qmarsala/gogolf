@@ -3,6 +3,8 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"math"
+	"math/rand/v2"
 	"os"
 	"strconv"
 	"strings"
@@ -22,7 +24,7 @@ func main() {
 	sevenIron := Club{Name: "7 Iron", Distance: 170}
 	pitchingWedge := Club{Name: "PW", Distance: 140}
 	lobWedge := Club{Name: "LW", Distance: 100}
-	putter := Club{Name: "LW", Distance: 40}
+	putter := Club{Name: "Putter", Distance: 40}
 	clubs := []Club{driver, sevenIron, pitchingWedge, lobWedge, putter}
 
 	//for 'hole out' logic, we should scan the path of the ball and the hole location
@@ -30,7 +32,7 @@ func main() {
 	//todo: collision detection
 	// for now the ball's receive hit could return a vector representing the path taken
 	// but it will eventually need to be an actually line that may curve
-	for !hole1.CheckForBall(ball) {
+	for !hole1.CheckForBall(ball) && scoreCard.TotalStrokes() < 11 {
 		fmt.Printf("distance to hole: %f\n", ball.Location.Distance(hole1.HoleLocation).Yards())
 		c := readString("Select a club: ")
 		clubChoice, _ := strconv.ParseInt(strings.TrimSpace(c), 10, 8)
@@ -38,7 +40,30 @@ func main() {
 		p := readString("power: ")
 		power, _ := strconv.ParseFloat(strings.TrimSpace(p), 64)
 		directionToHole := ball.Location.Direction(hole1.HoleLocation)
-		ball.ReceiveHit(club, float32(power), directionToHole)
+
+		result := NewD6().SkillCheck(10)
+		rotationDegrees := 0
+		rotationDirection := 1
+		if (rand.IntN(10)+1)%2 == 0 {
+			rotationDirection *= -1
+		}
+		if result.Success {
+			maxRotation := int(5 - math.Abs(float64(result.Margin)))
+			if maxRotation < 1 {
+				maxRotation = 1
+			}
+			rotationDegrees = rand.IntN(maxRotation)
+		} else {
+			rotationDegrees = rand.IntN(int(7 + math.Abs(float64(result.Margin))))
+		}
+		adjustedDirectionToHole := directionToHole.Rotate(float64(rotationDegrees) * float64(rotationDirection))
+		if club.Name == "Putter" {
+			fmt.Println("Using putter, no adjusting to aim")
+			ball.ReceiveHit(club, float32(power), directionToHole)
+		} else {
+			fmt.Println("normal hit, adjusting aim for ", result.Success, "(", result.Margin, ")")
+			ball.ReceiveHit(club, float32(power), adjustedDirectionToHole)
+		}
 		scoreCard.RecordStroke(holes[0])
 		fmt.Printf("%+v (%+v)\n", scoreCard.TotalStrokes(), scoreCard.Score())
 		fmt.Printf("ball: %+v | hole: %+v\n", ball.Location, hole1.HoleLocation)
