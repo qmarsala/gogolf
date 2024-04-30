@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"math"
 )
 
 // holes need a list of good locations to aim at
@@ -24,20 +23,21 @@ type Hole struct {
 }
 
 func (h Hole) DetectHoleOut(b GolfBall, bPath Vector) bool {
-	toHoleVec := Vector{X: float64(h.HoleLocation.X - b.PrevLocation.X), Y: float64(h.HoleLocation.X - b.PrevLocation.Y)}
-	crossProduct := bPath.X*toHoleVec.Y - bPath.Y*toHoleVec.X
-	if math.Abs(crossProduct) > 1e-7 {
-		return false
-	}
+	toHoleVec := Vector{X: float64(h.HoleLocation.X - b.PrevLocation.X), Y: float64(h.HoleLocation.Y - b.PrevLocation.Y)}
 	dotProduct := toHoleVec.Dot(bPath)
-	if dotProduct < 0 {
-		return false
-	}
-	grace := int(Foot(2).Units())
 	squaredLengthBPath := bPath.X*bPath.X + bPath.Y*bPath.Y
-	return (dotProduct > squaredLengthBPath) &&
-		(b.Location.Y >= (h.HoleLocation.Y-grace) && b.Location.Y <= (h.HoleLocation.Y+grace)) &&
-		(b.Location.X >= (h.HoleLocation.X-grace) && b.Location.X <= (h.HoleLocation.X+grace))
+	projectionFactor := dotProduct / squaredLengthBPath
+
+	closestPoint := Point{
+		X: int(float64(b.PrevLocation.X) + projectionFactor*bPath.X),
+		Y: int(float64(b.PrevLocation.Y) + projectionFactor*bPath.Y),
+	}
+	if projectionFactor < 0 {
+		closestPoint = b.PrevLocation
+	} else if projectionFactor > 1 {
+		closestPoint = b.Location
+	}
+	return closestPoint.Distance(h.HoleLocation) <= Foot(1).Units() && b.Location.Distance(h.HoleLocation) <= Foot(3).Units()
 }
 
 func NewHole(number int, par int, holeLocation Point, boundary Size) *Hole {
