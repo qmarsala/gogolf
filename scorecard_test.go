@@ -33,7 +33,7 @@ func TestScore(t *testing.T) {
 		Par:    4,
 	}
 	sc := ScoreCard{
-		Course: Course{[]Hole{hole}},
+		Course: Course{[]Hole{hole, hole2}},
 		Scores: map[int]int{},
 	}
 
