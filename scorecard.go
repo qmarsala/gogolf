@@ -5,7 +5,7 @@ import (
 )
 
 type ScoreCard struct {
-	Holes  []Hole
+	Course Course
 	Scores map[int]int
 }
 
@@ -22,10 +22,10 @@ func (sc ScoreCard) TotalStrokes() (score int) {
 
 func (sc ScoreCard) Score() (score int) {
 	for k, v := range sc.Scores {
-		if holeIndex := slices.IndexFunc(sc.Holes, func(h Hole) bool {
+		if holeIndex := slices.IndexFunc(sc.Course.Holes, func(h Hole) bool {
 			return h.Number == k
 		}); holeIndex > -1 {
-			score += v - sc.Holes[holeIndex].Par
+			score += v - sc.Course.Holes[holeIndex].Par
 		}
 	}
 	return

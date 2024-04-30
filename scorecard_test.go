@@ -10,7 +10,7 @@ func TestRecordScore(t *testing.T) {
 		Par:    3,
 	}
 	sc := ScoreCard{
-		Holes:  []Hole{hole},
+		Course: Course{[]Hole{hole}},
 		Scores: map[int]int{},
 	}
 
@@ -33,7 +33,7 @@ func TestScore(t *testing.T) {
 		Par:    4,
 	}
 	sc := ScoreCard{
-		Holes:  []Hole{hole, hole2},
+		Course: Course{[]Hole{hole}},
 		Scores: map[int]int{},
 	}
 
@@ -61,7 +61,7 @@ func TestTotalStrokes(t *testing.T) {
 		Par:    4,
 	}
 	sc := ScoreCard{
-		Holes:  []Hole{hole, hole2},
+		Course: Course{[]Hole{hole}},
 		Scores: map[int]int{},
 	}
 
