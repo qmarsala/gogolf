@@ -6,6 +6,11 @@ type GolfBall struct {
 	Location Point
 }
 
+func (ball *GolfBall) TeeUp() {
+	ball.Location = Point{0, 0}
+	fmt.Println("Ball teed up")
+}
+
 // todo: eventually we will want to 'shape' the shot
 // ie. a fade/draw/slice/hook etc.
 // how do we want to message that?
