@@ -4,6 +4,16 @@ import (
 	"fmt"
 )
 
+// holes need a list of good locations to aim at
+// sometimes it is best not to aim at the hole.
+// and we want to implement 'ob' and 'trees' to force you away form the hole sometimes
+// yet inputs like 'aim left 20 degrees' could be clunky as the only option
+// having options like: center fairway, center green, hole, etc as quick aim options.
+// also, being able to adjust distance aim to gain finer control
+// if I am aiming at a point >= club distance, then full power is full power
+// but it might be helpful to be able to aim at a point < club distance, and scale power from there.
+// ex: aim pw at 100 yrds (making full power 100 instead of 140)
+
 type Hole struct {
 	Number       int
 	Par          int
