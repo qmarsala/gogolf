@@ -64,11 +64,14 @@ func main() {
 				rotationDegrees = math.Max(possibleRotation+math.Abs(float64(result.Margin)), 1)
 				power = math.Max(power*(float64(club.Forgiveness)-(math.Abs(float64(result.Margin))/100)), 0.1)
 			}
+
 			directionToHole.Rotate(rotationDegrees * rotationDirection)
 			ballPath := ball.ReceiveHit(club, float32(power), directionToHole)
+			if club.Name != "Putter" {
+				experimentWithShotSimpleShapes_Draw(&ball, ballPath, h)
+			}
 			fmt.Printf("Ball traveled %f\n", Unit(ballPath.Magnitude()).Yards())
 			scoreCard.RecordStroke(h)
-
 			fmt.Println("Success: ", result.Success, " ", result.Margin, " Rotation: ", rotationDegrees, " ", rotationDirection)
 			fmt.Printf("ball: %+v | hole: %+v\n", ball.Location, h.HoleLocation)
 			if h.DetectHoleOut(ball, ballPath) {
@@ -86,4 +89,17 @@ func readString(prompt string) string {
 	text, _ := reader.ReadString('\n')
 	text = strings.TrimSpace(text)
 	return text
+}
+
+func experimentWithShotSimpleShapes_Draw(ball *GolfBall, ballPath Vector, h Hole) {
+	fmt.Printf("pre draw ball: %+v | hole: %+v\n", ball.Location, h.HoleLocation)
+	directionToHole := ball.PrevLocation.Direction(h.HoleLocation)
+	drawRotationDegrees := -45
+	if directionToHole.Y < 0 {
+		drawRotationDegrees = 45
+	}
+	rotatedPath := ballPath.Rotate(float64(drawRotationDegrees))
+	translationDistance := Yard(math.Max(rand.Float64()*3, 1)).Units()
+	fmt.Println("Draw: ", translationDistance)
+	ball.Location = ball.Location.Move(rotatedPath, float64(translationDistance))
 }
