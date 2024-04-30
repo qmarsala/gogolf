@@ -12,6 +12,11 @@ type Hole struct {
 	HoleLocation Point
 }
 
+// for 'hole out' logic, we should scan the path of the ball and the hole location
+// for collision. Then if it was not traveling to far past, it could be considered in
+// todo: collision detection
+// for now the ball's receive hit could return a vector representing the path taken
+// but it will eventually need to be an actually line that may curve
 func (h Hole) CheckForBall(b GolfBall) bool {
 	// this allows a ball to stop short and be counted, we will
 	// want to do collision checks on a path to be more accurate
@@ -20,7 +25,6 @@ func (h Hole) CheckForBall(b GolfBall) bool {
 		b.Location.Y >= (h.HoleLocation.Y-grace) && b.Location.Y <= (h.HoleLocation.Y+grace)) ||
 		(b.Location.Y == h.HoleLocation.Y &&
 			b.Location.X >= (h.HoleLocation.X-grace) && b.Location.X <= (h.HoleLocation.X+grace))
-	fmt.Printf("holed out: %+v\n", holedOut)
 	return holedOut
 }
 
@@ -41,5 +45,11 @@ func (h Hole) String() string {
 
 type Course struct {
 	Holes []Hole
-	Par   int
+}
+
+func (c Course) Par() (par int) {
+	for _, v := range c.Holes {
+		par += v.Par
+	}
+	return
 }
