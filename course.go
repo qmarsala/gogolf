@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 )
 
 // holes need a list of good locations to aim at
@@ -22,18 +23,21 @@ type Hole struct {
 	HoleLocation Point
 }
 
-// for 'hole out' logic, we should scan the path of the ball and the hole location
-// for collision. Then if it was not traveling to far past, it could be considered in
-// todo: collision detection
-// for now the ball's receive hit could return a vector representing the path taken
-// but it will eventually need to be an actually line that may curve
-func (h Hole) CheckForBall(b GolfBall) bool {
-	// this allows a ball to stop short and be counted, we will
-	// want to do collision checks on a path to be more accurate
+func (h Hole) DetectHoleOut(b GolfBall, bPath Vector) bool {
+	toHoleVec := Vector{X: float64(h.HoleLocation.X - b.PrevLocation.X), Y: float64(h.HoleLocation.X - b.PrevLocation.Y)}
+	crossProduct := bPath.X*toHoleVec.Y - bPath.Y*toHoleVec.X
+	if math.Abs(crossProduct) > 1e-7 {
+		return false
+	}
+	dotProduct := toHoleVec.Dot(bPath)
+	if dotProduct < 0 {
+		return false
+	}
 	grace := int(Foot(2).Units())
-	holedOut := (b.Location.Y >= (h.HoleLocation.Y-grace) && b.Location.Y <= (h.HoleLocation.Y+grace)) &&
+	squaredLengthBPath := bPath.X*bPath.X + bPath.Y*bPath.Y
+	return (dotProduct > squaredLengthBPath) &&
+		(b.Location.Y >= (h.HoleLocation.Y-grace) && b.Location.Y <= (h.HoleLocation.Y+grace)) &&
 		(b.Location.X >= (h.HoleLocation.X-grace) && b.Location.X <= (h.HoleLocation.X+grace))
-	return holedOut
 }
 
 func NewHole(number int, par int, holeLocation Point, boundary Size) *Hole {
