@@ -20,6 +20,10 @@ type Club struct {
 	Forgiveness float32
 }
 
+func (c Club) AccuracyDegrees() float32 {
+	return ((1 - c.Accuracy) * 100) / 2
+}
+
 type Golfer struct {
 	Name   string
 	Target Point
