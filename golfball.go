@@ -3,11 +3,13 @@ package main
 import "fmt"
 
 type GolfBall struct {
-	Location Point
+	Location     Point
+	PrevLocation Point
 }
 
 func (ball *GolfBall) TeeUp() {
 	ball.Location = Point{0, 0}
+	ball.PrevLocation = Point{0, 0}
 	fmt.Println("Ball teed up")
 }
 
@@ -19,9 +21,9 @@ func (ball *GolfBall) TeeUp() {
 // the collision detection on the hole is going to be really important.  A simple alternative
 // for now, could be to check if it is within a few points of the hole.  Though I think the collision
 // will be much better.
-func (ball *GolfBall) ReceiveHit(club Club, power float32, direction Vector) {
+func (ball *GolfBall) ReceiveHit(club Club, power float32, direction Vector) (path Vector) {
 	yards := Yard(float32(club.Distance) * power)
-	startingLocation := Point{ball.Location.X, ball.Location.Y}
+	ball.PrevLocation = Point{ball.Location.X, ball.Location.Y}
 	ball.Location = ball.Location.Move(direction, float64(yards.Units()))
-	fmt.Printf("Ball traveled %f\n", startingLocation.Distance(ball.Location).Yards())
+	return Vector{X: float64(ball.Location.X - ball.PrevLocation.X), Y: float64(ball.Location.Y - ball.PrevLocation.Y)}
 }
