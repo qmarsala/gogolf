@@ -35,7 +35,7 @@ func (d Dice) SkillCheck(targetNumber int) SkillCheckResult {
 	total, rolls := d.rollN(3)
 	margin := targetNumber - total
 	return SkillCheckResult{
-		Success:    margin >= 0,
+		Success:    margin <= 0,
 		IsCritical: rolls[0] == rolls[1] && rolls[0] == rolls[2],
 		RollTotal:  total,
 		Rolls:      rolls,
