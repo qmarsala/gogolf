@@ -15,59 +15,54 @@ func main() {
 	hole1 := *NewHole(1, 4, Point{X: 20, Y: int(Yard(423).Units())}, Size{})
 	holes := []Hole{hole1}
 	ball := GolfBall{Location: Point{X: 0, Y: 0}}
+	course := Course{Holes: holes}
 	scoreCard := ScoreCard{
-		Holes:  holes,
+		Course: course,
 		Scores: map[int]int{},
 	}
 
-	driver := Club{Name: "Driver", Distance: 280}
-	sevenIron := Club{Name: "7 Iron", Distance: 170}
-	pitchingWedge := Club{Name: "PW", Distance: 140}
-	lobWedge := Club{Name: "LW", Distance: 100}
-	putter := Club{Name: "Putter", Distance: 40}
+	driver := Club{Name: "Driver", Distance: 280, Accuracy: .8}
+	sevenIron := Club{Name: "7 Iron", Distance: 170, Accuracy: .9}
+	pitchingWedge := Club{Name: "PW", Distance: 140, Accuracy: .95}
+	lobWedge := Club{Name: "LW", Distance: 100, Accuracy: .95}
+	putter := Club{Name: "Putter", Distance: 40, Accuracy: 1}
 	clubs := []Club{driver, sevenIron, pitchingWedge, lobWedge, putter}
 
-	//for 'hole out' logic, we should scan the path of the ball and the hole location
-	// for collision. Then if it was not traveling to far past, it could be considered in
-	//todo: collision detection
-	// for now the ball's receive hit could return a vector representing the path taken
-	// but it will eventually need to be an actually line that may curve
-	for !hole1.CheckForBall(ball) && scoreCard.TotalStrokes() < 11 {
-		fmt.Printf("distance to hole: %f\n", ball.Location.Distance(hole1.HoleLocation).Yards())
-		c := readString("Select a club: ")
-		clubChoice, _ := strconv.ParseInt(strings.TrimSpace(c), 10, 8)
-		club := clubs[clubChoice]
-		p := readString("power: ")
-		power, _ := strconv.ParseFloat(strings.TrimSpace(p), 64)
-		directionToHole := ball.Location.Direction(hole1.HoleLocation)
+	for _, h := range course.Holes {
+		fmt.Println(h)
+		for !h.CheckForBall(ball) && scoreCard.TotalStrokes() < 11 {
+			fmt.Printf("distance to hole: %f\n", ball.Location.Distance(h.HoleLocation).Yards())
+			c := readString("Select a club: ")
+			clubChoice, _ := strconv.ParseInt(strings.TrimSpace(c), 10, 8)
+			club := clubs[clubChoice]
+			p := readString("power: ")
+			power, _ := strconv.ParseFloat(strings.TrimSpace(p), 64)
+			directionToHole := ball.Location.Direction(h.HoleLocation)
 
-		result := NewD6().SkillCheck(10)
-		rotationDegrees := 0
-		rotationDirection := 1
-		if (rand.IntN(10)+1)%2 == 0 {
-			rotationDirection *= -1
-		}
-		if result.Success {
-			maxRotation := int(5 - math.Abs(float64(result.Margin)))
-			if maxRotation < 1 {
-				maxRotation = 1
+			result := NewD6().SkillCheck(10)
+			var rotationDegrees float64 = 0
+			rotationDirection := 1
+			//how do we want to control the miss direction?
+			if (rand.IntN(10)+1)%2 == 0 {
+				rotationDirection *= -1
 			}
-			rotationDegrees = rand.IntN(maxRotation)
-		} else {
-			rotationDegrees = rand.IntN(int(7 + math.Abs(float64(result.Margin))))
-		}
-		adjustedDirectionToHole := directionToHole.Rotate(float64(rotationDegrees) * float64(rotationDirection))
-		if club.Name == "Putter" {
-			fmt.Println("Using putter, no adjusting to aim")
+			if result.Success {
+				possibleRotation := math.Min(rand.Float64()*100, float64(club.AccuracyDegrees()))
+				rotationDegrees = math.Max(possibleRotation-float64(result.Margin), 0)
+			} else {
+				possibleRotation := math.Min(rand.Float64()*100, float64(club.AccuracyDegrees())*1.3)
+				rotationDegrees = math.Max(possibleRotation+float64(result.Margin), 1)
+				power = math.Max(power*(.8-(math.Abs(float64(result.Margin))/100)), 0)
+			}
+			fmt.Println("Success: ", result.Success, " ", result.Margin, " Rotation: ", rotationDegrees, " ", rotationDirection)
+			directionToHole.Rotate(float64(rotationDegrees) * float64(rotationDirection))
 			ball.ReceiveHit(club, float32(power), directionToHole)
-		} else {
-			fmt.Println("normal hit, adjusting aim for ", result.Success, "(", result.Margin, ")")
-			ball.ReceiveHit(club, float32(power), adjustedDirectionToHole)
+			scoreCard.RecordStroke(holes[0])
+			fmt.Printf("%+v (%+v)\n", scoreCard.TotalStrokes(), scoreCard.Score())
+			fmt.Printf("ball: %+v | hole: %+v\n", ball.Location, h.HoleLocation)
 		}
-		scoreCard.RecordStroke(holes[0])
-		fmt.Printf("%+v (%+v)\n", scoreCard.TotalStrokes(), scoreCard.Score())
-		fmt.Printf("ball: %+v | hole: %+v\n", ball.Location, hole1.HoleLocation)
 	}
+	fmt.Println("Score: ", scoreCard.TotalStrokes(), "(", scoreCard.Score(), ")")
 }
 
 func readString(prompt string) string {
