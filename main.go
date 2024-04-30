@@ -53,15 +53,16 @@ func main() {
 			rotationDegrees := float64(0)
 			clubAcc := float64(club.AccuracyDegrees())
 			if result.Success {
-				possibleRotation := math.Min(random.Float64()*100, clubAcc)
+				possibleRotation := math.Min(random.Float64()*clubAcc, clubAcc)
 				fmt.Println("Possible Rotation: ", possibleRotation)
 				rotationDegrees = math.Max(possibleRotation-float64(result.Margin), 0)
 			} else {
-				minimumMisHitRotation := math.Min((random.Float64() * 100), 45-(45*float64(club.Forgiveness)))
+				baseMisHit := 45 * (1 - float64(club.Forgiveness))
+				minimumMisHitRotation := random.Float64() * baseMisHit
 				possibleRotation := math.Max(minimumMisHitRotation+clubAcc, clubAcc)
 				fmt.Println("Possible Rotation: ", possibleRotation)
 				rotationDegrees = math.Max(possibleRotation+math.Abs(float64(result.Margin)), 1)
-				power = math.Max(power*(float64(club.Forgiveness)-(math.Abs(float64(result.Margin))/100)), 0)
+				power = math.Max(power*(float64(club.Forgiveness)-(math.Abs(float64(result.Margin))/100)), 0.1)
 			}
 			directionToHole.Rotate(rotationDegrees * rotationDirection)
 			ballPath := ball.ReceiveHit(club, float32(power), directionToHole)
