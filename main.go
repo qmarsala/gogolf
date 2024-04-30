@@ -23,18 +23,19 @@ func main() {
 		Scores: map[int]int{},
 	}
 
-	driver := Club{Name: "Driver", Distance: 280, Accuracy: .8}
-	sevenIron := Club{Name: "7 Iron", Distance: 170, Accuracy: .9}
-	pitchingWedge := Club{Name: "PW", Distance: 140, Accuracy: .95}
-	lobWedge := Club{Name: "LW", Distance: 100, Accuracy: .95}
-	putter := Club{Name: "Putter", Distance: 40, Accuracy: 1}
+	driver := Club{Name: "Driver", Distance: 280, Accuracy: .8, Forgiveness: .8}
+	sevenIron := Club{Name: "7 Iron", Distance: 170, Accuracy: .9, Forgiveness: .8}
+	pitchingWedge := Club{Name: "PW", Distance: 140, Accuracy: .95, Forgiveness: .8}
+	lobWedge := Club{Name: "LW", Distance: 100, Accuracy: .95, Forgiveness: .8}
+	putter := Club{Name: "Putter", Distance: 40, Accuracy: 1, Forgiveness: .95}
 	clubs := []Club{driver, sevenIron, pitchingWedge, lobWedge, putter}
 
+	random := rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64()))
 	for _, h := range course.Holes {
 		fmt.Printf("%+v (%+v)\n", scoreCard.TotalStrokes(), scoreCard.ScoreThrough(h.Number-1))
 		fmt.Println(h)
 		ball.TeeUp()
-		for !h.CheckForBall(ball) && scoreCard.TotalStrokesThisHole(h) < 11 {
+		for scoreCard.TotalStrokesThisHole(h) < 11 {
 			fmt.Printf("distance to hole: %f\n", ball.Location.Distance(h.HoleLocation).Yards())
 			c := readString("Select a club: ")
 			clubChoice, _ := strconv.ParseInt(strings.TrimSpace(c), 10, 8)
@@ -44,26 +45,34 @@ func main() {
 			directionToHole := ball.Location.Direction(h.HoleLocation)
 
 			result := NewD6().SkillCheck(10)
-			var rotationDegrees float64 = 0
-			rotationDirection := 1
 			//how do we want to control the miss direction?
-			if (rand.IntN(10)+1)%2 == 0 {
+			rotationDirection := float64(1)
+			if int(math.Abs(float64(result.Margin)))%2 == 0 {
 				rotationDirection *= -1
 			}
+			rotationDegrees := float64(0)
+			clubAcc := float64(club.AccuracyDegrees())
 			if result.Success {
-				possibleRotation := math.Min(rand.Float64()*100, float64(club.AccuracyDegrees()))
+				possibleRotation := math.Min(random.Float64()*100, clubAcc)
+				fmt.Println("Possible Rotation: ", possibleRotation)
 				rotationDegrees = math.Max(possibleRotation-float64(result.Margin), 0)
 			} else {
-				possibleRotation := math.Min(rand.Float64()*100, float64(club.AccuracyDegrees())*1.3)
-				rotationDegrees = math.Max(possibleRotation+float64(result.Margin), 1)
-				power = math.Max(power*(.8-(math.Abs(float64(result.Margin))/100)), 0)
+				minimumMisHitRotation := math.Min((random.Float64() * 100), 45-(45*float64(club.Forgiveness)))
+				possibleRotation := math.Max(minimumMisHitRotation+clubAcc, clubAcc)
+				fmt.Println("Possible Rotation: ", possibleRotation)
+				rotationDegrees = math.Max(possibleRotation+math.Abs(float64(result.Margin)), 1)
+				power = math.Max(power*(float64(club.Forgiveness)-(math.Abs(float64(result.Margin))/100)), 0)
 			}
-			directionToHole.Rotate(float64(rotationDegrees) * float64(rotationDirection))
-			ball.ReceiveHit(club, float32(power), directionToHole)
+			directionToHole.Rotate(rotationDegrees * rotationDirection)
+			ballPath := ball.ReceiveHit(club, float32(power), directionToHole)
+			fmt.Printf("Ball traveled %f\n", Unit(ballPath.Magnitude()).Yards())
 			scoreCard.RecordStroke(h)
 
 			fmt.Println("Success: ", result.Success, " ", result.Margin, " Rotation: ", rotationDegrees, " ", rotationDirection)
 			fmt.Printf("ball: %+v | hole: %+v\n", ball.Location, h.HoleLocation)
+			if h.DetectHoleOut(ball, ballPath) {
+				break
+			}
 		}
 		fmt.Println("Hole Completed: ", scoreCard.TotalStrokesThisHole(h), " (", scoreCard.ScoreThisHole(h), ")")
 	}
