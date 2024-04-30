@@ -21,10 +21,8 @@ func (h Hole) CheckForBall(b GolfBall) bool {
 	// this allows a ball to stop short and be counted, we will
 	// want to do collision checks on a path to be more accurate
 	grace := int(Foot(2).Units())
-	holedOut := (b.Location.X == h.HoleLocation.X &&
-		b.Location.Y >= (h.HoleLocation.Y-grace) && b.Location.Y <= (h.HoleLocation.Y+grace)) ||
-		(b.Location.Y == h.HoleLocation.Y &&
-			b.Location.X >= (h.HoleLocation.X-grace) && b.Location.X <= (h.HoleLocation.X+grace))
+	holedOut := (b.Location.Y >= (h.HoleLocation.Y-grace) && b.Location.Y <= (h.HoleLocation.Y+grace)) &&
+		(b.Location.X >= (h.HoleLocation.X-grace) && b.Location.X <= (h.HoleLocation.X+grace))
 	return holedOut
 }
 
@@ -50,6 +48,15 @@ type Course struct {
 func (c Course) Par() (par int) {
 	for _, v := range c.Holes {
 		par += v.Par
+	}
+	return
+}
+
+func (c Course) ParUpToHole(holeNumber int) (par int) {
+	for _, v := range c.Holes {
+		if v.Number <= holeNumber {
+			par += v.Par
+		}
 	}
 	return
 }
