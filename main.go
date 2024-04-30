@@ -14,7 +14,7 @@ func main() {
 	fmt.Println("\nWelcome to GoGolf.")
 	hole1 := *NewHole(1, 4, Point{X: 20, Y: int(Yard(423).Units())}, Size{})
 	hole2 := *NewHole(2, 5, Point{X: -100, Y: int(Yard(523).Units())}, Size{})
-	hole3 := *NewHole(2, 3, Point{X: 0, Y: int(Yard(123).Units())}, Size{})
+	hole3 := *NewHole(3, 3, Point{X: 0, Y: int(Yard(123).Units())}, Size{})
 	holes := []Hole{hole1, hole2, hole3}
 	ball := GolfBall{Location: Point{X: 0, Y: 0}}
 	course := Course{Holes: holes}
@@ -31,9 +31,10 @@ func main() {
 	clubs := []Club{driver, sevenIron, pitchingWedge, lobWedge, putter}
 
 	for _, h := range course.Holes {
+		fmt.Printf("%+v (%+v)\n", scoreCard.TotalStrokes(), scoreCard.ScoreThrough(h.Number-1))
 		fmt.Println(h)
 		ball.TeeUp()
-		for !h.CheckForBall(ball) && scoreCard.TotalStrokes() < 11 {
+		for !h.CheckForBall(ball) && scoreCard.TotalStrokesThisHole(h) < 11 {
 			fmt.Printf("distance to hole: %f\n", ball.Location.Distance(h.HoleLocation).Yards())
 			c := readString("Select a club: ")
 			clubChoice, _ := strconv.ParseInt(strings.TrimSpace(c), 10, 8)
@@ -59,12 +60,12 @@ func main() {
 			}
 			directionToHole.Rotate(float64(rotationDegrees) * float64(rotationDirection))
 			ball.ReceiveHit(club, float32(power), directionToHole)
-			scoreCard.RecordStroke(holes[0])
+			scoreCard.RecordStroke(h)
 
 			fmt.Println("Success: ", result.Success, " ", result.Margin, " Rotation: ", rotationDegrees, " ", rotationDirection)
-			fmt.Printf("%+v (%+v)\n", scoreCard.TotalStrokes(), scoreCard.Score())
 			fmt.Printf("ball: %+v | hole: %+v\n", ball.Location, h.HoleLocation)
 		}
+		fmt.Println("Hole Completed: ", scoreCard.TotalStrokesThisHole(h), " (", scoreCard.ScoreThisHole(h), ")")
 	}
 	fmt.Println("Score: ", scoreCard.TotalStrokes(), "(", scoreCard.Score(), ")")
 }
