@@ -23,24 +23,12 @@ type Hole struct {
 }
 
 func (h Hole) DetectHoleOut(b GolfBall, bPath Vector) bool {
-	toHoleVec := Vector{X: float64(h.HoleLocation.X - b.PrevLocation.X), Y: float64(h.HoleLocation.Y - b.PrevLocation.Y)}
-	dotProduct := toHoleVec.Dot(bPath)
-	squaredLengthBPath := bPath.Dot(bPath)
-	projectionFactor := dotProduct / squaredLengthBPath
-
-	closestPoint := Point{
-		X: int(float64(b.PrevLocation.X) + projectionFactor*bPath.X),
-		Y: int(float64(b.PrevLocation.Y) + projectionFactor*bPath.Y),
-	}
-	if projectionFactor < 0 {
-		closestPoint = b.PrevLocation
-	} else if projectionFactor > 1 {
-		closestPoint = b.Location
-	}
-	distanceFromHole := closestPoint.Distance(h.HoleLocation)
-	hitHole := distanceFromHole < 1 && b.Location.Distance(h.HoleLocation) <= Yard(10).Units()
+	// eventually when we have 'carry' and 'roll' paths, we will need to make sure
+	// it was the roll path, or the carries endpoint that hits the hole
+	directHit, distanceFromHole := b.CheckForCollision(bPath, h.HoleLocation)
+	hitAndStoppedInHole := directHit && b.Location.Distance(h.HoleLocation) <= Yard(10).Units()
 	closeEnough := distanceFromHole <= Unit(2) && b.Location.Distance(h.HoleLocation) <= Yard(1).Units()
-	return hitHole || closeEnough
+	return hitAndStoppedInHole || closeEnough
 
 }
 
