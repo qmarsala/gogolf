@@ -29,6 +29,7 @@ func main() {
 	lobWedge := Club{Name: "LW", Distance: 100, Accuracy: .95, Forgiveness: .8}
 	putter := Club{Name: "Putter", Distance: 40, Accuracy: 1, Forgiveness: .95}
 	clubs := []Club{driver, sevenIron, pitchingWedge, lobWedge, putter}
+	golfer := Golfer{Clubs: clubs}
 
 	random := rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64()))
 	for _, h := range course.Holes {
@@ -36,10 +37,15 @@ func main() {
 		fmt.Println(h)
 		ball.TeeUp()
 		for scoreCard.TotalStrokesThisHole(h) < 11 {
-			fmt.Printf("distance to hole: %f\n", ball.Location.Distance(h.HoleLocation).Yards())
-			c := readString("Select a club: ")
-			clubChoice, _ := strconv.ParseInt(strings.TrimSpace(c), 10, 8)
-			club := clubs[clubChoice]
+			distance := ball.Location.Distance(h.HoleLocation).Yards()
+			fmt.Printf("distance to hole: %f\n", distance)
+			//this can be a good default, but would still want a way to change it in the game
+			club := golfer.GetBestClub(distance)
+			fmt.Println("Using ", club.Name)
+			//still need a better way to do this, something like a 'select a shot' and have a few options
+			// like full, 3/4, 1/2, 1/4. as well as things like 'draw' and 'fade' or 'straight'
+			// though, when putting, we may need an option like 'tap in' that just adds a stroke and finishes the hole
+			// when the ball is within a certain range.  perhaps this could be part of hole out logic. and it auto taps in if the ball is close.
 			p := readString("power: ")
 			power, _ := strconv.ParseFloat(strings.TrimSpace(p), 64)
 			directionToHole := ball.Location.Direction(h.HoleLocation)
@@ -68,13 +74,21 @@ func main() {
 			directionToHole.Rotate(rotationDegrees * rotationDirection)
 			ballPath := ball.ReceiveHit(club, float32(power), directionToHole)
 			if club.Name != "Putter" {
-				experimentWithShotSimpleShapes_Draw(&ball, ballPath, h)
+				if rand.IntN(100)%2 == 0 {
+					experimentWithShotSimpleShapes_Draw(&ball, ballPath, h)
+				} else {
+					experimentWithShotSimpleShapes_Fade(&ball, ballPath, h)
+				}
 			}
 			fmt.Printf("Ball traveled %f\n", Unit(ballPath.Magnitude()).Yards())
 			scoreCard.RecordStroke(h)
 			fmt.Println("Success: ", result.Success, " ", result.Margin, " Rotation: ", rotationDegrees, " ", rotationDirection)
 			fmt.Printf("ball: %+v | hole: %+v\n", ball.Location, h.HoleLocation)
 			if h.DetectHoleOut(ball, ballPath) {
+				break
+			} else if h.DetectTapIn(ball) {
+				scoreCard.RecordStroke(h)
+				fmt.Println("tap in")
 				break
 			}
 		}
@@ -101,5 +115,18 @@ func experimentWithShotSimpleShapes_Draw(ball *GolfBall, ballPath Vector, h Hole
 	rotatedPath := ballPath.Rotate(float64(drawRotationDegrees))
 	translationDistance := Yard(math.Max(rand.Float64()*3, 1)).Units()
 	fmt.Println("Draw: ", translationDistance)
+	ball.Location = ball.Location.Move(rotatedPath, float64(translationDistance))
+}
+
+func experimentWithShotSimpleShapes_Fade(ball *GolfBall, ballPath Vector, h Hole) {
+	fmt.Printf("pre fade ball: %+v | hole: %+v\n", ball.Location, h.HoleLocation)
+	directionToHole := ball.PrevLocation.Direction(h.HoleLocation)
+	drawRotationDegrees := 45
+	if directionToHole.Y < 0 {
+		drawRotationDegrees = -45
+	}
+	rotatedPath := ballPath.Rotate(float64(drawRotationDegrees))
+	translationDistance := Yard(math.Max(rand.Float64()*3, 1)).Units()
+	fmt.Println("Fade: ", translationDistance)
 	ball.Location = ball.Location.Move(rotatedPath, float64(translationDistance))
 }
