@@ -1,5 +1,7 @@
 package main
 
+import "math"
+
 type Club struct {
 	Name     string
 	Distance Yard
@@ -27,6 +29,21 @@ func (c Club) AccuracyDegrees() float32 {
 type Golfer struct {
 	Name   string
 	Target Point
+	Clubs  []Club
+}
+
+//idea: strategy pattern that could be provided by a 'caddie'
+func (g Golfer) GetBestClub(distance Yard) Club {
+	c := g.Clubs[0]
+	closetDiff := float64(1000)
+	for _, v := range g.Clubs {
+		diff := math.Abs(float64(v.Distance) - float64(distance))
+		if diff <= closetDiff && v.Distance >= distance {
+			closetDiff = diff
+			c = v
+		}
+	}
+	return c
 }
 
 // how do we want to do this?
