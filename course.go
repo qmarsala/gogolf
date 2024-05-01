@@ -25,7 +25,7 @@ type Hole struct {
 func (h Hole) DetectHoleOut(b GolfBall, bPath Vector) bool {
 	toHoleVec := Vector{X: float64(h.HoleLocation.X - b.PrevLocation.X), Y: float64(h.HoleLocation.Y - b.PrevLocation.Y)}
 	dotProduct := toHoleVec.Dot(bPath)
-	squaredLengthBPath := bPath.X*bPath.X + bPath.Y*bPath.Y
+	squaredLengthBPath := bPath.Dot(bPath)
 	projectionFactor := dotProduct / squaredLengthBPath
 
 	closestPoint := Point{
