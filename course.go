@@ -37,11 +37,15 @@ func (h Hole) DetectHoleOut(b GolfBall, bPath Vector) bool {
 	} else if projectionFactor > 1 {
 		closestPoint = b.Location
 	}
-	return closestPoint.Distance(h.HoleLocation) <= Unit(5) && b.Location.Distance(h.HoleLocation) <= Foot(2).Units()
+	distanceFromHole := closestPoint.Distance(h.HoleLocation)
+	hitHole := distanceFromHole < 1 && b.Location.Distance(h.HoleLocation) <= Yard(10).Units()
+	closeEnough := distanceFromHole <= Unit(2) && b.Location.Distance(h.HoleLocation) <= Yard(1).Units()
+	return hitHole || closeEnough
+
 }
 
 func (h Hole) DetectTapIn(b GolfBall) bool {
-	return b.Location.Distance(h.HoleLocation) <= Foot(6).Units()
+	return b.Location.Distance(h.HoleLocation) <= Yard(2).Units()
 }
 
 func NewHole(number int, par int, holeLocation Point, boundary Size) *Hole {
