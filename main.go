@@ -10,6 +10,16 @@ import (
 	"strings"
 )
 
+// things to explore:
+// [ ] changing aim target - at least need to aim 'left' or 'right', but aiming shorter would be nice too
+// as it would allow flexibility with a full,3/4,1/2,1/4 shot system. (need to remove typing raw power, its cumbersome, annoying, and too easy in a way as you can be very precise)
+// [ ] wind - translate the final point like a draw for now, though this is a little different
+// [ ] greens adding break
+
+//todo:
+// [ ] go through brain storm comments and create some exploration tasks
+// [ ] refactor experimental code into longer term solutions
+
 func main() {
 	fmt.Println("\nWelcome to GoGolf.")
 	hole1 := *NewHole(1, 4, Point{X: 20, Y: int(Yard(423).Units())}, Size{})
