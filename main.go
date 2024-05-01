@@ -22,17 +22,8 @@ import (
 
 func main() {
 	fmt.Println("\nWelcome to GoGolf.")
-	hole1 := *NewHole(1, 4, Point{X: 20, Y: int(Yard(423).Units())}, Size{})
-	hole2 := *NewHole(2, 5, Point{X: -100, Y: int(Yard(523).Units())}, Size{})
-	hole3 := *NewHole(3, 3, Point{X: 0, Y: int(Yard(123).Units())}, Size{})
-	hole4 := *NewHole(4, 4, Point{X: int(Yard(323).Units()), Y: 0}, Size{})
-	holes := []Hole{hole1, hole2, hole3, hole4}
 	ball := GolfBall{Location: Point{X: 0, Y: 0}}
-	course := Course{Holes: holes}
-	scoreCard := ScoreCard{
-		Course: course,
-		Scores: map[int]int{},
-	}
+	course, scoreCard := GenerateCourse(3)
 	golfer := Golfer{Clubs: DefaultClubs()}
 
 	random := rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64()))

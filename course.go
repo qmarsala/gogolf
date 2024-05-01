@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"math"
+	"math/rand/v2"
 )
 
 // holes need a list of good locations to aim at
@@ -69,4 +71,43 @@ func (c Course) ParUpToHole(holeNumber int) (par int) {
 		}
 	}
 	return
+}
+
+func GenerateCourse(holeCount int) (Course, ScoreCard) {
+	holes := []Hole{}
+	parsAssigned := make(map[int]int)
+	// just generate the correct number, we could always shuffle and re number
+	// after we ensure we have enough of each type of hole
+	for i := 0; i < holeCount; i++ {
+		distance := Yard(math.Max((rand.Float64() * 620), 68))
+		width := Yard(math.Max((rand.Float64() * 60), 20))
+		par := 3
+		if distance >= 250 {
+			par++
+		}
+		if distance >= 500 {
+			par++
+		}
+		if holeCount >= 2 && parsAssigned[3] < 1 {
+			distance = Yard(math.Max((rand.Float64() * 200), 68))
+			par = 3
+		}
+		if holeCount >= 2 && parsAssigned[4] < 1 {
+			distance = Yard(math.Max((rand.Float64() * 520), 300))
+			par = 4
+		}
+		if holeCount >= 2 && parsAssigned[5] < 1 {
+			distance = Yard(math.Max((rand.Float64() * 620), 510))
+			par = 5
+		}
+		parsAssigned[par]++
+		holeLocation := Point{X: int(width.Units()), Y: int(distance.Units())}
+		holes = append(holes, *NewHole(i+1, par, holeLocation, Size{}))
+	}
+	course := Course{Holes: holes}
+	scoreCard := ScoreCard{
+		Course: course,
+		Scores: map[int]int{},
+	}
+	return course, scoreCard
 }
