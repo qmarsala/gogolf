@@ -34,12 +34,21 @@ func main() {
 		Scores: map[int]int{},
 	}
 
-	driver := Club{Name: "Driver", Distance: 280, Accuracy: .8, Forgiveness: .8}
-	sevenIron := Club{Name: "7 Iron", Distance: 170, Accuracy: .9, Forgiveness: .8}
-	pitchingWedge := Club{Name: "PW", Distance: 140, Accuracy: .95, Forgiveness: .8}
+	driver := Club{Name: "Driver", Distance: 280, Accuracy: .75, Forgiveness: .8}
+	threeWood := Club{Name: "3 Wood", Distance: 250, Accuracy: .8, Forgiveness: .8}
+	fiveWood := Club{Name: "5 Wood", Distance: 235, Accuracy: .8, Forgiveness: .8}
+	fourIron := Club{Name: "4 Iron", Distance: 215, Accuracy: .85, Forgiveness: .8}
+	fiveIron := Club{Name: "5 Iron", Distance: 200, Accuracy: .85, Forgiveness: .8}
+	sixIron := Club{Name: "6 Iron", Distance: 190, Accuracy: .85, Forgiveness: .8}
+	sevenIron := Club{Name: "7 Iron", Distance: 180, Accuracy: .9, Forgiveness: .8}
+	eightIron := Club{Name: "8 Iron", Distance: 170, Accuracy: .9, Forgiveness: .8}
+	nineIron := Club{Name: "8 Iron", Distance: 160, Accuracy: .9, Forgiveness: .8}
+	pitchingWedge := Club{Name: "PW", Distance: 150, Accuracy: .95, Forgiveness: .8}
+	gapWedge := Club{Name: "GW", Distance: 140, Accuracy: .95, Forgiveness: .8}
+	sandWedge := Club{Name: "SW", Distance: 125, Accuracy: .95, Forgiveness: .8}
 	lobWedge := Club{Name: "LW", Distance: 100, Accuracy: .95, Forgiveness: .8}
 	putter := Club{Name: "Putter", Distance: 40, Accuracy: 1, Forgiveness: .95}
-	clubs := []Club{driver, sevenIron, pitchingWedge, lobWedge, putter}
+	clubs := []Club{driver, threeWood, fiveWood, fourIron, fiveIron, sixIron, sevenIron, eightIron, nineIron, pitchingWedge, gapWedge, sandWedge, lobWedge, putter}
 	golfer := Golfer{Clubs: clubs}
 
 	random := rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64()))
@@ -124,6 +133,8 @@ func experimentWithShotSimpleShapes_Draw(ball *GolfBall, ballPath Vector, h Hole
 		drawRotationDegrees = 45
 	}
 	rotatedPath := ballPath.Rotate(float64(drawRotationDegrees))
+	// this should probably be a factor of total distance
+	// shorter shots can move as much as longer shots
 	translationDistance := Yard(math.Max(rand.Float64()*3, 1)).Units()
 	fmt.Println("Draw: ", translationDistance)
 	ball.Location = ball.Location.Move(rotatedPath, float64(translationDistance))
