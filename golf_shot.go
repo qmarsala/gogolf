@@ -8,3 +8,26 @@ package main
 // - carry distance
 // - roll distance
 // - list of points to make a path that could change direction (fade or draw) to get around something
+
+type ShotShape int
+
+const (
+	Straight ShotShape = iota
+	Fade     ShotShape = iota
+	Draw     ShotShape = iota
+)
+
+type GolfShot struct {
+	Club      Club
+	ShotShape ShotShape
+	Target    Point
+	Power     float32
+	Loft      float32
+}
+
+type GolfShotResult struct {
+}
+
+func (gs *GolfShot) Execute(golfer Golfer) GolfShotResult {
+	return GolfShotResult{}
+}
