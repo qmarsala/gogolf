@@ -10,13 +10,13 @@ func NewD6() Dice {
 	return Dice{Sides: 6}
 }
 
-func (d Dice) roll() int {
+func (d Dice) Roll() int {
 	return rand.IntN(d.Sides) + 1
 }
 
-func (d Dice) rollN(dieCount int) (total int, rolls []int) {
+func (d Dice) RollN(dieCount int) (total int, rolls []int) {
 	for i := 0; i < dieCount; i++ {
-		roll := d.roll()
+		roll := d.Roll()
 		rolls = append(rolls, roll)
 		total += roll
 	}
@@ -32,7 +32,7 @@ type SkillCheckResult struct {
 }
 
 func (d Dice) SkillCheck(targetNumber int) SkillCheckResult {
-	total, rolls := d.rollN(3)
+	total, rolls := d.RollN(3)
 	margin := targetNumber - total
 	return SkillCheckResult{
 		Success:    margin >= 0,

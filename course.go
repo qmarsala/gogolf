@@ -28,14 +28,14 @@ func (h Hole) DetectHoleOut(b GolfBall, bPath Vector) bool {
 	// eventually when we have 'carry' and 'roll' paths, we will need to make sure
 	// it was the roll path, or the carries endpoint that hits the hole
 	directHit, distanceFromHole := b.CheckForCollision(bPath, h.HoleLocation)
-	hitAndStoppedInHole := directHit && b.Location.Distance(h.HoleLocation) <= Yard(10).Units()
+	hitAndStoppedInHole := directHit && b.Location.Distance(h.HoleLocation) <= Foot(16).Units()
 	closeEnough := distanceFromHole <= Unit(2) && b.Location.Distance(h.HoleLocation) <= Yard(1).Units()
 	return hitAndStoppedInHole || closeEnough
 
 }
 
 func (h Hole) DetectTapIn(b GolfBall) bool {
-	return b.Location.Distance(h.HoleLocation) <= Yard(2).Units()
+	return b.Location.Distance(h.HoleLocation) <= Foot(4).Units()
 }
 
 func NewHole(number int, par int, holeLocation Point, boundary Size) *Hole {
