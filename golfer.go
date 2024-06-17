@@ -65,6 +65,18 @@ func (g Golfer) GetBestClub(distance Yard) Club {
 	return c
 }
 
+func (g Golfer) SkillCheck(d Dice, targetNumber int) SkillCheckResult {
+	total, rolls := d.RollN(3)
+	margin := targetNumber - total
+	return SkillCheckResult{
+		Success:    margin >= 0,
+		IsCritical: rolls[0] == rolls[1] && rolls[0] == rolls[2],
+		RollTotal:  total,
+		Rolls:      rolls,
+		Margin:     margin,
+	}
+}
+
 // how do we want to do this?
 // we can have different types of shots
 // and use different clubs

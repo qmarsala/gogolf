@@ -30,15 +30,3 @@ type SkillCheckResult struct {
 	Rolls      []int
 	Margin     int
 }
-
-func (d Dice) SkillCheck(targetNumber int) SkillCheckResult {
-	total, rolls := d.RollN(3)
-	margin := targetNumber - total
-	return SkillCheckResult{
-		Success:    margin >= 0,
-		IsCritical: rolls[0] == rolls[1] && rolls[0] == rolls[2],
-		RollTotal:  total,
-		Rolls:      rolls,
-		Margin:     margin,
-	}
-}

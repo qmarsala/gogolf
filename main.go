@@ -45,7 +45,7 @@ func main() {
 			power, _ := strconv.ParseFloat(strings.TrimSpace(p), 64)
 			directionToHole := ball.Location.Direction(h.HoleLocation)
 
-			result := NewD6().SkillCheck(10)
+			result := golfer.SkillCheck(NewD6(), 10)
 			//how do we want to control the miss direction?
 			rotationDirection := float64(1)
 			if int(math.Abs(float64(result.Margin)))%2 == 0 {
