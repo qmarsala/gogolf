@@ -11,23 +11,69 @@ package main
 
 type ShotShape int
 
-const (
-	Straight ShotShape = iota
-	Fade     ShotShape = iota
-	Draw     ShotShape = iota
-)
+// const (
+// 	Straight ShotShape = iota
+// 	Fade     ShotShape = iota
+// 	Draw     ShotShape = iota
+// )
 
-type GolfShot struct {
-	Club      Club
-	ShotShape ShotShape
-	Target    Point
-	Power     float32
-	Loft      float32
+type GolfShot interface {
+	Execute(Golfer, GolfBall) GolfShotResult
+	// Club      Club
+	// ShotShape ShotShape
+	// Target    Point
+	// Power     float32
+}
+
+type Straight struct {
+	//what would these things be called?
+	Club   Club
+	Target Point
+	Power  float32
+}
+
+type Fade struct {
+	Club   Club
+	Target Point
+	Power  float32
+}
+
+type Draw struct {
+	Club   Club
+	Target Point
+	Power  float32
 }
 
 type GolfShotResult struct {
+	CarryDistance float32
+	RollDistance  float32
+	Path          []Point
 }
 
-func (gs *GolfShot) Execute(golfer Golfer) GolfShotResult {
+func (gs *GolfShotResult) TotalDistance() float32 {
+	return gs.RollDistance + gs.CarryDistance
+}
+
+func (gs *Straight) Execute(golfer Golfer, ball GolfBall) GolfShotResult {
+	//todo:
+	// - calculate shot distance
+	// - depending on club, determine carry and roll.
+	// - plot path, point for start, carry end (and direction change for curved shots), and roll end.
+	return GolfShotResult{}
+}
+
+func (gs *Fade) Execute(golfer Golfer, ball GolfBall) GolfShotResult {
+	//todo:
+	// - calculate shot distance
+	// - depending on club, determine carry and roll.
+	// - plot path, point for start, carry end (and direction change for curved shots), and roll end.
+	return GolfShotResult{}
+}
+
+func (gs *Draw) Execute(golfer Golfer, ball GolfBall) GolfShotResult {
+	//todo:
+	// - calculate shot distance
+	// - depending on club, determine carry and roll.
+	// - plot path, point for start, carry end (and direction change for curved shots), and roll end.
 	return GolfShotResult{}
 }
