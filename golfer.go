@@ -153,13 +153,16 @@ func (g Golfer) CalculateTargetNumber(club Club, difficulty int) int {
 
 // AwardExperience adds XP to both the skill and ability for a club
 func (g *Golfer) AwardExperience(club Club, xp int) {
+	// Get copies of the skill and ability
 	skill := g.GetSkillForClub(club)
 	ability := g.GetAbilityForClub(club)
 
-	skill.AddExperience(xp)
-	ability.AddExperience(xp)
+	// Call AddExperience on the copies (using pointer receiver)
+	// This modifies the copies in place
+	(&skill).AddExperience(xp)
+	(&ability).AddExperience(xp)
 
-	// Update the maps with the modified skill and ability
+	// Update the maps with the modified copies
 	g.Skills[skill.Name] = skill
 	g.Abilities[ability.Name] = ability
 }
