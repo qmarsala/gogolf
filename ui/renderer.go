@@ -5,6 +5,39 @@ import (
 	"strings"
 )
 
+// colorizeOutcome returns colored text based on shot outcome
+func colorizeOutcome(outcome string) string {
+	switch outcome {
+	case "Critical Success":
+		return colorBrightGreen + outcome + colorReset
+	case "Excellent", "Good":
+		return colorGreen + outcome + colorReset
+	case "Marginal":
+		return colorYellow + outcome + colorReset
+	case "Poor":
+		return colorYellow + outcome + colorReset
+	case "Bad", "Critical Failure":
+		return colorRed + outcome + colorReset
+	default:
+		return outcome
+	}
+}
+
+// colorizeMoney returns colored money value
+func colorizeMoney(value int) string {
+	return colorYellow + fmt.Sprintf("%d", value) + colorReset
+}
+
+// colorizeXP returns colored XP value
+func colorizeXP(value int) string {
+	return colorCyan + fmt.Sprintf("+%d", value) + colorReset
+}
+
+// colorizeLevelUp returns colored level up message
+func colorizeLevelUp(message string) string {
+	return colorBrightGreen + "🎉 " + message + colorReset
+}
+
 // Renderer manages the rendering of game state to the terminal
 type Renderer struct {
 	Terminal *Terminal
@@ -79,7 +112,7 @@ func (r *Renderer) RenderLeftPanel(state GameState) {
 		row++
 		r.printInPanel(panel, row, fmt.Sprintf("├─ Club: %s", shot.ClubName), false)
 		row++
-		r.printInPanel(panel, row, fmt.Sprintf("├─ Quality: %s (Margin: %+d)", shot.Outcome, shot.Margin), false)
+		r.printInPanel(panel, row, fmt.Sprintf("├─ Quality: %s (Margin: %+d)", colorizeOutcome(shot.Outcome), shot.Margin), false)
 		row++
 		r.printInPanel(panel, row, fmt.Sprintf("├─ Description: %s", shot.Description), false)
 		row++
@@ -100,10 +133,10 @@ func (r *Renderer) RenderLeftPanel(state GameState) {
 
 		// XP and level ups
 		if shot.XPEarned > 0 {
-			r.printInPanel(panel, row, fmt.Sprintf("XP Earned: +%d", shot.XPEarned), false)
+			r.printInPanel(panel, row, fmt.Sprintf("XP Earned: %s", colorizeXP(shot.XPEarned)), false)
 			row++
 			for _, levelUp := range shot.LevelUps {
-				r.printInPanel(panel, row, levelUp, false)
+				r.printInPanel(panel, row, colorizeLevelUp(levelUp), false)
 				row++
 			}
 			row++ // blank line
@@ -141,7 +174,7 @@ func (r *Renderer) RenderRightPanel(state GameState) {
 	row++
 	r.printInPanel(panel, row, fmt.Sprintf("Player: %s", state.PlayerName), false)
 	row++
-	r.printInPanel(panel, row, fmt.Sprintf("Money: %d", state.Money), false)
+	r.printInPanel(panel, row, fmt.Sprintf("Money: %s", colorizeMoney(state.Money)), false)
 	row++
 	row++ // blank line
 
