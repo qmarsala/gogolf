@@ -102,7 +102,7 @@ func TestProShop_PurchaseBall_Success(t *testing.T) {
 	}
 
 	initialMoney := golfer.Money
-	success := shop.PurchaseBall(golfer, targetBall.Name)
+	success := shop.PurchaseBall(&golfer, targetBall.Name)
 
 	if !success {
 		t.Error("PurchaseBall failed, want success")
@@ -141,7 +141,7 @@ func TestProShop_PurchaseBall_InsufficientFunds(t *testing.T) {
 	}
 
 	initialMoney := golfer.Money
-	success := shop.PurchaseBall(golfer, expensiveBall.Name)
+	success := shop.PurchaseBall(&golfer, expensiveBall.Name)
 
 	if success {
 		t.Error("PurchaseBall succeeded with insufficient funds, want failure")
@@ -158,7 +158,7 @@ func TestProShop_PurchaseBall_NotFound(t *testing.T) {
 	golfer := NewGolfer("TestPlayer")
 	golfer.Money = 1000
 
-	success := shop.PurchaseBall(golfer, "NonExistent Ball")
+	success := shop.PurchaseBall(&golfer, "NonExistent Ball")
 
 	if success {
 		t.Error("PurchaseBall succeeded for non-existent ball, want failure")
@@ -184,7 +184,7 @@ func TestProShop_PurchaseGlove_Success(t *testing.T) {
 		t.Fatal("No affordable glove found in shop")
 	}
 
-	success := shop.PurchaseGlove(golfer, targetGlove.Name)
+	success := shop.PurchaseGlove(&golfer, targetGlove.Name)
 
 	if !success {
 		t.Error("PurchaseGlove failed, want success")
@@ -214,7 +214,7 @@ func TestProShop_PurchaseShoes_Success(t *testing.T) {
 		t.Fatal("No affordable shoes found in shop")
 	}
 
-	success := shop.PurchaseShoes(golfer, targetShoes.Name)
+	success := shop.PurchaseShoes(&golfer, targetShoes.Name)
 
 	if !success {
 		t.Error("PurchaseShoes failed, want success")
