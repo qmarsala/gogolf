@@ -23,7 +23,7 @@ import (
 func main() {
 	fmt.Println("\nWelcome to GoGolf.")
 	ball := GolfBall{Location: Point{X: 0, Y: 0}}
-	course, scoreCard := GenerateCourse(3)
+	course, scoreCard := GenerateSimpleCourse(3) // Use course with lie system
 	golfer := NewGolfer("Player")
 
 	// Display initial player stats
@@ -48,8 +48,12 @@ func main() {
 			power, _ := strconv.ParseFloat(strings.TrimSpace(p), 64)
 			directionToHole := ball.Location.Direction(h.HoleLocation)
 
-			// Calculate dynamic target number based on club, skill, and ability
-			difficulty := 0 // TODO: Will come from lie system in Phase 3
+			// Get current lie and calculate difficulty modifier
+			lie := ball.GetLie(&h)
+			difficulty := lie.DifficultyModifier()
+			fmt.Printf("Lie: %s (difficulty: %+d)\n", lie, difficulty)
+
+			// Calculate dynamic target number based on club, skill, ability, and lie
 			targetNumber := golfer.CalculateTargetNumber(club, difficulty)
 			result := golfer.SkillCheck(NewD6(), targetNumber)
 
