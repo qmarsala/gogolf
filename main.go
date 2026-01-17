@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"gogolf/ui"
 	"math"
 	"math/rand/v2"
 	"os"
@@ -20,38 +21,119 @@ import (
 // [ ] go through brain storm comments and create some exploration tasks
 // [ ] refactor experimental code into longer term solutions
 
+// buildGameState creates a GameState from current game data for UI rendering
+func buildGameState(golfer Golfer, hole Hole, ball GolfBall, scoreCard ScoreCard, lastShot *ui.ShotDisplay, promptMsg string) ui.GameState {
+	// Build skills map
+	skills := make(map[string]ui.SkillDisplay)
+	for name, skill := range golfer.Skills {
+		skills[name] = ui.SkillDisplay{
+			Name:      skill.Name,
+			Level:     skill.Level,
+			Value:     skill.Value(),
+			CurrentXP: skill.Experience,
+			XPForNext: skill.ExperienceToNextLevel(),
+		}
+	}
+
+	// Build abilities map
+	abilities := make(map[string]ui.AbilityDisplay)
+	for name, ability := range golfer.Abilities {
+		abilities[name] = ui.AbilityDisplay{
+			Name:      ability.Name,
+			Level:     ability.Level,
+			Value:     ability.Value(),
+			CurrentXP: ability.Experience,
+			XPForNext: ability.ExperienceToNextLevel(),
+		}
+	}
+
+	// Build equipment display
+	equipment := ui.EquipmentDisplay{}
+	if golfer.Ball != nil {
+		equipment.BallName = golfer.Ball.Name
+		equipment.BallBonus = fmt.Sprintf("+%.0f dist", golfer.Ball.DistanceBonus)
+	}
+	if golfer.Glove != nil {
+		equipment.GloveName = golfer.Glove.Name
+		equipment.GloveBonus = fmt.Sprintf("+%.2f acc", golfer.Glove.AccuracyBonus)
+	}
+	if golfer.Shoes != nil {
+		equipment.ShoesName = golfer.Shoes.Name
+		equipment.ShoesBonus = fmt.Sprintf("-%d lie pen", golfer.Shoes.LiePenaltyReduction)
+	}
+
+	// Get current lie
+	lie := ball.GetLie(&hole)
+
+	return ui.GameState{
+		PlayerName:        golfer.Name,
+		Money:             golfer.Money,
+		Skills:            skills,
+		Abilities:         abilities,
+		Equipment:         equipment,
+		HoleNumber:        hole.Number,
+		TotalHoles:        len(scoreCard.Course.Holes),
+		Par:               hole.Par,
+		HoleDistance:      float64(hole.Distance),
+		BallLie:           lie.String(),
+		BallLieDifficulty: lie.DifficultyModifier(),
+		DistanceToHole:    float64(ball.Location.Distance(hole.HoleLocation).Yards()),
+		BallLocationX:     float64(ball.Location.X),
+		BallLocationY:     float64(ball.Location.Y),
+		HoleLocationX:     float64(hole.HoleLocation.X),
+		HoleLocationY:     float64(hole.HoleLocation.Y),
+		LastShot:          lastShot,
+		TotalStrokes:      scoreCard.TotalStrokes(),
+		ScoreToPar:        scoreCard.Score(),
+		StrokesThisHole:   scoreCard.TotalStrokesThisHole(hole),
+		PromptMsg:         promptMsg,
+	}
+}
+
 func main() {
-	fmt.Println("\nWelcome to GoGolf.")
+	// Initialize UI renderer
+	renderer := ui.NewRenderer()
+	defer renderer.Terminal.ShowCursor() // Ensure cursor is restored on exit
+
+	// Check if terminal supports rich UI
+	if !renderer.Layout.SupportsRichUI() {
+		fmt.Println("Terminal too small for rich UI. Minimum 80x24 required.")
+		fmt.Println("Falling back to simple mode...")
+		// TODO: Implement simple fallback mode
+		return
+	}
+
+	renderer.Terminal.HideCursor()
+
 	ball := GolfBall{Location: Point{X: 0, Y: 0}}
 	course, scoreCard := GenerateSimpleCourse(3) // Use course with lie system
 	golfer := NewGolfer("Player")
 
-	// Display initial player stats
-	displayPlayerStats(golfer)
-
 	random := rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64()))
+	var lastShot *ui.ShotDisplay // Track last shot for display
+
 	for _, h := range course.Holes {
-		fmt.Printf("%+v (%+v)\n", scoreCard.TotalStrokes(), scoreCard.ScoreThrough(h.Number-1))
-		fmt.Println(h)
 		ball.TeeUp()
+		lastShot = nil // Reset shot display for new hole
+
 		for scoreCard.TotalStrokesThisHole(h) < 11 {
-			distance := ball.Location.Distance(h.HoleLocation).Yards()
-			fmt.Printf("distance to hole: %f\n", distance)
-			//this can be a good default, but would still want a way to change it in the game
-			club := golfer.GetBestClub(distance)
-			fmt.Println("Using ", club.Name)
-			//still need a better way to do this, something like a 'select a shot' and have a few options
-			// like full, 3/4, 1/2, 1/4. as well as things like 'draw' and 'fade' or 'straight'
-			// though, when putting, we may need an option like 'tap in' that just adds a stroke and finishes the hole
-			// when the ball is within a certain range.  perhaps this could be part of hole out logic. and it auto taps in if the ball is close.
-			p := readString("power: ")
-			power, _ := strconv.ParseFloat(strings.TrimSpace(p), 64)
+			// Render UI with current state
+			club := golfer.GetBestClub(ball.Location.Distance(h.HoleLocation).Yards())
+			state := buildGameState(golfer, h, ball, scoreCard, lastShot, fmt.Sprintf("Using %s - Enter power (0-1):", club.Name))
+			renderer.Render(state)
+
+			// Get power input from user
+			reader := bufio.NewReader(os.Stdin)
+			renderer.Terminal.ShowCursor()
+			powerInput, _ := reader.ReadString('\n')
+			renderer.Terminal.HideCursor()
+			power, _ := strconv.ParseFloat(strings.TrimSpace(powerInput), 64)
+
 			directionToHole := ball.Location.Direction(h.HoleLocation)
 
 			// Get current lie and calculate difficulty modifier
 			lie := ball.GetLie(&h)
 			difficulty := lie.DifficultyModifier()
-			fmt.Printf("Lie: %s (difficulty: %+d)\n", lie, difficulty)
 
 			// Calculate dynamic target number based on club, skill, ability, and lie
 			targetNumber := golfer.CalculateTargetNumber(club, difficulty)
@@ -70,12 +152,6 @@ func main() {
 			rotationDegrees := CalculateRotation(modifiedClub, result, random)
 			power = CalculatePower(modifiedClub, power, result)
 
-			// Enhanced feedback
-			fmt.Printf("\nShot Quality: %s (Margin: %+d)\n", result.Outcome, result.Margin)
-			fmt.Printf("├─ %s\n", GetShotQualityDescription(result))
-			fmt.Printf("├─ Rotation: %.1f° %s\n", rotationDegrees, map[bool]string{true: "left", false: "right"}[rotationDirection < 0])
-			fmt.Printf("└─ Power: %.0f%%\n\n", power*100)
-
 			// Award XP and detect level-ups
 			skill := golfer.GetSkillForClub(club)
 			ability := golfer.GetAbilityForClub(club)
@@ -85,22 +161,19 @@ func main() {
 			xpAward := calculateXP(result.Outcome)
 			golfer.AwardExperience(club, xpAward)
 
-			// Check for level-ups
+			// Check for level-ups and collect messages
 			newSkill := golfer.GetSkillForClub(club)
 			newAbility := golfer.GetAbilityForClub(club)
+			var levelUps []string
 
 			if newSkill.Level > prevSkillLevel {
-				fmt.Printf("🎉 %s leveled up to %d!\n", newSkill.Name, newSkill.Level)
+				levelUps = append(levelUps, fmt.Sprintf("%s leveled up to %d!", newSkill.Name, newSkill.Level))
 			}
 			if newAbility.Level > prevAbilityLevel {
-				fmt.Printf("🎉 %s leveled up to %d!\n", newAbility.Name, newAbility.Level)
+				levelUps = append(levelUps, fmt.Sprintf("%s leveled up to %d!", newAbility.Name, newAbility.Level))
 			}
 
-			fmt.Printf("XP: +%d (%s: %d/%d, %s: %d/%d)\n\n",
-				xpAward,
-				newSkill.Name, newSkill.Experience, newSkill.ExperienceToNextLevel(),
-				newAbility.Name, newAbility.Experience, newAbility.ExperienceToNextLevel())
-
+			// Execute shot
 			directionToHole.Rotate(rotationDegrees * rotationDirection)
 			ballPath := ball.ReceiveHit(modifiedClub, float32(power), directionToHole)
 			if club.Name != "Putter" {
@@ -110,33 +183,59 @@ func main() {
 					experimentWithShotSimpleShapes_Fade(&ball, ballPath, h)
 				}
 			}
-			fmt.Printf("Ball traveled %.1f yards\n", Unit(ballPath.Magnitude()).Yards())
+
 			scoreCard.RecordStroke(h)
-			fmt.Printf("Result: %s | Rotation: %.1f° %s\n",
-				result.Outcome,
-				rotationDegrees,
-				map[bool]string{true: "left", false: "right"}[rotationDirection < 0])
-			fmt.Printf("ball: %+v | hole: %+v\n", ball.Location, h.HoleLocation)
+
+			// Build shot display for next render
+			rotationDir := "right"
+			if rotationDirection < 0 {
+				rotationDir = "left"
+			}
+			lastShot = &ui.ShotDisplay{
+				ClubName:    club.Name,
+				Outcome:     result.Outcome.String(),
+				Margin:      result.Margin,
+				Description: GetShotQualityDescription(result),
+				Rotation:    rotationDegrees,
+				RotationDir: rotationDir,
+				Power:       power,
+				Distance:    float64(Unit(ballPath.Magnitude()).Yards()),
+				XPEarned:    xpAward,
+				LevelUps:    levelUps,
+			}
 			if h.DetectHoleOut(ball, ballPath) {
 				break
 			} else if h.DetectTapIn(ball) {
 				scoreCard.RecordStroke(h)
-				fmt.Println("tap in")
+				lastShot.Description += " (Tap in)"
 				break
 			}
 		}
+
 		// Award money for hole completion
-		strokes := scoreCard.TotalStrokesThisHole(h)
-		reward := CalculateHoleReward(h.Par, strokes)
-		golfer.AwardHoleReward(h.Par, strokes)
+		golfer.AwardHoleReward(h.Par, scoreCard.TotalStrokesThisHole(h))
 
-		fmt.Println("Hole Completed: ", scoreCard.TotalStrokesThisHole(h), " (", scoreCard.ScoreThisHole(h), ")")
-		fmt.Printf("Money earned: %d (Total: %d)\n", reward, golfer.Money)
+		// Show hole completion screen
+		reward := CalculateHoleReward(h.Par, scoreCard.TotalStrokesThisHole(h))
+		statusMsg := fmt.Sprintf("Hole %d Complete! %d strokes (%+d) | +%d money",
+			h.Number, scoreCard.TotalStrokesThisHole(h), scoreCard.ScoreThisHole(h), reward)
+		state := buildGameState(golfer, h, ball, scoreCard, lastShot, "Press Enter to continue...")
+		state.StatusMsg = statusMsg
+		renderer.Render(state)
+
+		// Wait for user to press enter
+		reader := bufio.NewReader(os.Stdin)
+		renderer.Terminal.ShowCursor()
+		reader.ReadString('\n')
+		renderer.Terminal.HideCursor()
 	}
-	fmt.Println("Score: ", scoreCard.TotalStrokes(), "(", scoreCard.Score(), ")")
 
-	// Display final player stats
+	// Show round complete screen
+	renderer.Terminal.Clear()
+	renderer.Terminal.ShowCursor()
 	fmt.Println("\n=== Round Complete ===")
+	fmt.Printf("Final Score: %d (%+d)\n", scoreCard.TotalStrokes(), scoreCard.Score())
+	fmt.Printf("Money: %d\n\n", golfer.Money)
 	displayPlayerStats(golfer)
 }
 
@@ -186,14 +285,6 @@ func calculateXP(outcome SkillCheckOutcome) int {
 	default:
 		return 1
 	}
-}
-
-func readString(prompt string) string {
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Print(prompt)
-	text, _ := reader.ReadString('\n')
-	text = strings.TrimSpace(text)
-	return text
 }
 
 func experimentWithShotSimpleShapes_Draw(ball *GolfBall, ballPath Vector, h Hole) {
