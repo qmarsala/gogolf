@@ -26,6 +26,12 @@ Based on the project vision in CLAUDE.md, this document outlines the gaps betwee
   - Level-up notifications during gameplay
   - Player stats display (skills/abilities with XP progress)
   - Full character progression system active
+- **Course Grid & Lie System** (PR #4 merged)
+  - 8 LieTypes with difficulty modifiers
+  - Spatial grid system for course layout
+  - Ball position to lie detection
+  - Lie difficulty integrated into target numbers
+  - GenerateSimpleCourse with automatic lie setup
 
 ### ❌ Missing Core RPG Features
 
@@ -102,55 +108,73 @@ Based on the project vision in CLAUDE.md, this document outlines the gaps betwee
 - Total: 68 tests passing
 - Tests verify: calculateXP, dynamic target numbers, XP awards, level-ups
 
-### Remaining Work for Future Phases
-- [ ] Integrate lie difficulty into target number calculation (Phase 3)
-
 ---
 
-## Phase 3: Course Grid & Lie System
-**Priority: MEDIUM** - Adds strategic depth
+## ✅ Phase 3: Course Grid & Lie System [COMPLETE]
+**Status: MERGED** (PR #4) - Strategic depth added to shot difficulty
 
-### Requirements (from CLAUDE.md)
-> "The course is a grid of locations the ball can be within"
-> "Each location will have properties that determine the lie of the ball"
-> "ex: a location may be considered to be 'in a bunker', 'in the rough', 'or in the fairway'"
+### Completed Implementation
 
-### Current Issue
-- Course exists but not as a spatial grid
-- No lie detection
-- Ball location is just X/Y coordinates without context
+**LieType System:**
+- Created `LieType` enum with 8 types:
+  - **Tee** (+2): Easiest, ball teed up perfectly
+  - **Fairway** (0): Normal lie, no penalty
+  - **First Cut** (-1): Slight penalty
+  - **Rough** (-2): Moderate penalty
+  - **Deep Rough** (-4): Heavy penalty, ball buried
+  - **Bunker** (-4): Very hard, sand shot
+  - **Green** (+1): Putting is easier
+  - **Penalty Area** (0): Same as fairway after drop
+- Each lie type has `DifficultyModifier()` method
 
-### Design Decisions
+**Course Grid System:**
+- Created `GridCell` type with position and lie properties
+- Created `CourseGrid` with 2D cell array
+- Implemented `NewCourseGrid(width, length, cellSize)` constructor
+- Implemented `GetLieAtPosition()` for position-to-lie mapping
+- Implemented `SetLieAtPosition()` for grid configuration
+- Added bounds checking (returns PenaltyArea for out-of-bounds)
+- Configurable cell size (e.g., 10-yard squares)
+- Unit conversion handling: 1 yard = 72 units
 
-**Lie Types:**
-- Tee (easiest)
-- Fairway (normal)
-- First Cut (slight penalty)
-- Rough (moderate penalty)
-- Deep Rough (heavy penalty)
-- Bunker (very heavy penalty, special mechanics)
-- Green (putting only)
-- Penalty Area (stroke penalty)
+**Hole Integration:**
+- Added `Grid *CourseGrid` field to `Hole` struct
+- Created `NewHoleWithGrid()` constructor
+- Added `Hole.GetLieAtPosition()` method
+- Maintained backward compatibility (nil grid defaults to Fairway)
 
-**Grid System:**
-- Divide hole into grid cells (e.g., 10-yard squares)
-- Each cell has a `LieType`
-- Ball location maps to grid cell
-- Lie affects target number difficulty
+**Ball Lie Detection:**
+- Added `GolfBall.GetLie(hole)` method
+- Automatic lie detection based on ball position
 
-### Implementation Tasks
-1. Create `LieType` enum
-2. Create `GridCell` type with LieType, position, properties
-3. Create `CourseGrid` structure (2D array of GridCells)
-4. Update `Hole` to include `CourseGrid`
-5. Update ball landing logic to determine lie
-6. Create lie → difficulty modifier mapping
-7. Integrate lie difficulty into target number calculation
+**Course Generation:**
+- Created `GenerateSimpleCourse()` function
+- Automatic lie setup:
+  - Tee area: First 10 yards
+  - Green area: Last 20 yards around hole
+  - Fairway: Middle area (default)
 
-**Example Grid:**
-```
-[Tee][Fairway][Fairway][Rough][Fairway][Green]
-```
+**Main Game Loop Integration:**
+- Switched to `GenerateSimpleCourse()`
+- Ball lie detected before each shot
+- Lie difficulty modifier applied to target number
+- Player feedback: `Lie: Tee (difficulty: +2)`
+
+**Gameplay Impact:**
+Target numbers now vary by lie (Level 1 golfer with Driver, base ~4):
+- From Tee: 6 (easier)
+- From Fairway: 4 (normal)
+- From Rough: 2 (harder)
+- From Bunker: 0 (very hard)
+
+**Test Coverage:**
+- Added 13 new tests (140 total test cases)
+- All tests passing
+- Tests cover:
+  - LieType enum and difficulty modifiers (3 tests)
+  - CourseGrid position mapping (6 tests)
+  - Hole/Ball integration (4 tests)
+  - Full integration testing
 
 ---
 
@@ -244,13 +268,13 @@ Not explicitly in CLAUDE.md but needed for RPG progression
 7. ✅ Add player stat display (PR #3)
 8. ✅ Add level-up notifications (PR #3)
 
-### Sprint 3: Course Depth (Lie System) (CURRENT)
-9. ⬜ Create course grid system
-10. ⬜ Implement lie types
-11. ⬜ Integrate lie difficulty into target numbers
-12. ⬜ Update ball landing to detect lie
+### Sprint 3: Course Depth (Lie System) ✅ COMPLETE
+9. ✅ Create course grid system (PR #4)
+10. ✅ Implement lie types (PR #4)
+11. ✅ Integrate lie difficulty into target numbers (PR #4)
+12. ✅ Update ball landing to detect lie (PR #4)
 
-### Sprint 4: Progression (Equipment)
+### Sprint 4: Progression (Equipment) (CURRENT)
 13. ⬜ Expand equipment system
 14. ⬜ Create ProShop
 15. ⬜ Add currency and rewards
@@ -287,19 +311,21 @@ Action → Skill Check → XP Gain → Level Up → Better Stats → Harder Cour
 
 ## Next Steps
 
-**Immediate Priority:** Phase 3 - Course Grid & Lie System
+**Immediate Priority:** Phase 4 - Equipment System & ProShop
 
-With the RPG mechanics fully functional (Phases 1 & 2 complete), the next step is to add strategic depth by implementing a course grid system where ball position affects difficulty.
+With the core RPG mechanics fully functional (Phases 1-3 complete), the next step is to add equipment progression by implementing a shop system where players can purchase upgraded equipment using currency earned from rounds.
 
 **Key Features to Implement:**
-1. **Lie Types** - Tee, Fairway, Rough, Bunker, Green, etc.
-2. **Grid System** - Spatial grid that maps ball position to lie type
-3. **Difficulty Modifiers** - Each lie type affects target number differently:
-   - Tee: +2 (easier)
-   - Fairway: 0 (normal)
-   - Rough: -2 (harder)
-   - Bunker: -4 (very hard)
-4. **Ball Position Detection** - Determine lie after each shot lands
+1. **Equipment Types** - Expand beyond clubs to balls, gloves, shoes
+2. **ProShop System** - Interface to browse and purchase equipment
+3. **Currency System** - Earn money based on round performance
+4. **Equipment Bonuses** - Items provide stat bonuses (accuracy, distance, etc.)
+
+**Design Considerations:**
+- Equipment should complement skills, not replace them
+- Starter equipment vs premium equipment tiers
+- Reward good play (par/birdie bonuses) with currency
+- Balance equipment costs with earning rate
 
 **Recommended First Task:**
-Create the `LieType` enum and difficulty modifier system. Follow TDD approach by writing tests that verify different lies produce different target numbers.
+Create the currency system for the Golfer, then add reward logic for completing holes based on score (birdie, par, bogey). Follow TDD approach.
