@@ -67,9 +67,9 @@ func (r *Renderer) Render(state GameState) {
 	r.RenderLeftPanel(state)
 	r.RenderRightPanel(state)
 
-	// Position cursor at prompt location
-	promptRow := r.Layout.LeftPanel.Height - 2
-	r.Terminal.MoveCursor(promptRow, r.Layout.LeftPanel.X+2)
+	// Position cursor after the "> " prompt for user input
+	promptRow := r.Layout.LeftPanel.Height - 1 // Last row where "> " is printed
+	r.Terminal.MoveCursor(promptRow, r.Layout.LeftPanel.X+4) // +2 for left margin, +2 for "> "
 }
 
 // RenderBorder draws the vertical divider between panels
