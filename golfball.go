@@ -13,6 +13,11 @@ func (ball *GolfBall) TeeUp() {
 	fmt.Println("Ball teed up")
 }
 
+// GetLie returns the lie type at the ball's current location
+func (b GolfBall) GetLie(hole *Hole) LieType {
+	return hole.GetLieAtPosition(b.Location)
+}
+
 // this is probably the only place we need this logic
 // - did the ball hit anything on its way (or the hole)
 // - its the only thing 'moving' in the game
