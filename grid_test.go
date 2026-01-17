@@ -50,24 +50,28 @@ func TestCourseGrid_Creation(t *testing.T) {
 
 // Test GetLieAtPosition returns correct lie for a position
 func TestCourseGrid_GetLieAtPosition(t *testing.T) {
-	// Create a simple grid
+	// Create a simple grid: 30 yards x 30 yards with 10-yard cells = 3x3 grid
+	// Each cell is 10 yards = 72 units
 	grid := NewCourseGrid(Yard(30), Yard(30), Yard(10))
 
-	// Manually set some cells to different lies
-	grid.Cells[0][0].Lie = Tee        // Bottom-left
-	grid.Cells[1][1].Lie = Fairway    // Center
-	grid.Cells[2][2].Lie = Green      // Top-right
-	grid.Cells[0][2].Lie = Rough      // Bottom-right
+	// Use SetLieAtPosition to set lies at specific positions (in units)
+	// Cell [0][0]: X=0-72, Y=0-72
+	// Cell [1][1]: X=72-144, Y=72-144
+	// Cell [2][2]: X=144-216, Y=144-216
+	grid.SetLieAtPosition(Point{X: 36, Y: 36}, Tee)       // Cell [0][0] - center
+	grid.SetLieAtPosition(Point{X: 108, Y: 108}, Fairway) // Cell [1][1] - center
+	grid.SetLieAtPosition(Point{X: 180, Y: 180}, Green)   // Cell [2][2] - center
+	grid.SetLieAtPosition(Point{X: 180, Y: 36}, Rough)    // Cell [0][2] - center
 
 	tests := []struct {
 		name     string
 		position Point
 		expected LieType
 	}{
-		{"Tee position", Point{X: 5, Y: 5}, Tee},
-		{"Fairway position", Point{X: 15, Y: 15}, Fairway},
-		{"Green position", Point{X: 25, Y: 25}, Green},
-		{"Rough position", Point{X: 25, Y: 5}, Rough},
+		{"Tee position", Point{X: 36, Y: 36}, Tee},
+		{"Fairway position", Point{X: 108, Y: 108}, Fairway},
+		{"Green position", Point{X: 180, Y: 180}, Green},
+		{"Rough position", Point{X: 180, Y: 36}, Rough},
 	}
 
 	for _, tt := range tests {
@@ -129,12 +133,17 @@ func TestCourseGrid_SetLieAtPosition(t *testing.T) {
 
 // Test that grid correctly maps units to cell indices
 func TestCourseGrid_CellIndexCalculation(t *testing.T) {
+	// 100 yards x 100 yards with 10-yard cells = 10x10 grid
+	// Each cell is 10 yards = 72 units
 	grid := NewCourseGrid(Yard(100), Yard(100), Yard(10))
 
-	// Set specific cells
-	grid.SetLieAtPosition(Point{X: 0, Y: 0}, Tee)      // Cell [0][0]
-	grid.SetLieAtPosition(Point{X: 10, Y: 10}, Rough)  // Cell [1][1]
-	grid.SetLieAtPosition(Point{X: 95, Y: 95}, Green)  // Cell [9][9]
+	// Set specific cells (in units)
+	// Cell [0][0]: X=0-72, Y=0-72
+	// Cell [1][1]: X=72-144, Y=72-144
+	// Cell [9][9]: X=648-720, Y=648-720
+	grid.SetLieAtPosition(Point{X: 0, Y: 0}, Tee)       // Cell [0][0]
+	grid.SetLieAtPosition(Point{X: 72, Y: 72}, Rough)   // Cell [1][1]
+	grid.SetLieAtPosition(Point{X: 680, Y: 680}, Green) // Cell [9][9]
 
 	// Verify positions within the same cell get the same lie
 	tests := []struct {
@@ -143,11 +152,11 @@ func TestCourseGrid_CellIndexCalculation(t *testing.T) {
 		expected LieType
 	}{
 		{"Tee cell - corner", Point{X: 0, Y: 0}, Tee},
-		{"Tee cell - center", Point{X: 5, Y: 5}, Tee},
-		{"Tee cell - edge", Point{X: 9, Y: 9}, Tee},
-		{"Rough cell - corner", Point{X: 10, Y: 10}, Rough},
-		{"Rough cell - center", Point{X: 15, Y: 15}, Rough},
-		{"Green cell - anywhere", Point{X: 95, Y: 95}, Green},
+		{"Tee cell - center", Point{X: 36, Y: 36}, Tee},
+		{"Tee cell - edge", Point{X: 71, Y: 71}, Tee},
+		{"Rough cell - corner", Point{X: 72, Y: 72}, Rough},
+		{"Rough cell - center", Point{X: 108, Y: 108}, Rough},
+		{"Green cell - anywhere", Point{X: 680, Y: 680}, Green},
 	}
 
 	for _, tt := range tests {
