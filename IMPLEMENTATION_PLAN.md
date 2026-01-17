@@ -20,6 +20,12 @@ Based on the project vision in CLAUDE.md, this document outlines the gaps betwee
   - Experience and leveling (1-9 levels)
   - Club-to-skill/ability mapping
   - Dynamic target number calculation
+- **Main Game Loop Integration** (PR #3 merged)
+  - Dynamic target numbers based on skill + ability
+  - XP award system (1-15 XP per shot based on outcome)
+  - Level-up notifications during gameplay
+  - Player stats display (skills/abilities with XP progress)
+  - Full character progression system active
 
 ### ❌ Missing Core RPG Features
 
@@ -52,66 +58,52 @@ Based on the project vision in CLAUDE.md, this document outlines the gaps betwee
 - 100% coverage on new code
 - TDD methodology followed strictly
 
-### Remaining Integration Work
-While the system is built, it's not yet integrated into the main game loop:
-- [ ] Update main.go to use `CalculateTargetNumber()` instead of hardcoded `10`
-- [ ] Award XP after each shot based on outcome
-- [ ] Display skill/ability progression to player
-- [ ] Integrate lie difficulty into target number calculation
-
 ---
 
-## Phase 2: Main Game Loop Integration
-**Priority: HIGH** - Connect Phase 1 to gameplay
+## ✅ Phase 2: Main Game Loop Integration [COMPLETE]
+**Status: MERGED** (PR #3) - RPG mechanics now active in gameplay
 
-### Requirements
-Make the Skills & Abilities system affect actual gameplay and award experience for player progression.
+### Completed Implementation
 
-### Current Issue
-[main.go:48](main.go#L48) still uses hardcoded `targetNumber = 10`
+**Dynamic Target Numbers:**
+- Replaced hardcoded `targetNumber = 10` with `golfer.CalculateTargetNumber(club, difficulty)`
+- Target numbers now scale: Level 1 golfer ~4, Level 9 golfer ~36
+- Formula: `skill.Value() + ability.Value() + difficulty`
 
-### Implementation Tasks
+**XP Award System:**
+- Created `calculateXP()` helper function with tier-based XP values:
+  - Critical Success: 15 XP
+  - Excellent: 10 XP
+  - Good: 7 XP
+  - Marginal: 5 XP
+  - Poor: 3 XP
+  - Bad: 2 XP
+  - Critical Failure: 1 XP
+- XP awarded after each shot to both skill and ability
 
-**1. Dynamic Target Numbers**
-```go
-// Replace this (main.go line 48):
-result := golfer.SkillCheck(NewD6(), 10)
+**Level-Up Notifications:**
+- Detects level-ups by comparing pre/post levels
+- Displays celebration messages: "🎉 Driver leveled up to 2!"
+- Shows XP progress after each shot: `XP: +7 (Driver: 45/100, Strength: 32/100)`
 
-// With this:
-club := golfer.GetBestClub(targetDistance)
-difficulty := 0 // Will come from lie system in Phase 3
-targetNumber := golfer.CalculateTargetNumber(club, difficulty)
-result := golfer.SkillCheck(NewD6(), targetNumber)
-```
+**Player Stats Display:**
+- Added `displayPlayerStats()` function
+- Shows all 7 skills and 4 abilities with:
+  - Current level and value contribution
+  - XP progress toward next level (e.g., "45/100 XP")
+  - MAX indicator for level 9 skills/abilities
+- Displayed at start of round and after completion
 
-**2. XP Award System**
-```go
-// After each shot, award XP based on outcome
-xpAward := calculateXP(result.Outcome)
-golfer.AwardExperience(club, xpAward)
+**Bug Fixes:**
+- Fixed `AwardExperience` pointer semantics to properly modify skill/ability copies
 
-// Suggested XP values:
-// CriticalSuccess: 15 XP
-// Excellent: 10 XP
-// Good: 7 XP
-// Marginal: 5 XP
-// Poor: 3 XP
-// Bad: 2 XP
-// CriticalFailure: 1 XP
-```
+**Test Coverage:**
+- Added 4 new integration tests
+- Total: 68 tests passing
+- Tests verify: calculateXP, dynamic target numbers, XP awards, level-ups
 
-**3. Progression Feedback**
-```go
-// Notify player of level-ups
-if leveledUp {
-    fmt.Printf("🎉 %s leveled up to %d!\n", skillName, newLevel)
-}
-```
-
-**4. Player Stats Display**
-- Show current skills/abilities in game UI
-- Display XP progress toward next level
-- Show value contributions to target numbers
+### Remaining Work for Future Phases
+- [ ] Integrate lie difficulty into target number calculation (Phase 3)
 
 ---
 
@@ -246,13 +238,13 @@ Not explicitly in CLAUDE.md but needed for RPG progression
 3. ✅ Add experience/leveling system (PR #2)
 4. ✅ Dynamic target number calculation (PR #2)
 
-### Sprint 2: Game Loop Integration (CURRENT)
-5. ⬜ Replace hardcoded target numbers with `CalculateTargetNumber()`
-6. ⬜ Implement XP award system after each shot
-7. ⬜ Add player stat display
-8. ⬜ Add level-up notifications
+### Sprint 2: Game Loop Integration ✅ COMPLETE
+5. ✅ Replace hardcoded target numbers with `CalculateTargetNumber()` (PR #3)
+6. ✅ Implement XP award system after each shot (PR #3)
+7. ✅ Add player stat display (PR #3)
+8. ✅ Add level-up notifications (PR #3)
 
-### Sprint 3: Course Depth (Lie System)
+### Sprint 3: Course Depth (Lie System) (CURRENT)
 9. ⬜ Create course grid system
 10. ⬜ Implement lie types
 11. ⬜ Integrate lie difficulty into target numbers
@@ -295,9 +287,19 @@ Action → Skill Check → XP Gain → Level Up → Better Stats → Harder Cour
 
 ## Next Steps
 
-**Immediate Priority:** Phase 2 - Main Game Loop Integration
+**Immediate Priority:** Phase 3 - Course Grid & Lie System
 
-With the Skills & Abilities foundation complete (Phase 1), we need to integrate it into actual gameplay so players can use and improve their skills.
+With the RPG mechanics fully functional (Phases 1 & 2 complete), the next step is to add strategic depth by implementing a course grid system where ball position affects difficulty.
+
+**Key Features to Implement:**
+1. **Lie Types** - Tee, Fairway, Rough, Bunker, Green, etc.
+2. **Grid System** - Spatial grid that maps ball position to lie type
+3. **Difficulty Modifiers** - Each lie type affects target number differently:
+   - Tee: +2 (easier)
+   - Fairway: 0 (normal)
+   - Rough: -2 (harder)
+   - Bunker: -4 (very hard)
+4. **Ball Position Detection** - Determine lie after each shot lands
 
 **Recommended First Task:**
-Update [main.go](main.go) to use dynamic target numbers based on golfer skills/abilities instead of the hardcoded value of 10. Follow TDD approach by writing tests that verify target numbers change based on skill levels.
+Create the `LieType` enum and difficulty modifier system. Follow TDD approach by writing tests that verify different lies produce different target numbers.
