@@ -14,80 +14,104 @@ Based on the project vision in CLAUDE.md, this document outlines the gaps betwee
 - Ball physics with rotation and power
 - Score tracking system
 - Basic game loop
+- **Skills & Abilities System** (PR #2 merged)
+  - 4 Abilities: Strength, Control, Touch, Mental
+  - 7 Skills: Driver, Woods, Long Irons, Mid Irons, Short Irons, Wedges, Putter
+  - Experience and leveling (1-9 levels)
+  - Club-to-skill/ability mapping
+  - Dynamic target number calculation
 
 ### ❌ Missing Core RPG Features
 
 ---
 
-## Phase 1: Skills & Abilities System
-**Priority: HIGH** - This is the foundation of the RPG mechanics
+## ✅ Phase 1: Skills & Abilities System [COMPLETE]
+**Status: MERGED** (PR #2) - Foundation of RPG mechanics established
 
-### Requirements (from CLAUDE.md)
-> "A character has skills and abilities, such as strength, accuracy, green reading, irons, drivers, etc..."
-> "Skills/Abilities gain experience when used for a skill check"
-> "Skills/Abilities can be leveled to a maximum level of 9"
+### Completed Implementation
 
-### Design Decisions
+**Created Types:**
+- `Ability` - Character attributes (Strength, Control, Touch, Mental)
+- `Skill` - Club proficiencies (Driver, Woods, Long/Mid/Short Irons, Wedges, Putter)
 
-**Abilities (Attributes):**
-- Strength (power/distance)
-- Control (accuracy/consistency)
-- Touch (finesse shots, putting)
-- Mental (course management, green reading)
+**Key Features:**
+- Level system: 1-9 levels with `Value() = level * 2`
+- XP progression: `(level + 1) * 50` XP to next level
+- Auto-leveling with overflow XP handling
+- Map-based skill/ability storage in Golfer
 
-**Skills (Club Proficiencies):**
-- Driver
-- Woods
-- Long Irons (3-5)
-- Mid Irons (6-7)
-- Short Irons (8-9)
-- Wedges
-- Putter
+**New Golfer Methods:**
+- `NewGolfer(name)` - Constructor with default skills/abilities at level 1
+- `GetSkillForClub(club)` - Maps club to relevant skill
+- `GetAbilityForClub(club)` - Maps club to relevant ability
+- `CalculateTargetNumber(club, difficulty)` - Dynamic target number formula
+- `AwardExperience(club, xp)` - Grants XP to both skill and ability
 
-**Leveling System:**
-- Levels: 1-9
-- Experience gained per skill check
-- Level determines skill value contribution to target number
+**Test Coverage:**
+- 52 tests total (all passing)
+- 100% coverage on new code
+- TDD methodology followed strictly
 
-### Implementation Tasks
-1. Create `Ability` type with name, level (1-9), experience
-2. Create `Skill` type with name, level (1-9), experience
-3. Add `Skills` and `Abilities` maps to `Golfer` struct
-4. Create level → value conversion formula (e.g., level * 2 = bonus to target number)
-5. Create experience gain system (award XP on skill check)
-6. Create level-up logic (threshold-based)
-7. Update SkillCheck to accept skill/ability and calculate dynamic target number
-
-**Formula for Target Number:**
-```
-targetNumber = baseSkillValue + relevantAbilityValue + difficultyModifier
-```
+### Remaining Integration Work
+While the system is built, it's not yet integrated into the main game loop:
+- [ ] Update main.go to use `CalculateTargetNumber()` instead of hardcoded `10`
+- [ ] Award XP after each shot based on outcome
+- [ ] Display skill/ability progression to player
+- [ ] Integrate lie difficulty into target number calculation
 
 ---
 
-## Phase 2: Dynamic Target Numbers
-**Priority: HIGH** - Directly tied to Phase 1
+## Phase 2: Main Game Loop Integration
+**Priority: HIGH** - Connect Phase 1 to gameplay
 
-### Requirements (from CLAUDE.md)
-> "target number is determined by the skills involved in the check as well as the difficulty of the action"
+### Requirements
+Make the Skills & Abilities system affect actual gameplay and award experience for player progression.
 
 ### Current Issue
-Target number is hardcoded to 10 in `main.go:48`
+[main.go:48](main.go#L48) still uses hardcoded `targetNumber = 10`
 
 ### Implementation Tasks
-1. Remove hardcoded target number
-2. Create method: `Golfer.CalculateTargetNumber(skill Skill, ability Ability, difficulty int) int`
-3. Integrate lie difficulty into target number
-4. Update all SkillCheck calls to use calculated target numbers
 
-**Example:**
+**1. Dynamic Target Numbers**
 ```go
-// Driver shot from fairway
-skill := golfer.Skills["Driver"]
-ability := golfer.Abilities["Strength"]
-lieDifficulty := currentLie.Difficulty // 0 = fairway, -2 = rough, -4 = bunker
-targetNumber := skill.Value() + ability.Value() + lieDifficulty
+// Replace this (main.go line 48):
+result := golfer.SkillCheck(NewD6(), 10)
+
+// With this:
+club := golfer.GetBestClub(targetDistance)
+difficulty := 0 // Will come from lie system in Phase 3
+targetNumber := golfer.CalculateTargetNumber(club, difficulty)
+result := golfer.SkillCheck(NewD6(), targetNumber)
 ```
+
+**2. XP Award System**
+```go
+// After each shot, award XP based on outcome
+xpAward := calculateXP(result.Outcome)
+golfer.AwardExperience(club, xpAward)
+
+// Suggested XP values:
+// CriticalSuccess: 15 XP
+// Excellent: 10 XP
+// Good: 7 XP
+// Marginal: 5 XP
+// Poor: 3 XP
+// Bad: 2 XP
+// CriticalFailure: 1 XP
+```
+
+**3. Progression Feedback**
+```go
+// Notify player of level-ups
+if leveledUp {
+    fmt.Printf("🎉 %s leveled up to %d!\n", skillName, newLevel)
+}
+```
+
+**4. Player Stats Display**
+- Show current skills/abilities in game UI
+- Display XP progress toward next level
+- Show value contributions to target numbers
 
 ---
 
@@ -216,26 +240,34 @@ Not explicitly in CLAUDE.md but needed for RPG progression
 
 ## Recommended Implementation Order
 
-### Sprint 1: Foundation (Skills System)
-1. ✅ Tiered skill checks (DONE)
-2. ⬜ Implement Abilities and Skills
-3. ⬜ Add experience/leveling system
-4. ⬜ Dynamic target numbers
+### Sprint 1: Foundation (Skills System) ✅ COMPLETE
+1. ✅ Tiered skill checks (PR #1)
+2. ✅ Implement Abilities and Skills (PR #2)
+3. ✅ Add experience/leveling system (PR #2)
+4. ✅ Dynamic target number calculation (PR #2)
 
-### Sprint 2: Course Depth (Lie System)
-5. ⬜ Create course grid system
-6. ⬜ Implement lie types
-7. ⬜ Integrate lie difficulty into target numbers
+### Sprint 2: Game Loop Integration (CURRENT)
+5. ⬜ Replace hardcoded target numbers with `CalculateTargetNumber()`
+6. ⬜ Implement XP award system after each shot
+7. ⬜ Add player stat display
+8. ⬜ Add level-up notifications
 
-### Sprint 3: Progression (Equipment)
-8. ⬜ Expand equipment system
-9. ⬜ Create ProShop
-10. ⬜ Add currency and rewards
+### Sprint 3: Course Depth (Lie System)
+9. ⬜ Create course grid system
+10. ⬜ Implement lie types
+11. ⬜ Integrate lie difficulty into target numbers
+12. ⬜ Update ball landing to detect lie
 
-### Sprint 4: Polish
-11. ⬜ Save/load system
-12. ⬜ Advanced course features
-13. ⬜ UI improvements
+### Sprint 4: Progression (Equipment)
+13. ⬜ Expand equipment system
+14. ⬜ Create ProShop
+15. ⬜ Add currency and rewards
+16. ⬜ Equipment bonuses to stats
+
+### Sprint 5: Polish
+17. ⬜ Save/load system
+18. ⬜ Advanced course features
+19. ⬜ UI improvements
 
 ---
 
@@ -263,9 +295,9 @@ Action → Skill Check → XP Gain → Level Up → Better Stats → Harder Cour
 
 ## Next Steps
 
-**Immediate Priority:** Phase 1 - Skills & Abilities System
+**Immediate Priority:** Phase 2 - Main Game Loop Integration
 
-This is the foundation that enables dynamic target numbers, experience progression, and the core RPG loop.
+With the Skills & Abilities foundation complete (Phase 1), we need to integrate it into actual gameplay so players can use and improve their skills.
 
 **Recommended First Task:**
-Create the Skills/Abilities data structures and leveling system, starting with TDD approach.
+Update [main.go](main.go) to use dynamic target numbers based on golfer skills/abilities instead of the hardcoded value of 10. Follow TDD approach by writing tests that verify target numbers change based on skill levels.
