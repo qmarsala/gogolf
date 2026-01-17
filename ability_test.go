@@ -104,7 +104,7 @@ func TestAbility_ExperienceToNextLevel(t *testing.T) {
 		{1, 100},  // Level 1 → 2 = 100 XP
 		{2, 150},  // Level 2 → 3 = 150 XP
 		{3, 200},  // Level 3 → 4 = 200 XP
-		{8, 400},  // Level 8 → 9 = 400 XP
+		{8, 450},  // Level 8 → 9 = 450 XP
 		{9, 0},    // Level 9 (max) = 0 (no next level)
 	}
 
