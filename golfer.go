@@ -51,6 +51,10 @@ type Golfer struct {
 	Clubs     []Club
 	Skills    map[string]Skill
 	Abilities map[string]Ability
+	Money     int // Currency for purchasing equipment
+	Ball      *Ball  // Equipped golf ball
+	Glove     *Glove // Equipped glove
+	Shoes     *Shoes // Equipped shoes
 }
 
 // NewGolfer creates a new golfer with default skills and abilities at level 1
@@ -73,6 +77,7 @@ func NewGolfer(name string) Golfer {
 			"Touch":    NewAbility("Touch"),
 			"Mental":   NewAbility("Mental"),
 		},
+		Money: 100, // Starter money for basic equipment
 	}
 }
 
@@ -144,11 +149,15 @@ func (g Golfer) GetAbilityForClub(club Club) Ability {
 }
 
 // CalculateTargetNumber computes target number for skill check
-// Formula: skillValue + abilityValue + difficultyModifier
+// Formula: skillValue + abilityValue + difficultyModifier + equipmentBonuses
 func (g Golfer) CalculateTargetNumber(club Club, difficulty int) int {
 	skill := g.GetSkillForClub(club)
 	ability := g.GetAbilityForClub(club)
-	return skill.Value() + ability.Value() + difficulty
+
+	// Apply shoes bonus to reduce lie penalties
+	adjustedDifficulty := difficulty + g.GetTotalLiePenaltyReduction()
+
+	return skill.Value() + ability.Value() + adjustedDifficulty
 }
 
 // AwardExperience adds XP to both the skill and ability for a club
@@ -165,6 +174,71 @@ func (g *Golfer) AwardExperience(club Club, xp int) {
 	// Update the maps with the modified copies
 	g.Skills[skill.Name] = skill
 	g.Abilities[ability.Name] = ability
+}
+
+// AddMoney increases the golfer's money by the specified amount
+func (g *Golfer) AddMoney(amount int) {
+	g.Money += amount
+}
+
+// SpendMoney decreases the golfer's money by the specified amount
+// Returns true if the transaction succeeded, false if insufficient funds
+func (g *Golfer) SpendMoney(amount int) bool {
+	if g.Money < amount {
+		return false // Insufficient funds
+	}
+	g.Money -= amount
+	return true
+}
+
+// EquipBall equips a golf ball
+func (g *Golfer) EquipBall(ball *Ball) {
+	g.Ball = ball
+}
+
+// EquipGlove equips a glove
+func (g *Golfer) EquipGlove(glove *Glove) {
+	g.Glove = glove
+}
+
+// EquipShoes equips shoes
+func (g *Golfer) EquipShoes(shoes *Shoes) {
+	g.Shoes = shoes
+}
+
+// GetEquippedBall returns the currently equipped ball (may be nil)
+func (g Golfer) GetEquippedBall() *Ball {
+	return g.Ball
+}
+
+// GetTotalLiePenaltyReduction returns the total lie penalty reduction from equipment
+// Shoes reduce the difficulty of bad lies (e.g., rough, bunkers)
+func (g Golfer) GetTotalLiePenaltyReduction() int {
+	if g.Shoes == nil {
+		return 0
+	}
+	return g.Shoes.LiePenaltyReduction
+}
+
+// GetModifiedClub returns a club with equipment bonuses applied
+// Ball adds distance, glove improves accuracy
+func (g Golfer) GetModifiedClub(club Club) Club {
+	modified := club
+
+	// Apply ball distance bonus
+	if g.Ball != nil {
+		modified.Distance = Yard(float32(modified.Distance) + g.Ball.DistanceBonus)
+	}
+
+	// Apply glove accuracy bonus (capped at 1.0)
+	if g.Glove != nil {
+		modified.Accuracy += g.Glove.AccuracyBonus
+		if modified.Accuracy > 1.0 {
+			modified.Accuracy = 1.0
+		}
+	}
+
+	return modified
 }
 
 // how do we want to do this?

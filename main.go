@@ -63,9 +63,12 @@ func main() {
 				rotationDirection *= -1
 			}
 
-			// Use tier-based calculations
-			rotationDegrees := CalculateRotation(club, result, random)
-			power = CalculatePower(club, power, result)
+			// Apply equipment bonuses to club
+			modifiedClub := golfer.GetModifiedClub(club)
+
+			// Use tier-based calculations with modified club
+			rotationDegrees := CalculateRotation(modifiedClub, result, random)
+			power = CalculatePower(modifiedClub, power, result)
 
 			// Enhanced feedback
 			fmt.Printf("\nShot Quality: %s (Margin: %+d)\n", result.Outcome, result.Margin)
@@ -99,7 +102,7 @@ func main() {
 				newAbility.Name, newAbility.Experience, newAbility.ExperienceToNextLevel())
 
 			directionToHole.Rotate(rotationDegrees * rotationDirection)
-			ballPath := ball.ReceiveHit(club, float32(power), directionToHole)
+			ballPath := ball.ReceiveHit(modifiedClub, float32(power), directionToHole)
 			if club.Name != "Putter" {
 				if rand.IntN(100)%2 == 0 {
 					experimentWithShotSimpleShapes_Draw(&ball, ballPath, h)
@@ -122,7 +125,13 @@ func main() {
 				break
 			}
 		}
+		// Award money for hole completion
+		strokes := scoreCard.TotalStrokesThisHole(h)
+		reward := CalculateHoleReward(h.Par, strokes)
+		golfer.AwardHoleReward(h.Par, strokes)
+
 		fmt.Println("Hole Completed: ", scoreCard.TotalStrokesThisHole(h), " (", scoreCard.ScoreThisHole(h), ")")
+		fmt.Printf("Money earned: %d (Total: %d)\n", reward, golfer.Money)
 	}
 	fmt.Println("Score: ", scoreCard.TotalStrokes(), "(", scoreCard.Score(), ")")
 
