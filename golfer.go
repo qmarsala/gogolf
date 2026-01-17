@@ -52,6 +52,9 @@ type Golfer struct {
 	Skills    map[string]Skill
 	Abilities map[string]Ability
 	Money     int // Currency for purchasing equipment
+	Ball      *Ball  // Equipped golf ball
+	Glove     *Glove // Equipped glove
+	Shoes     *Shoes // Equipped shoes
 }
 
 // NewGolfer creates a new golfer with default skills and abilities at level 1
@@ -182,6 +185,26 @@ func (g *Golfer) SpendMoney(amount int) bool {
 	}
 	g.Money -= amount
 	return true
+}
+
+// EquipBall equips a golf ball
+func (g *Golfer) EquipBall(ball *Ball) {
+	g.Ball = ball
+}
+
+// EquipGlove equips a glove
+func (g *Golfer) EquipGlove(glove *Glove) {
+	g.Glove = glove
+}
+
+// EquipShoes equips shoes
+func (g *Golfer) EquipShoes(shoes *Shoes) {
+	g.Shoes = shoes
+}
+
+// GetEquippedBall returns the currently equipped ball (may be nil)
+func (g Golfer) GetEquippedBall() *Ball {
+	return g.Ball
 }
 
 // how do we want to do this?
