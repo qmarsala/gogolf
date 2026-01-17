@@ -21,12 +21,14 @@ func TestHole_WithGrid(t *testing.T) {
 
 // Test Hole.GetLieAtPosition delegates to grid
 func TestHole_GetLieAtPosition(t *testing.T) {
-	hole := NewHoleWithGrid(1, 4, Point{X: 360, Y: 720}, Size{}, Yard(100), Yard(100), Yard(10))
+	// Grid is 100 yards = 720 units, so valid positions are 0-719
+	holeLocation := Point{X: 360, Y: 680}
+	hole := NewHoleWithGrid(1, 4, holeLocation, Size{}, Yard(100), Yard(100), Yard(10))
 
 	// Set up different lies on the course
 	hole.Grid.SetLieAtPosition(Point{X: 0, Y: 0}, Tee)
 	hole.Grid.SetLieAtPosition(Point{X: 180, Y: 360}, Fairway)
-	hole.Grid.SetLieAtPosition(Point{X: 360, Y: 720}, Green) // At hole location
+	hole.Grid.SetLieAtPosition(Point{X: 360, Y: 680}, Green) // At hole location
 
 	tests := []struct {
 		name     string
@@ -35,7 +37,7 @@ func TestHole_GetLieAtPosition(t *testing.T) {
 	}{
 		{"Tee box", Point{X: 0, Y: 0}, Tee},
 		{"Fairway", Point{X: 180, Y: 360}, Fairway},
-		{"Green", Point{X: 360, Y: 720}, Green},
+		{"Green", Point{X: 360, Y: 680}, Green},
 	}
 
 	for _, tt := range tests {
@@ -51,12 +53,13 @@ func TestHole_GetLieAtPosition(t *testing.T) {
 
 // Test GolfBall can detect its lie
 func TestGolfBall_GetLie(t *testing.T) {
-	hole := NewHoleWithGrid(1, 4, Point{X: 360, Y: 720}, Size{}, Yard(100), Yard(100), Yard(10))
+	holeLocation := Point{X: 360, Y: 680}
+	hole := NewHoleWithGrid(1, 4, holeLocation, Size{}, Yard(100), Yard(100), Yard(10))
 
 	// Set up lies
 	hole.Grid.SetLieAtPosition(Point{X: 0, Y: 0}, Tee)
 	hole.Grid.SetLieAtPosition(Point{X: 180, Y: 360}, Rough)
-	hole.Grid.SetLieAtPosition(Point{X: 360, Y: 720}, Green)
+	hole.Grid.SetLieAtPosition(Point{X: 360, Y: 680}, Green)
 
 	tests := []struct {
 		name     string
@@ -65,7 +68,7 @@ func TestGolfBall_GetLie(t *testing.T) {
 	}{
 		{"Ball on tee", Point{X: 0, Y: 0}, Tee},
 		{"Ball in rough", Point{X: 180, Y: 360}, Rough},
-		{"Ball on green", Point{X: 360, Y: 720}, Green},
+		{"Ball on green", Point{X: 360, Y: 680}, Green},
 	}
 
 	for _, tt := range tests {
