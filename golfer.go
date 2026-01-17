@@ -46,9 +46,34 @@ func DefaultClubs() (clubs []Club) {
 }
 
 type Golfer struct {
-	Name   string
-	Target Point
-	Clubs  []Club
+	Name      string
+	Target    Point
+	Clubs     []Club
+	Skills    map[string]Skill
+	Abilities map[string]Ability
+}
+
+// NewGolfer creates a new golfer with default skills and abilities at level 1
+func NewGolfer(name string) Golfer {
+	return Golfer{
+		Name:  name,
+		Clubs: DefaultClubs(),
+		Skills: map[string]Skill{
+			"Driver":       NewSkill("Driver"),
+			"Woods":        NewSkill("Woods"),
+			"Long Irons":   NewSkill("Long Irons"),
+			"Mid Irons":    NewSkill("Mid Irons"),
+			"Short Irons":  NewSkill("Short Irons"),
+			"Wedges":       NewSkill("Wedges"),
+			"Putter":       NewSkill("Putter"),
+		},
+		Abilities: map[string]Ability{
+			"Strength": NewAbility("Strength"),
+			"Control":  NewAbility("Control"),
+			"Touch":    NewAbility("Touch"),
+			"Mental":   NewAbility("Mental"),
+		},
+	}
 }
 
 //idea: strategy pattern that could be provided by a 'caddie'
@@ -78,6 +103,65 @@ func (g Golfer) SkillCheck(d Dice, targetNumber int) SkillCheckResult {
 		Margin:     margin,
 		Outcome:    determineOutcome(margin, isCritical),
 	}
+}
+
+// GetSkillForClub returns the skill associated with a club
+func (g Golfer) GetSkillForClub(club Club) Skill {
+	switch club.Name {
+	case "Driver":
+		return g.Skills["Driver"]
+	case "3 Wood", "5 Wood":
+		return g.Skills["Woods"]
+	case "4 Iron", "5 Iron":
+		return g.Skills["Long Irons"]
+	case "6 Iron", "7 Iron":
+		return g.Skills["Mid Irons"]
+	case "8 Iron", "9 Iron":
+		return g.Skills["Short Irons"]
+	case "PW", "GW", "SW", "LW":
+		return g.Skills["Wedges"]
+	case "Putter":
+		return g.Skills["Putter"]
+	default:
+		return g.Skills["Driver"] // fallback
+	}
+}
+
+// GetAbilityForClub returns the ability associated with a club
+func (g Golfer) GetAbilityForClub(club Club) Ability {
+	switch club.Name {
+	case "Driver", "3 Wood", "5 Wood":
+		return g.Abilities["Strength"]
+	case "4 Iron", "5 Iron", "6 Iron", "7 Iron":
+		return g.Abilities["Control"]
+	case "8 Iron", "9 Iron", "PW", "GW", "SW", "LW":
+		return g.Abilities["Touch"]
+	case "Putter":
+		return g.Abilities["Mental"]
+	default:
+		return g.Abilities["Strength"] // fallback
+	}
+}
+
+// CalculateTargetNumber computes target number for skill check
+// Formula: skillValue + abilityValue + difficultyModifier
+func (g Golfer) CalculateTargetNumber(club Club, difficulty int) int {
+	skill := g.GetSkillForClub(club)
+	ability := g.GetAbilityForClub(club)
+	return skill.Value() + ability.Value() + difficulty
+}
+
+// AwardExperience adds XP to both the skill and ability for a club
+func (g *Golfer) AwardExperience(club Club, xp int) {
+	skill := g.GetSkillForClub(club)
+	ability := g.GetAbilityForClub(club)
+
+	skill.AddExperience(xp)
+	ability.AddExperience(xp)
+
+	// Update the maps with the modified skill and ability
+	g.Skills[skill.Name] = skill
+	g.Abilities[ability.Name] = ability
 }
 
 // how do we want to do this?
