@@ -46,25 +46,22 @@ func main() {
 			directionToHole := ball.Location.Direction(h.HoleLocation)
 
 			result := golfer.SkillCheck(NewD6(), 10)
-			//how do we want to control the miss direction?
+
+			// Determine rotation direction (keep existing logic)
 			rotationDirection := float64(1)
 			if int(math.Abs(float64(result.Margin)))%2 == 0 {
 				rotationDirection *= -1
 			}
-			rotationDegrees := float64(0)
-			clubAcc := float64(club.AccuracyDegrees())
-			if result.Success {
-				possibleRotation := math.Min(random.Float64()*clubAcc, clubAcc)
-				fmt.Println("Possible Rotation: ", possibleRotation)
-				rotationDegrees = math.Max(possibleRotation-float64(result.Margin), 0)
-			} else {
-				baseMisHit := 45 * (1 - float64(club.Forgiveness))
-				minimumMisHitRotation := random.Float64() * baseMisHit
-				possibleRotation := math.Max(minimumMisHitRotation+clubAcc, clubAcc)
-				fmt.Println("Possible Rotation: ", possibleRotation)
-				rotationDegrees = math.Max(possibleRotation+math.Abs(float64(result.Margin)), 1)
-				power = math.Max(power*(float64(club.Forgiveness)-(math.Abs(float64(result.Margin))/100)), 0.1)
-			}
+
+			// Use tier-based calculations
+			rotationDegrees := CalculateRotation(club, result, random)
+			power = CalculatePower(club, power, result)
+
+			// Enhanced feedback
+			fmt.Printf("\nShot Quality: %s (Margin: %+d)\n", result.Outcome, result.Margin)
+			fmt.Printf("├─ %s\n", GetShotQualityDescription(result))
+			fmt.Printf("├─ Rotation: %.1f° %s\n", rotationDegrees, map[bool]string{true: "left", false: "right"}[rotationDirection < 0])
+			fmt.Printf("└─ Power: %.0f%%\n\n", power*100)
 
 			directionToHole.Rotate(rotationDegrees * rotationDirection)
 			ballPath := ball.ReceiveHit(club, float32(power), directionToHole)
@@ -75,9 +72,12 @@ func main() {
 					experimentWithShotSimpleShapes_Fade(&ball, ballPath, h)
 				}
 			}
-			fmt.Printf("Ball traveled %f\n", Unit(ballPath.Magnitude()).Yards())
+			fmt.Printf("Ball traveled %.1f yards\n", Unit(ballPath.Magnitude()).Yards())
 			scoreCard.RecordStroke(h)
-			fmt.Println("Success: ", result.Success, " ", result.Margin, " Rotation: ", rotationDegrees, " ", rotationDirection)
+			fmt.Printf("Result: %s | Rotation: %.1f° %s\n",
+				result.Outcome,
+				rotationDegrees,
+				map[bool]string{true: "left", false: "right"}[rotationDirection < 0])
 			fmt.Printf("ball: %+v | hole: %+v\n", ball.Location, h.HoleLocation)
 			if h.DetectHoleOut(ball, ballPath) {
 				break

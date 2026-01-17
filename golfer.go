@@ -68,12 +68,15 @@ func (g Golfer) GetBestClub(distance Yard) Club {
 func (g Golfer) SkillCheck(d Dice, targetNumber int) SkillCheckResult {
 	total, rolls := d.RollN(3)
 	margin := targetNumber - total
+	isCritical := rolls[0] == rolls[1] && rolls[0] == rolls[2]
+
 	return SkillCheckResult{
 		Success:    margin >= 0,
-		IsCritical: rolls[0] == rolls[1] && rolls[0] == rolls[2],
+		IsCritical: isCritical,
 		RollTotal:  total,
 		Rolls:      rolls,
 		Margin:     margin,
+		Outcome:    determineOutcome(margin, isCritical),
 	}
 }
 
