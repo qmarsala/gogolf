@@ -32,8 +32,17 @@ Based on the project vision in CLAUDE.md, this document outlines the gaps betwee
   - Ball position to lie detection
   - Lie difficulty integrated into target numbers
   - GenerateSimpleCourse with automatic lie setup
+- **Equipment System & ProShop** (PR #5 ready)
+  - Currency system with tiered hole rewards
+  - 3 equipment types (Ball, Glove, Shoes) with stat bonuses
+  - ProShop with 10 items across 3 categories
+  - Purchase system with auto-equipping
+  - Equipment bonuses integrated into shot calculations
+  - Money awarded after each hole based on score
 
 ### ❌ Missing Core RPG Features
+- Save/Load system for persistence
+- ProShop UI for in-game browsing/purchasing
 
 ---
 
@@ -178,72 +187,164 @@ Target numbers now vary by lie (Level 1 golfer with Driver, base ~4):
 
 ---
 
-## Phase 4: Equipment System & ProShop
-**Priority: MEDIUM** - RPG progression mechanic
+## ✅ Phase 4: Equipment System & ProShop [COMPLETE]
+**Status: READY FOR PR** - RPG progression mechanic fully functional
 
-### Requirements (from CLAUDE.md)
-> "Equipment, such as clubs, balls, gloves, can be purchased from the ProShop"
-> "Both equipment and skills/abilities are used to determine the outcome of actions"
+### Completed Implementation
 
-### Current Issue
-- Only clubs exist
-- No equipment variation
-- No purchasing system
-- No currency/economy
+**Currency System:**
+- Added `Money` field to Golfer struct (starts with 100)
+- `AddMoney()` method to increase currency
+- `SpendMoney()` method with insufficient funds checking
+- Currency persisted throughout gameplay
 
-### Design Decisions
+**Hole Reward System:**
+- `CalculateHoleReward()` function with tiered rewards:
+  - Hole-in-one (1 stroke): 100 money
+  - Eagle (2 under par): 50 money
+  - Birdie (1 under par): 25 money
+  - Par: 10 money
+  - Bogey (1 over par): 5 money
+  - Double bogey or worse: 1 money
+- `AwardHoleReward()` method automatically awards money after each hole
+- Rewards displayed to player after hole completion
 
 **Equipment Types:**
-- Clubs (already exist, need shop integration)
-- Balls (distance, spin, control modifiers)
-- Gloves (accuracy bonus)
-- Shoes (lie penalty reduction)
+- **Ball**: Name, DistanceBonus, SpinControl, Cost
+- **Glove**: Name, AccuracyBonus, Cost
+- **Shoes**: Name, LiePenaltyReduction, Cost
+- Equipment fields added to Golfer (Ball, Glove, Shoes)
+- Equip methods: `EquipBall()`, `EquipGlove()`, `EquipShoes()`
+- `GetEquippedBall()` method for querying equipped items
 
-**Currency:**
-- Earn money through rounds (par/birdie bonuses)
-- Starter equipment vs premium equipment
+**ProShop System:**
+- `ProShop` struct with equipment inventory
+- `NewProShop()` creates shop with starter inventory:
+  - 4 ball options (Budget Ball: 20, Standard: 35, Premium: 50, Pro V1: 75)
+  - 3 glove options (Basic: 25, Leather Pro: 45, Precision Grip: 65)
+  - 3 shoe options (Casual Spikes: 30, All-Terrain Pro: 55, Tour Edition: 80)
+- Purchase methods: `PurchaseBall()`, `PurchaseGlove()`, `PurchaseShoes()`
+- Automatic equipment after purchase
+- Proper error handling (insufficient funds, item not found)
 
-**Equipment Stats:**
-```go
-type Ball struct {
-    Name string
-    DistanceBonus float32
-    SpinControl float32
-    Cost int
-}
+**Equipment Bonuses:**
+- `GetTotalLiePenaltyReduction()` - shoes reduce lie difficulty penalties
+- Updated `CalculateTargetNumber()` to apply shoe bonuses to lie difficulty
+- `GetModifiedClub()` applies equipment bonuses:
+  - Ball adds distance bonus to shots
+  - Glove improves club accuracy (capped at 1.0)
+  - Multiple bonuses stack correctly
+- Equipment bonuses integrated into all shot calculations
 
-type Glove struct {
-    Name string
-    AccuracyBonus float32
-    Cost int
-}
-```
+**Main Game Loop Integration:**
+- Equipment bonuses automatically applied via `GetModifiedClub()`
+- Money awarded after each hole completion
+- Player sees reward amount and total money
+- Full equipment system functional in gameplay
 
-### Implementation Tasks
-1. Create equipment types (Ball, Glove, Shoes)
-2. Create `ProShop` with inventory
-3. Add currency to `Golfer`
-4. Create purchase interface
-5. Update shot calculations to include equipment bonuses
-6. Create reward system (earn money per round)
+**Test Coverage:**
+- Added 44 new tests for Phase 4
+- 184 total test cases (all passing)
+- Tests cover:
+  - Currency system (7 tests)
+  - Hole rewards (9 tests)
+  - Equipment types (10 tests)
+  - ProShop purchasing (10 tests)
+  - Equipment bonuses (8 tests)
+- 100% test coverage on new code
+- Strict TDD methodology followed
+
+**Files Created:**
+- currency_test.go
+- reward.go, reward_test.go
+- equipment.go, equipment_test.go
+- proshop.go, proshop_test.go
+- equipment_bonus_test.go
+
+**Files Modified:**
+- golfer.go (Money, equipment fields, bonus methods)
+- main.go (equipment integration, money rewards)
 
 ---
 
 ## Phase 5: Save/Load System
-**Priority: LOW** - Nice to have for persistence
+**Priority: MEDIUM** - Required for RPG progression persistence
 
 ### Requirements
-Not explicitly in CLAUDE.md but needed for RPG progression
+Not explicitly in CLAUDE.md but needed for long-term progression
+
+### Design Decisions
+- JSON serialization for human-readable save files
+- Save golfer state (name, skills, abilities, equipment, currency)
+- Auto-save after each round
+- Manual save/load options
+- Multiple save slots (3-5 slots)
 
 ### Implementation Tasks
-1. Create `SaveGame` serialization (JSON)
-2. Save golfer state (skills, equipment, currency)
-3. Load game on startup
-4. Multiple save slots
+1. Create `SaveGame` struct with all player data
+2. Implement JSON serialization/deserialization
+3. Create save file management (write, read, list)
+4. Add auto-save after round completion
+5. Add manual save/load commands
+6. Handle save file versioning for future updates
 
 ---
 
-## Phase 6: Advanced Course Features
+## Phase 6: ProShop UI & Browsing
+**Priority: MEDIUM** - Enhance equipment shopping experience
+
+### Requirements
+> "Equipment, such as clubs, balls, gloves, can be purchased from the ProShop" (from CLAUDE.md)
+
+### Current State
+- ProShop exists with inventory and purchase methods
+- Purchasing works programmatically but no in-game UI
+- Players need a way to browse and buy equipment during gameplay
+
+### Design Decisions
+- Text-based menu system (fits CLI nature)
+- Display equipment with stats and prices
+- Compare with currently equipped items
+- Show affordability based on current money
+- Allow browsing without purchasing
+
+### Implementation Tasks
+1. Create `DisplayProShop()` function to show inventory
+2. Create equipment comparison display (current vs. available)
+3. Add interactive menu for browsing categories (Balls/Gloves/Shoes)
+4. Add purchase confirmation prompts
+5. Integrate ProShop access into main game loop (e.g., between rounds)
+6. Display money and current equipment when entering shop
+7. Add "Back to Game" option to exit shop
+
+**Example UI Flow:**
+```
+=== ProShop ===
+Money: 150
+
+1. Balls
+2. Gloves
+3. Shoes
+4. Back to Game
+
+> 1
+
+=== Balls ===
+Currently equipped: Standard Ball (+3 distance, 0.5 spin)
+
+Available:
+1. Budget Ball - 20 money (+0 distance, 0.3 spin)
+2. Premium Ball - 50 money (+5 distance, 0.7 spin)
+3. Pro V1 - 75 money (+8 distance, 0.9 spin)
+4. Back
+
+> 2
+Purchase Premium Ball for 50 money? (y/n)
+```
+
+---
+
+## Phase 7: Advanced Course Features
 **Priority: LOW** - Polish and depth
 
 ### Features
@@ -251,6 +352,7 @@ Not explicitly in CLAUDE.md but needed for RPG progression
 - Elevation changes (uphill/downhill)
 - Greens with break/slope
 - Hazards (water, trees, OB)
+- Course variety (links, parkland, desert)
 
 ---
 
@@ -274,16 +376,21 @@ Not explicitly in CLAUDE.md but needed for RPG progression
 11. ✅ Integrate lie difficulty into target numbers (PR #4)
 12. ✅ Update ball landing to detect lie (PR #4)
 
-### Sprint 4: Progression (Equipment) (CURRENT)
-13. ⬜ Expand equipment system
-14. ⬜ Create ProShop
-15. ⬜ Add currency and rewards
-16. ⬜ Equipment bonuses to stats
+### Sprint 4: Progression (Equipment) ✅ COMPLETE
+13. ✅ Create equipment types (Ball, Glove, Shoes) (PR #5)
+14. ✅ Create ProShop with inventory (PR #5)
+15. ✅ Add currency and rewards (PR #5)
+16. ✅ Equipment bonuses to stats (PR #5)
 
-### Sprint 5: Polish
+### Sprint 5: Persistence (NEXT)
 17. ⬜ Save/load system
-18. ⬜ Advanced course features
-19. ⬜ UI improvements
+18. ⬜ Auto-save functionality
+19. ⬜ Multiple save slots
+
+### Sprint 6: Polish
+20. ⬜ ProShop browsing UI
+21. ⬜ Advanced course features
+22. ⬜ Additional UI improvements
 
 ---
 
@@ -311,21 +418,28 @@ Action → Skill Check → XP Gain → Level Up → Better Stats → Harder Cour
 
 ## Next Steps
 
-**Immediate Priority:** Phase 4 - Equipment System & ProShop
+**Immediate Priority:** Phase 5 - Save/Load System
 
-With the core RPG mechanics fully functional (Phases 1-3 complete), the next step is to add equipment progression by implementing a shop system where players can purchase upgraded equipment using currency earned from rounds.
+With the core RPG mechanics and equipment progression fully functional (Phases 1-4 complete), the next priority is implementing save/load functionality to persist player progress between sessions.
+
+**Why Save/Load is Next:**
+- Players can lose hours of progression without saves
+- Required before adding more content (players need to keep progress)
+- Enables long-term character development
+- Natural checkpoint: good time to implement before more features
 
 **Key Features to Implement:**
-1. **Equipment Types** - Expand beyond clubs to balls, gloves, shoes
-2. **ProShop System** - Interface to browse and purchase equipment
-3. **Currency System** - Earn money based on round performance
-4. **Equipment Bonuses** - Items provide stat bonuses (accuracy, distance, etc.)
+1. **Save Game Structure** - JSON serialization of all player data
+2. **Auto-Save** - Automatic saves after round completion
+3. **Manual Save/Load** - Player-controlled save points
+4. **Multiple Slots** - Allow different character progressions
+
+**After Save/Load:**
+- Phase 6: ProShop UI for in-game equipment browsing
+- Phase 7: Advanced course features (wind, elevation, hazards)
 
 **Design Considerations:**
-- Equipment should complement skills, not replace them
-- Starter equipment vs premium equipment tiers
-- Reward good play (par/birdie bonuses) with currency
-- Balance equipment costs with earning rate
-
-**Recommended First Task:**
-Create the currency system for the Golfer, then add reward logic for completing holes based on score (birdie, par, bogey). Follow TDD approach.
+- Save file format should be human-readable (JSON)
+- Handle backward compatibility as game evolves
+- Graceful error handling for corrupted saves
+- Clear save/load confirmation messages
