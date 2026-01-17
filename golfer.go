@@ -149,11 +149,15 @@ func (g Golfer) GetAbilityForClub(club Club) Ability {
 }
 
 // CalculateTargetNumber computes target number for skill check
-// Formula: skillValue + abilityValue + difficultyModifier
+// Formula: skillValue + abilityValue + difficultyModifier + equipmentBonuses
 func (g Golfer) CalculateTargetNumber(club Club, difficulty int) int {
 	skill := g.GetSkillForClub(club)
 	ability := g.GetAbilityForClub(club)
-	return skill.Value() + ability.Value() + difficulty
+
+	// Apply shoes bonus to reduce lie penalties
+	adjustedDifficulty := difficulty + g.GetTotalLiePenaltyReduction()
+
+	return skill.Value() + ability.Value() + adjustedDifficulty
 }
 
 // AwardExperience adds XP to both the skill and ability for a club
@@ -205,6 +209,36 @@ func (g *Golfer) EquipShoes(shoes *Shoes) {
 // GetEquippedBall returns the currently equipped ball (may be nil)
 func (g Golfer) GetEquippedBall() *Ball {
 	return g.Ball
+}
+
+// GetTotalLiePenaltyReduction returns the total lie penalty reduction from equipment
+// Shoes reduce the difficulty of bad lies (e.g., rough, bunkers)
+func (g Golfer) GetTotalLiePenaltyReduction() int {
+	if g.Shoes == nil {
+		return 0
+	}
+	return g.Shoes.LiePenaltyReduction
+}
+
+// GetModifiedClub returns a club with equipment bonuses applied
+// Ball adds distance, glove improves accuracy
+func (g Golfer) GetModifiedClub(club Club) Club {
+	modified := club
+
+	// Apply ball distance bonus
+	if g.Ball != nil {
+		modified.Distance = Yard(float32(modified.Distance) + g.Ball.DistanceBonus)
+	}
+
+	// Apply glove accuracy bonus (capped at 1.0)
+	if g.Glove != nil {
+		modified.Accuracy += g.Glove.AccuracyBonus
+		if modified.Accuracy > 1.0 {
+			modified.Accuracy = 1.0
+		}
+	}
+
+	return modified
 }
 
 // how do we want to do this?
