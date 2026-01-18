@@ -130,10 +130,8 @@ func determineOutcome(margin int, isCritical bool) SkillCheckOutcome {
 		return Marginal
 	case margin >= -3:
 		return Poor
-	case margin >= -6:
-		return Bad
 	default:
-		return CriticalFailure
+		return Bad
 	}
 }
 
