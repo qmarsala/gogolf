@@ -241,7 +241,14 @@ func main() {
 
 				modifiedClub := ctx.Golfer.GetModifiedClub(ctx.CurrentClub)
 				powerMeter := ui.NewPowerMeter(renderer)
-				powerMeter.SetClubDistance(float64(modifiedClub.Distance))
+
+				if ctx.CurrentClub.Name == "Putter" {
+					distanceYards := ctx.Ball.Location.Distance(ctx.Hole.HoleLocation).Yards()
+					distanceFeet := float64(distanceYards.Feet())
+					powerMeter.SetPuttingModeWithClubDistance(distanceFeet, float64(modifiedClub.Distance))
+				} else {
+					powerMeter.SetClubDistance(float64(modifiedClub.Distance))
+				}
 				power := powerMeter.GetPower()
 
 				result := g.TakeShotWithShape(power, shape)

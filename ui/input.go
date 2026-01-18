@@ -17,6 +17,7 @@ type PowerMeter struct {
 	clubMaxDistance  float64 // Max distance of current club in yards (or feet for putting)
 	isPutting        bool
 	puttDistanceFeet float64
+	putterMaxYards   float64 // Putter's max distance in yards for power conversion
 }
 
 // NewPowerMeter creates a power meter with default settings
@@ -103,6 +104,12 @@ func (pm *PowerMeter) GetPower() float64 {
 	pm.renderer.Terminal.MoveCursor(meterRow, panel.X+2)
 	fmt.Print("                                                        ")
 
+	if pm.isPutting && pm.putterMaxYards > 0 {
+		selectedFeet := finalDist
+		selectedYards := selectedFeet / 3.0
+		return selectedYards / pm.putterMaxYards
+	}
+
 	return finalPower
 }
 
@@ -178,6 +185,7 @@ func (pm *PowerMeter) SetClubDistance(distance float64) {
 }
 
 // SetPuttingMode configures the meter for putting with auto-scaled distance
+// clubMaxDistanceYards is the putter's max distance in yards (used for power calculation)
 func (pm *PowerMeter) SetPuttingMode(distanceFeet float64) {
 	pm.isPutting = true
 	pm.puttDistanceFeet = distanceFeet
@@ -187,6 +195,12 @@ func (pm *PowerMeter) SetPuttingMode(distanceFeet float64) {
 		maxDistance = 10
 	}
 	pm.clubMaxDistance = maxDistance
+}
+
+// SetPuttingModeWithClubDistance configures putting mode and stores club distance for power conversion
+func (pm *PowerMeter) SetPuttingModeWithClubDistance(distanceFeet float64, clubMaxDistanceYards float64) {
+	pm.SetPuttingMode(distanceFeet)
+	pm.putterMaxYards = clubMaxDistanceYards
 }
 
 // ClearPuttingMode resets the meter to normal mode

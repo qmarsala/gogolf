@@ -262,3 +262,17 @@ func TestPowerMeter_ClearPuttingMode(t *testing.T) {
 		t.Error("ClearPuttingMode should set isPutting to false")
 	}
 }
+
+func TestPowerMeter_SetPuttingModeWithClubDistance(t *testing.T) {
+	renderer := NewRenderer()
+	pm := NewPowerMeter(renderer)
+
+	pm.SetPuttingModeWithClubDistance(15, 40)
+
+	if pm.putterMaxYards != 40 {
+		t.Errorf("putterMaxYards = %f, want 40", pm.putterMaxYards)
+	}
+	if !pm.isPutting {
+		t.Error("isPutting should be true")
+	}
+}
