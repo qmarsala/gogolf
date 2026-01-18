@@ -145,3 +145,58 @@ func TestPowerMeter_drawMeterBar_EdgeCases(t *testing.T) {
 	pm.drawMeterBar(3*time.Second, false)
 	pm.drawMeterBar(3*time.Second, true)
 }
+
+func TestPowerMeter_SetClubDistance(t *testing.T) {
+	renderer := NewRenderer()
+	pm := NewPowerMeter(renderer)
+
+	pm.SetClubDistance(180)
+
+	if pm.clubMaxDistance != 180 {
+		t.Errorf("clubMaxDistance = %f, want 180", pm.clubMaxDistance)
+	}
+}
+
+func TestPowerMeter_CalculateProjectedDistance(t *testing.T) {
+	renderer := NewRenderer()
+	pm := NewPowerMeter(renderer)
+	pm.SetClubDistance(200)
+
+	tests := []struct {
+		power            float64
+		expectedDistance float64
+		desc             string
+	}{
+		{0.0, 0.0, "0% power = 0 yards"},
+		{0.5, 100.0, "50% power = 100 yards"},
+		{1.0, 200.0, "100% power = 200 yards"},
+		{0.75, 150.0, "75% power = 150 yards"},
+	}
+
+	for _, tt := range tests {
+		distance := pm.calculateProjectedDistance(tt.power)
+		if math.Abs(distance-tt.expectedDistance) > 0.01 {
+			t.Errorf("%s: calculateProjectedDistance(%.2f) = %.2f, want %.2f",
+				tt.desc, tt.power, distance, tt.expectedDistance)
+		}
+	}
+}
+
+func TestPowerMeter_FormatDistanceDisplay(t *testing.T) {
+	renderer := NewRenderer()
+	pm := NewPowerMeter(renderer)
+	pm.SetClubDistance(180)
+
+	display := pm.formatDistanceDisplay(0.5, 90)
+	if display == "" {
+		t.Error("formatDistanceDisplay returned empty string")
+	}
+
+	if !containsSubstring(display, "90") {
+		t.Errorf("display should contain projected distance, got: %s", display)
+	}
+}
+
+func containsSubstring(s, substr string) bool {
+	return len(s) >= len(substr) && (s == substr || len(s) > 0 && (containsSubstring(s[1:], substr) || s[:len(substr)] == substr))
+}
