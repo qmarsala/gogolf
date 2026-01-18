@@ -76,3 +76,24 @@ func WaitForAnyKey() {
 	buf := make([]byte, 1)
 	os.Stdin.Read(buf)
 }
+
+// readSingleKey reads a single key press and returns the character
+func readSingleKey() byte {
+	fd := int(os.Stdin.Fd())
+	var oldState termios
+	_, _, _ = syscall.Syscall(syscall.SYS_IOCTL, uintptr(fd), tcgets, uintptr(unsafe.Pointer(&oldState)))
+
+	newState := oldState
+	newState.Lflag &^= syscall.ECHO | syscall.ICANON
+	newState.Cc[syscall.VMIN] = 1
+	newState.Cc[syscall.VTIME] = 0
+	_, _, _ = syscall.Syscall(syscall.SYS_IOCTL, uintptr(fd), tcsets, uintptr(unsafe.Pointer(&newState)))
+
+	defer func() {
+		_, _, _ = syscall.Syscall(syscall.SYS_IOCTL, uintptr(fd), tcsets, uintptr(unsafe.Pointer(&oldState)))
+	}()
+
+	buf := make([]byte, 1)
+	os.Stdin.Read(buf)
+	return buf[0]
+}

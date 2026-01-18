@@ -185,6 +185,11 @@ func (g Golfer) CalculateTargetNumber(club Club, difficulty int) int {
 	return skill.Value() + ability.Value() + adjustedDifficulty
 }
 
+// CalculateTargetNumberWithShape computes target number including shot shape difficulty
+func (g Golfer) CalculateTargetNumberWithShape(club Club, difficulty int, shape ShotShape) int {
+	return g.CalculateTargetNumber(club, difficulty+shape.DifficultyModifier())
+}
+
 // AwardExperience adds XP to both the skill and ability for a club
 func (g *Golfer) AwardExperience(club Club, xp int) {
 	// Get copies of the skill and ability

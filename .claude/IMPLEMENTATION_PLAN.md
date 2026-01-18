@@ -2,15 +2,16 @@
 
 ## Completed Work
 
-Phases 1-6 are complete. See [CORE_MECHANICS.md](CORE_MECHANICS.md) for documentation of implemented systems:
+Phases 1-7 are complete. See [CORE_MECHANICS.md](CORE_MECHANICS.md) for documentation of implemented systems:
 - Skills & Abilities System (PR #2)
 - Main Game Loop Integration (PR #3)
 - Course Grid & Lie System (PR #4)
 - Equipment System & ProShop (PR #5)
 - Save/Load System (PR #15)
 - ProShop UI & Browsing (PR #16)
+- Shot Shape System (PR #17)
 
-**Current test count:** 260 tests passing
+**Current test count:** 278 tests passing
 
 ---
 
