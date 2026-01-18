@@ -74,6 +74,7 @@ type ShotDisplay struct {
 	ShapeSuccess  bool
 	Outcome       string // e.g., "Good", "Critical Success"
 	Margin        int
+	DiceRolls     []int
 	Description   string  // Quality description
 	Rotation      float64 // Degrees
 	RotationDir   string  // "left" or "right"

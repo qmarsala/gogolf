@@ -3,6 +3,7 @@ package ui
 import (
 	"fmt"
 	"gogolf"
+	"math/rand"
 	"time"
 )
 
@@ -218,4 +219,96 @@ func (s *ShotShapeSelector) waitForShapeKey() byte {
 			return key
 		}
 	}
+}
+
+// DiceRoller displays an animated dice rolling effect
+type DiceRoller struct {
+	renderer *Renderer
+}
+
+// NewDiceRoller creates a dice roller UI component
+func NewDiceRoller(renderer *Renderer) *DiceRoller {
+	return &DiceRoller{renderer: renderer}
+}
+
+// ShowRoll displays an animated dice roll, stopping each die one at a time
+func (dr *DiceRoller) ShowRoll(finalRolls []int) {
+	if len(finalRolls) != 3 {
+		return
+	}
+
+	panel := dr.renderer.Layout.LeftPanel
+	row := panel.Height - 6
+
+	stopped := [3]bool{false, false, false}
+	displayed := [3]int{1, 1, 1}
+
+	animationDuration := 1500 * time.Millisecond
+	stopInterval := animationDuration / 4
+	frameInterval := 50 * time.Millisecond
+
+	startTime := time.Now()
+	ticker := time.NewTicker(frameInterval)
+	defer ticker.Stop()
+
+	for {
+		elapsed := time.Since(startTime)
+
+		if elapsed > stopInterval && !stopped[0] {
+			stopped[0] = true
+			displayed[0] = finalRolls[0]
+		}
+		if elapsed > stopInterval*2 && !stopped[1] {
+			stopped[1] = true
+			displayed[1] = finalRolls[1]
+		}
+		if elapsed > stopInterval*3 && !stopped[2] {
+			stopped[2] = true
+			displayed[2] = finalRolls[2]
+		}
+
+		for i := 0; i < 3; i++ {
+			if !stopped[i] {
+				displayed[i] = rand.Intn(6) + 1
+			}
+		}
+
+		dr.renderer.Terminal.MoveCursor(row, panel.X+2)
+		dr.drawDice(displayed, stopped)
+
+		if stopped[0] && stopped[1] && stopped[2] {
+			break
+		}
+
+		<-ticker.C
+	}
+
+	total := finalRolls[0] + finalRolls[1] + finalRolls[2]
+	dr.renderer.Terminal.MoveCursor(row+1, panel.X+2)
+	fmt.Printf("Total: %d                              ", total)
+
+	time.Sleep(500 * time.Millisecond)
+}
+
+// drawDice renders the three dice with their current values
+func (dr *DiceRoller) drawDice(values [3]int, stopped [3]bool) {
+	fmt.Print("Dice: ")
+	for i, val := range values {
+		if stopped[i] {
+			fmt.Printf("%s[%d]%s ", colorBrightWhite, val, colorReset)
+		} else {
+			fmt.Printf("%s[%d]%s ", colorDim, val, colorReset)
+		}
+	}
+	fmt.Print("      ")
+}
+
+// ClearDiceDisplay clears the dice roll display area
+func (dr *DiceRoller) ClearDiceDisplay() {
+	panel := dr.renderer.Layout.LeftPanel
+	row := panel.Height - 6
+	dr.renderer.Terminal.MoveCursor(row, panel.X+2)
+	fmt.Print("                                        ")
+	dr.renderer.Terminal.MoveCursor(row+1, panel.X+2)
+	fmt.Print("                                        ")
 }

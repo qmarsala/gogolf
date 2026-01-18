@@ -32,6 +32,7 @@ type ShotResult struct {
 	ShapeSuccess  bool
 	Outcome       gogolf.SkillCheckOutcome
 	Margin        int
+	DiceRolls     []int
 	Description   string
 	Rotation      float64
 	RotationDir   string
@@ -174,6 +175,7 @@ func (g *Game) TakeShotWithShape(power float64, shape gogolf.ShotShape) ShotResu
 		ShapeSuccess:  shapeResult.Success,
 		Outcome:       result.Outcome,
 		Margin:        result.Margin,
+		DiceRolls:     result.Rolls,
 		Description:   gogolf.GetShotQualityDescription(result),
 		Rotation:      rotationDegrees,
 		RotationDir:   rotationDir,

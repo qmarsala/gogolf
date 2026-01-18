@@ -38,6 +38,15 @@ func colorizeLevelUp(message string) string {
 	return colorBrightGreen + "🎉 " + message + colorReset
 }
 
+// formatDiceRolls formats dice rolls as "[1] [2] [3] = 6"
+func formatDiceRolls(rolls []int) string {
+	if len(rolls) != 3 {
+		return "N/A"
+	}
+	total := rolls[0] + rolls[1] + rolls[2]
+	return fmt.Sprintf("[%d] [%d] [%d] = %d", rolls[0], rolls[1], rolls[2], total)
+}
+
 // Renderer manages the rendering of game state to the terminal
 type Renderer struct {
 	Terminal *Terminal
@@ -108,6 +117,8 @@ func (r *Renderer) RenderLeftPanel(state GameState) {
 		row++
 		r.printInPanel(panel, row, fmt.Sprintf("├─ Club: %s", shot.ClubName), false)
 		row++
+		r.printInPanel(panel, row, fmt.Sprintf("├─ Dice: %s", formatDiceRolls(shot.DiceRolls)), false)
+		row++
 		r.printInPanel(panel, row, fmt.Sprintf("├─ Quality: %s (Margin: %+d)", colorizeOutcome(shot.Outcome), shot.Margin), false)
 		row++
 		r.printInPanel(panel, row, fmt.Sprintf("├─ Description: %s", shot.Description), false)
@@ -138,11 +149,6 @@ func (r *Renderer) RenderLeftPanel(state GameState) {
 			row++ // blank line
 		}
 	}
-
-	// Separator
-	r.printInPanel(panel, row, strings.Repeat(HorizontalLine, panel.Width-4), false)
-	row++
-	row++ // blank line
 
 	// Status/error messages
 	if state.ErrorMsg != "" {

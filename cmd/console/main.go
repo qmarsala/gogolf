@@ -80,6 +80,7 @@ func shotResultToDisplay(result game.ShotResult) *ui.ShotDisplay {
 		ShapeSuccess:  result.ShapeSuccess,
 		Outcome:       result.Outcome.String(),
 		Margin:        result.Margin,
+		DiceRolls:     result.DiceRolls,
 		Description:   result.Description,
 		Rotation:      result.Rotation,
 		RotationDir:   result.RotationDir,
@@ -235,6 +236,10 @@ func main() {
 			power := powerMeter.GetPower()
 
 			result := g.TakeShotWithShape(power, shape)
+
+			diceRoller := ui.NewDiceRoller(renderer)
+			diceRoller.ShowRoll(result.DiceRolls)
+
 			lastShot = shotResultToDisplay(result)
 
 			if result.TapIn {
