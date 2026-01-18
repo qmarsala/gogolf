@@ -7,17 +7,21 @@ import (
 
 // PowerMeter manages the spacebar-based power input
 type PowerMeter struct {
-	renderer *Renderer
-	maxPower float64
-	maxTime  time.Duration
+	renderer       *Renderer
+	maxPower       float64
+	maxTime        time.Duration
+	sweetSpotStart float64 // Sweet spot starts at 75% of bar
+	sweetSpotEnd   float64 // Sweet spot ends at 85% of bar
 }
 
 // NewPowerMeter creates a power meter with default settings
 func NewPowerMeter(renderer *Renderer) *PowerMeter {
 	return &PowerMeter{
-		renderer: renderer,
-		maxPower: 1.0,
-		maxTime:  2 * time.Second, // 2 seconds for full power
+		renderer:       renderer,
+		maxPower:       1.0,
+		maxTime:        2 * time.Second, // 2 seconds for max time
+		sweetSpotStart: 0.75,             // Sweet spot at 75%-85%
+		sweetSpotEnd:   0.85,
 	}
 }
 
@@ -49,6 +53,7 @@ func (pm *PowerMeter) GetPower() float64 {
 	}()
 
 	// Goroutine to update meter display
+	var finalElapsed time.Duration
 	go func() {
 		for {
 			select {
@@ -56,20 +61,21 @@ func (pm *PowerMeter) GetPower() float64 {
 				elapsed := time.Since(startTime)
 				power := pm.calculatePower(elapsed)
 
-				// Draw power meter
+				// Draw power meter (not stopped yet)
 				pm.renderer.Terminal.MoveCursor(meterRow, panel.X+2)
-				meterBar := pm.drawMeterBar(power)
+				meterBar := pm.drawMeterBar(elapsed, false)
 				fmt.Printf("Power: %s %.0f%%   ", meterBar, power*100)
 
 				// Check if max time reached
 				if elapsed >= pm.maxTime {
-					powerChan <- pm.maxPower
+					finalElapsed = elapsed
+					powerChan <- pm.calculatePower(elapsed)
 					return
 				}
 			case <-stopChan:
 				elapsed := time.Since(startTime)
-				power := pm.calculatePower(elapsed)
-				powerChan <- power
+				finalElapsed = elapsed
+				powerChan <- pm.calculatePower(elapsed)
 				return
 			}
 		}
@@ -77,6 +83,14 @@ func (pm *PowerMeter) GetPower() float64 {
 
 	// Wait for power value
 	finalPower := <-powerChan
+
+	// Show final position with marker
+	pm.renderer.Terminal.MoveCursor(meterRow, panel.X+2)
+	meterBar := pm.drawMeterBar(finalElapsed, true)
+	fmt.Printf("Power: %s %.0f%%   ", meterBar, finalPower*100)
+
+	// Brief pause to show result
+	time.Sleep(500 * time.Millisecond)
 
 	// Clear the meter display
 	pm.renderer.Terminal.MoveCursor(meterRow, panel.X+2)
@@ -86,23 +100,60 @@ func (pm *PowerMeter) GetPower() float64 {
 }
 
 // calculatePower converts elapsed time to power value (0.0 to 1.0)
+// with sweet spot mechanics: <75% = linear to 95%, 75-85% = 100%, >85% = decay to 50%
 func (pm *PowerMeter) calculatePower(elapsed time.Duration) float64 {
-	if elapsed >= pm.maxTime {
-		return pm.maxPower
+	timeRatio := float64(elapsed) / float64(pm.maxTime)
+	if timeRatio > 1.0 {
+		timeRatio = 1.0
 	}
 
-	ratio := float64(elapsed) / float64(pm.maxTime)
-	return ratio * pm.maxPower
+	// Before sweet spot: linear increase to 95%
+	if timeRatio < pm.sweetSpotStart {
+		return (timeRatio / pm.sweetSpotStart) * 0.95
+	}
+
+	// In sweet spot: 100% power
+	if timeRatio <= pm.sweetSpotEnd {
+		return 1.0
+	}
+
+	// Past sweet spot: decay from 95% to 50%
+	overshoot := (timeRatio - pm.sweetSpotEnd) / (1.0 - pm.sweetSpotEnd)
+	return 0.95 - (overshoot * 0.45)
 }
 
-// drawMeterBar creates a visual power bar
-func (pm *PowerMeter) drawMeterBar(power float64) string {
+// drawMeterBar creates a visual power bar with sweet spot zone
+func (pm *PowerMeter) drawMeterBar(elapsed time.Duration, stopped bool) string {
 	barWidth := 20
-	filledWidth := int(power * float64(barWidth))
+	timeRatio := float64(elapsed) / float64(pm.maxTime)
+	if timeRatio > 1.0 {
+		timeRatio = 1.0
+	}
+
+	sweetStart := int(pm.sweetSpotStart * float64(barWidth))
+	sweetEnd := int(pm.sweetSpotEnd * float64(barWidth))
+	currentPos := int(timeRatio * float64(barWidth))
 
 	bar := "["
 	for i := 0; i < barWidth; i++ {
-		if i < filledWidth {
+		// Sweet spot zone boundaries
+		if i == sweetStart {
+			bar += "("
+			continue
+		}
+		if i == sweetEnd {
+			bar += ")"
+			continue
+		}
+
+		// Current position marker (only when stopped)
+		if stopped && i == currentPos {
+			bar += "o"
+			continue
+		}
+
+		// Fill bar up to current position
+		if i < currentPos {
 			bar += "="
 		} else {
 			bar += " "

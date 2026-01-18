@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"math"
 	"testing"
 	"time"
 )
@@ -25,9 +26,17 @@ func TestNewPowerMeter(t *testing.T) {
 	if pm.maxTime != 2*time.Second {
 		t.Errorf("PowerMeter maxTime = %v, want 2s", pm.maxTime)
 	}
+
+	if pm.sweetSpotStart != 0.75 {
+		t.Errorf("PowerMeter sweetSpotStart = %f, want 0.75", pm.sweetSpotStart)
+	}
+
+	if pm.sweetSpotEnd != 0.85 {
+		t.Errorf("PowerMeter sweetSpotEnd = %f, want 0.85", pm.sweetSpotEnd)
+	}
 }
 
-// Test calculatePower returns correct power values
+// Test calculatePower returns correct power values with sweet spot
 func TestPowerMeter_calculatePower(t *testing.T) {
 	renderer := NewRenderer()
 	pm := NewPowerMeter(renderer)
@@ -35,43 +44,87 @@ func TestPowerMeter_calculatePower(t *testing.T) {
 	tests := []struct {
 		elapsed  time.Duration
 		expected float64
+		desc     string
 	}{
-		{0, 0.0},
-		{500 * time.Millisecond, 0.25},
-		{1 * time.Second, 0.5},
-		{1500 * time.Millisecond, 0.75},
-		{2 * time.Second, 1.0},
-		{3 * time.Second, 1.0}, // Should cap at max
+		{0, 0.0, "Start = 0%"},
+		{500 * time.Millisecond, 0.317, "25% time -> 31.7% power"},
+		{1000 * time.Millisecond, 0.633, "50% time -> 63.3% power"},
+		{1499 * time.Millisecond, 0.949, "Just before zone = ~95%"},
+		{1500 * time.Millisecond, 1.0, "Zone start = 100%"},
+		{1600 * time.Millisecond, 1.0, "Zone middle = 100%"},
+		{1700 * time.Millisecond, 1.0, "Zone end = 100%"},
+		{1850 * time.Millisecond, 0.725, "Midway overshoot"},
+		{2000 * time.Millisecond, 0.50, "Max overshoot = 50%"},
+		{3000 * time.Millisecond, 0.50, "Beyond max = 50%"},
 	}
 
 	for _, tt := range tests {
 		power := pm.calculatePower(tt.elapsed)
-		if power < tt.expected-0.01 || power > tt.expected+0.01 {
-			t.Errorf("calculatePower(%v) = %f, want %f", tt.elapsed, power, tt.expected)
+		if math.Abs(power-tt.expected) > 0.01 {
+			t.Errorf("%s: calculatePower(%v) = %.3f, want %.3f", tt.desc, tt.elapsed, power, tt.expected)
 		}
 	}
 }
 
-// Test drawMeterBar creates correct bar representation
+// Test drawMeterBar creates correct bar representation with sweet spot
 func TestPowerMeter_drawMeterBar(t *testing.T) {
 	renderer := NewRenderer()
 	pm := NewPowerMeter(renderer)
 
 	tests := []struct {
-		power    float64
+		elapsed  time.Duration
+		stopped  bool
 		expected string
+		desc     string
 	}{
-		{0.0, "[                    ]"},
-		{0.25, "[=====               ]"},
-		{0.5, "[==========          ]"},
-		{0.75, "[===============     ]"},
-		{1.0, "[====================]"},
+		{
+			0,
+			false,
+			"[               ( )  ]",
+			"Start - empty bar with zone",
+		},
+		{
+			500 * time.Millisecond,
+			false,
+			"[=====          ( )  ]",
+			"25% time - before zone",
+		},
+		{
+			1499 * time.Millisecond,
+			false,
+			"[============== ( )  ]",
+			"Just before zone (not stopped)",
+		},
+		{
+			1500 * time.Millisecond,
+			true,
+			"[===============( )  ]",
+			"Zone start (stopped at boundary)",
+		},
+		{
+			1600 * time.Millisecond,
+			true,
+			"[===============(o)  ]",
+			"In zone (stopped) - 100%",
+		},
+		{
+			1700 * time.Millisecond,
+			true,
+			"[===============(=)  ]",
+			"Zone end (stopped)",
+		},
+		{
+			2000 * time.Millisecond,
+			true,
+			"[===============(=)==]",
+			"Max time (stopped) - overshoot",
+		},
 	}
 
 	for _, tt := range tests {
-		bar := pm.drawMeterBar(tt.power)
+		bar := pm.drawMeterBar(tt.elapsed, tt.stopped)
 		if bar != tt.expected {
-			t.Errorf("drawMeterBar(%f) = %q, want %q", tt.power, bar, tt.expected)
+			t.Errorf("%s: drawMeterBar(%v, %v) = %q, want %q", tt.desc, tt.elapsed, tt.stopped, bar, tt.expected)
 		}
 	}
 }
@@ -87,8 +140,8 @@ func TestPowerMeter_drawMeterBar_EdgeCases(t *testing.T) {
 		}
 	}()
 
-	pm.drawMeterBar(-0.1)
-	pm.drawMeterBar(1.5)
-	pm.drawMeterBar(0.0)
-	pm.drawMeterBar(1.0)
+	pm.drawMeterBar(0, false)
+	pm.drawMeterBar(0, true)
+	pm.drawMeterBar(3*time.Second, false)
+	pm.drawMeterBar(3*time.Second, true)
 }
