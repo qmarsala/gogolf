@@ -1,7 +1,6 @@
 package main
 
 import (
-	"gogolf/dice"
 	"math/rand/v2"
 	"testing"
 )
@@ -61,8 +60,8 @@ func TestCalculateRotation_WithGloveBonus(t *testing.T) {
 	club := Club{Name: "Driver", Accuracy: 0.75, Forgiveness: 0.8}
 	random := rand.New(rand.NewPCG(12345, 67890)) // Fixed seed for reproducibility
 
-	result := dice.SkillCheckResult{
-		Outcome: dice.Good,
+	result := SkillCheckResult{
+		Outcome: Good,
 		Margin:  3,
 	}
 

@@ -12,14 +12,14 @@ func TestSkillCheck_OutcomePopulated(t *testing.T) {
 	for i := 0; i < 10; i++ {
 		result := golfer.SkillCheck(d, 10)
 
-		if result.Outcome < dice.CriticalFailure || result.Outcome > dice.CriticalSuccess {
+		if result.Outcome < CriticalFailure || result.Outcome > CriticalSuccess {
 			t.Errorf("SkillCheck returned invalid outcome: %v", result.Outcome)
 		}
 
-		if result.Success && result.Outcome < dice.Marginal {
+		if result.Success && result.Outcome < Marginal {
 			t.Errorf("Success=true but outcome=%v is a failure tier", result.Outcome)
 		}
-		if !result.Success && result.Outcome >= dice.Marginal {
+		if !result.Success && result.Outcome >= Marginal {
 			t.Errorf("Success=false but outcome=%v is a success tier", result.Outcome)
 		}
 	}
@@ -37,16 +37,16 @@ func TestSkillCheck_CriticalDetection(t *testing.T) {
 				t.Errorf("IsCritical=true but rolls not equal: %v", result.Rolls)
 			}
 
-			if result.Outcome != dice.CriticalSuccess && result.Outcome != dice.CriticalFailure {
+			if result.Outcome != CriticalSuccess && result.Outcome != CriticalFailure {
 				t.Errorf("IsCritical=true but outcome=%v is not critical", result.Outcome)
 			}
 
-			if result.Margin >= 0 && result.Outcome != dice.CriticalSuccess {
+			if result.Margin >= 0 && result.Outcome != CriticalSuccess {
 				t.Errorf("Critical with margin=%d should be CriticalSuccess, got %v",
 					result.Margin, result.Outcome)
 			}
 
-			if result.Margin < 0 && result.Outcome != dice.CriticalFailure {
+			if result.Margin < 0 && result.Outcome != CriticalFailure {
 				t.Errorf("Critical with margin=%d should be CriticalFailure, got %v",
 					result.Margin, result.Outcome)
 			}

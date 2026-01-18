@@ -28,7 +28,7 @@ type GameContext struct {
 
 type ShotResult struct {
 	ClubName    string
-	Outcome     dice.SkillCheckOutcome
+	Outcome     SkillCheckOutcome
 	Margin      int
 	Description string
 	Rotation    float64
@@ -222,21 +222,21 @@ func (g *Game) GetLastShotResult() *ShotResult {
 	return g.lastShotResult
 }
 
-func calculateXP(outcome dice.SkillCheckOutcome) int {
+func calculateXP(outcome SkillCheckOutcome) int {
 	switch outcome {
-	case dice.CriticalSuccess:
+	case CriticalSuccess:
 		return 15
-	case dice.Excellent:
+	case Excellent:
 		return 10
-	case dice.Good:
+	case Good:
 		return 7
-	case dice.Marginal:
+	case Marginal:
 		return 5
-	case dice.Poor:
+	case Poor:
 		return 3
-	case dice.Bad:
+	case Bad:
 		return 2
-	case dice.CriticalFailure:
+	case CriticalFailure:
 		return 1
 	default:
 		return 1

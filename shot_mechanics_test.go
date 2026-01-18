@@ -1,7 +1,6 @@
 package main
 
 import (
-	"gogolf/dice"
 	"math"
 	"math/rand/v2"
 	"testing"
@@ -9,8 +8,8 @@ import (
 
 func TestCalculateRotation_CriticalSuccess(t *testing.T) {
 	club := Club{Name: "Driver", Distance: 280, Accuracy: 0.75, Forgiveness: 0.8}
-	result := dice.SkillCheckResult{
-		Outcome: dice.CriticalSuccess,
+	result := SkillCheckResult{
+		Outcome: CriticalSuccess,
 		Margin:  7,
 	}
 	random := rand.New(rand.NewPCG(1, 2))
@@ -27,8 +26,8 @@ func TestCalculateRotation_CriticalSuccess(t *testing.T) {
 
 func TestCalculateRotation_Excellent(t *testing.T) {
 	club := Club{Name: "7 Iron", Distance: 180, Accuracy: 0.9, Forgiveness: 0.8}
-	result := dice.SkillCheckResult{
-		Outcome: dice.Excellent,
+	result := SkillCheckResult{
+		Outcome: Excellent,
 		Margin:  5,
 	}
 	random := rand.New(rand.NewPCG(1, 2))
@@ -45,8 +44,8 @@ func TestCalculateRotation_Excellent(t *testing.T) {
 
 func TestCalculateRotation_Good(t *testing.T) {
 	club := Club{Name: "Putter", Distance: 40, Accuracy: 1.0, Forgiveness: 0.95}
-	result := dice.SkillCheckResult{
-		Outcome: dice.Good,
+	result := SkillCheckResult{
+		Outcome: Good,
 		Margin:  2,
 	}
 	random := rand.New(rand.NewPCG(1, 2))
@@ -61,8 +60,8 @@ func TestCalculateRotation_Good(t *testing.T) {
 
 func TestCalculateRotation_Marginal(t *testing.T) {
 	club := Club{Name: "SW", Distance: 125, Accuracy: 0.95, Forgiveness: 0.8}
-	result := dice.SkillCheckResult{
-		Outcome: dice.Marginal,
+	result := SkillCheckResult{
+		Outcome: Marginal,
 		Margin:  0,
 	}
 	random := rand.New(rand.NewPCG(1, 2))
@@ -79,8 +78,8 @@ func TestCalculateRotation_Marginal(t *testing.T) {
 
 func TestCalculateRotation_Poor(t *testing.T) {
 	club := Club{Name: "3 Wood", Distance: 250, Accuracy: 0.8, Forgiveness: 0.8}
-	result := dice.SkillCheckResult{
-		Outcome: dice.Poor,
+	result := SkillCheckResult{
+		Outcome: Poor,
 		Margin:  -2,
 	}
 	random := rand.New(rand.NewPCG(1, 2))
@@ -95,8 +94,8 @@ func TestCalculateRotation_Poor(t *testing.T) {
 
 func TestCalculateRotation_Bad(t *testing.T) {
 	club := Club{Name: "4 Iron", Distance: 215, Accuracy: 0.85, Forgiveness: 0.8}
-	result := dice.SkillCheckResult{
-		Outcome: dice.Bad,
+	result := SkillCheckResult{
+		Outcome: Bad,
 		Margin:  -5,
 	}
 	random := rand.New(rand.NewPCG(1, 2))
@@ -107,7 +106,7 @@ func TestCalculateRotation_Bad(t *testing.T) {
 		t.Errorf("Bad rotation = %.2f, expected >= 1", rotation)
 	}
 
-	poorResult := dice.SkillCheckResult{Outcome: dice.Poor, Margin: -2}
+	poorResult := SkillCheckResult{Outcome: Poor, Margin: -2}
 	poorRotation := CalculateRotation(club, poorResult, rand.New(rand.NewPCG(1, 2)))
 
 	if rotation <= poorRotation {
@@ -118,8 +117,8 @@ func TestCalculateRotation_Bad(t *testing.T) {
 
 func TestCalculateRotation_CriticalFailure(t *testing.T) {
 	club := Club{Name: "Driver", Distance: 280, Accuracy: 0.75, Forgiveness: 0.8}
-	result := dice.SkillCheckResult{
-		Outcome: dice.CriticalFailure,
+	result := SkillCheckResult{
+		Outcome: CriticalFailure,
 		Margin:  -8,
 	}
 	random := rand.New(rand.NewPCG(1, 2))
@@ -134,7 +133,7 @@ func TestCalculateRotation_CriticalFailure(t *testing.T) {
 
 func TestCalculatePower_CriticalSuccess(t *testing.T) {
 	club := Club{Name: "Driver", Accuracy: 0.75, Forgiveness: 0.8}
-	result := dice.SkillCheckResult{Outcome: dice.CriticalSuccess, Margin: 7}
+	result := SkillCheckResult{Outcome: CriticalSuccess, Margin: 7}
 	initialPower := 1.0
 
 	power := CalculatePower(club, initialPower, result)
@@ -150,16 +149,16 @@ func TestCalculatePower_ExcellentAndGood(t *testing.T) {
 	initialPower := 0.85
 
 	tests := []struct {
-		outcome  dice.SkillCheckOutcome
+		outcome  SkillCheckOutcome
 		margin   int
 		expected float64
 	}{
-		{dice.Excellent, 5, 0.85},
-		{dice.Good, 2, 0.85},
+		{Excellent, 5, 0.85},
+		{Good, 2, 0.85},
 	}
 
 	for _, tt := range tests {
-		result := dice.SkillCheckResult{Outcome: tt.outcome, Margin: tt.margin}
+		result := SkillCheckResult{Outcome: tt.outcome, Margin: tt.margin}
 		power := CalculatePower(club, initialPower, result)
 
 		if !floatEquals(power, tt.expected, 0.001) {
@@ -170,7 +169,7 @@ func TestCalculatePower_ExcellentAndGood(t *testing.T) {
 
 func TestCalculatePower_Marginal(t *testing.T) {
 	club := Club{Name: "Putter", Accuracy: 1.0, Forgiveness: 0.95}
-	result := dice.SkillCheckResult{Outcome: dice.Marginal, Margin: 0}
+	result := SkillCheckResult{Outcome: Marginal, Margin: 0}
 	initialPower := 1.0
 
 	power := CalculatePower(club, initialPower, result)
@@ -183,7 +182,7 @@ func TestCalculatePower_Marginal(t *testing.T) {
 
 func TestCalculatePower_Poor(t *testing.T) {
 	club := Club{Name: "SW", Accuracy: 0.95, Forgiveness: 0.8}
-	result := dice.SkillCheckResult{Outcome: dice.Poor, Margin: -2}
+	result := SkillCheckResult{Outcome: Poor, Margin: -2}
 	initialPower := 1.0
 
 	power := CalculatePower(club, initialPower, result)
@@ -200,7 +199,7 @@ func TestCalculatePower_Poor(t *testing.T) {
 
 func TestCalculatePower_Bad(t *testing.T) {
 	club := Club{Name: "3 Wood", Accuracy: 0.8, Forgiveness: 0.8}
-	result := dice.SkillCheckResult{Outcome: dice.Bad, Margin: -5}
+	result := SkillCheckResult{Outcome: Bad, Margin: -5}
 	initialPower := 1.0
 
 	power := CalculatePower(club, initialPower, result)
@@ -210,7 +209,7 @@ func TestCalculatePower_Bad(t *testing.T) {
 		t.Errorf("Bad power = %.3f, expected %.3f", power, expected)
 	}
 
-	poorResult := dice.SkillCheckResult{Outcome: dice.Poor, Margin: -5}
+	poorResult := SkillCheckResult{Outcome: Poor, Margin: -5}
 	poorPower := CalculatePower(club, initialPower, poorResult)
 
 	if power >= poorPower {
@@ -220,7 +219,7 @@ func TestCalculatePower_Bad(t *testing.T) {
 
 func TestCalculatePower_CriticalFailure(t *testing.T) {
 	club := Club{Name: "Driver", Accuracy: 0.75, Forgiveness: 0.8}
-	result := dice.SkillCheckResult{Outcome: dice.CriticalFailure, Margin: -8}
+	result := SkillCheckResult{Outcome: CriticalFailure, Margin: -8}
 	initialPower := 1.0
 
 	power := CalculatePower(club, initialPower, result)
@@ -233,7 +232,7 @@ func TestCalculatePower_CriticalFailure(t *testing.T) {
 
 func TestCalculatePower_FloorEnforcement(t *testing.T) {
 	club := Club{Name: "Driver", Accuracy: 0.75, Forgiveness: 0.5}
-	result := dice.SkillCheckResult{Outcome: dice.Poor, Margin: -100}
+	result := SkillCheckResult{Outcome: Poor, Margin: -100}
 	initialPower := 1.0
 
 	power := CalculatePower(club, initialPower, result)
@@ -245,7 +244,7 @@ func TestCalculatePower_FloorEnforcement(t *testing.T) {
 
 func TestCalculatePower_ScalesWithInitialPower(t *testing.T) {
 	club := Club{Name: "7 Iron", Accuracy: 0.9, Forgiveness: 0.8}
-	result := dice.SkillCheckResult{Outcome: dice.Good, Margin: 2}
+	result := SkillCheckResult{Outcome: Good, Margin: 2}
 
 	tests := []float64{0.5, 0.75, 1.0, 1.25}
 
@@ -261,20 +260,20 @@ func TestCalculatePower_ScalesWithInitialPower(t *testing.T) {
 
 func TestGetShotQualityDescription_AllOutcomes(t *testing.T) {
 	tests := []struct {
-		outcome       dice.SkillCheckOutcome
+		outcome       SkillCheckOutcome
 		shouldContain string
 	}{
-		{dice.CriticalSuccess, "PURE STRIKE"},
-		{dice.Excellent, "Great shot"},
-		{dice.Good, "Good contact"},
-		{dice.Marginal, "Just caught it"},
-		{dice.Poor, "Slight miss"},
-		{dice.Bad, "Poor contact"},
-		{dice.CriticalFailure, "DISASTER"},
+		{CriticalSuccess, "PURE STRIKE"},
+		{Excellent, "Great shot"},
+		{Good, "Good contact"},
+		{Marginal, "Just caught it"},
+		{Poor, "Slight miss"},
+		{Bad, "Poor contact"},
+		{CriticalFailure, "DISASTER"},
 	}
 
 	for _, tt := range tests {
-		result := dice.SkillCheckResult{Outcome: tt.outcome}
+		result := SkillCheckResult{Outcome: tt.outcome}
 		description := GetShotQualityDescription(result)
 
 		if description == "" {
@@ -292,7 +291,7 @@ func TestCalculateRotation_DifferentClubs(t *testing.T) {
 		{Name: "Putter", Accuracy: 1.0, Forgiveness: 0.95},
 	}
 
-	result := dice.SkillCheckResult{Outcome: dice.Good, Margin: 2}
+	result := SkillCheckResult{Outcome: Good, Margin: 2}
 	random := rand.New(rand.NewPCG(1, 2))
 
 	for _, club := range clubs {

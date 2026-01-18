@@ -1,23 +1,22 @@
 package main
 
 import (
-	"gogolf/dice"
 	"gogolf/progression"
 	"testing"
 )
 
 func TestCalculateXP(t *testing.T) {
 	tests := []struct {
-		outcome  dice.SkillCheckOutcome
+		outcome  SkillCheckOutcome
 		expected int
 	}{
-		{dice.CriticalSuccess, 15},
-		{dice.Excellent, 10},
-		{dice.Good, 7},
-		{dice.Marginal, 5},
-		{dice.Poor, 3},
-		{dice.Bad, 2},
-		{dice.CriticalFailure, 1},
+		{CriticalSuccess, 15},
+		{Excellent, 10},
+		{Good, 7},
+		{Marginal, 5},
+		{Poor, 3},
+		{Bad, 2},
+		{CriticalFailure, 1},
 	}
 
 	for _, tt := range tests {
@@ -67,7 +66,7 @@ func TestGameLoopIntegration_XPAward(t *testing.T) {
 	initialSkillXP := golfer.Skills["Putter"].Experience
 	initialAbilityXP := golfer.Abilities["Mental"].Experience
 
-	xp := calculateXP(dice.Excellent)
+	xp := calculateXP(Excellent)
 	golfer.AwardExperience(club, xp)
 
 	if golfer.Skills["Putter"].Experience != initialSkillXP+10 {

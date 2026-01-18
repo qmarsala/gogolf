@@ -98,18 +98,18 @@ func (g Golfer) GetBestClub(distance Yard) Club {
 	return c
 }
 
-func (g Golfer) SkillCheck(d dice.Dice, targetNumber int) dice.SkillCheckResult {
+func (g Golfer) SkillCheck(d dice.Dice, targetNumber int) SkillCheckResult {
 	total, rolls := d.RollN(3)
 	margin := targetNumber - total
 	isCritical := rolls[0] == rolls[1] && rolls[0] == rolls[2]
 
-	return dice.SkillCheckResult{
+	return SkillCheckResult{
 		Success:    margin >= 0,
 		IsCritical: isCritical,
 		RollTotal:  total,
 		Rolls:      rolls,
 		Margin:     margin,
-		Outcome:    dice.DetermineOutcome(margin, isCritical),
+		Outcome:    DetermineOutcome(margin, isCritical),
 	}
 }
 
