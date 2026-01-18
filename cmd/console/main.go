@@ -221,74 +221,80 @@ func main() {
 
 	renderer.Terminal.HideCursor()
 
-	for !g.IsRoundComplete() {
-		g.TeeUp()
-		var lastShot *ui.ShotDisplay
+	for {
+		for !g.IsRoundComplete() {
+			g.TeeUp()
+			var lastShot *ui.ShotDisplay
 
-		for !g.IsHoleComplete() {
+			for !g.IsHoleComplete() {
+				ctx := g.GetContext()
+				state := buildGameState(ctx, lastShot, fmt.Sprintf("Using %s", ctx.CurrentClub.Name))
+				renderer.Render(state)
+
+				var shape gogolf.ShotShape
+				if ctx.CurrentClub.Name == "Putter" {
+					shape = gogolf.Straight
+				} else {
+					shapeSelector := ui.NewShotShapeSelector(renderer)
+					shape = shapeSelector.SelectShotShape()
+				}
+
+				modifiedClub := ctx.Golfer.GetModifiedClub(ctx.CurrentClub)
+				powerMeter := ui.NewPowerMeter(renderer)
+				powerMeter.SetClubDistance(float64(modifiedClub.Distance))
+				power := powerMeter.GetPower()
+
+				result := g.TakeShotWithShape(power, shape)
+
+				diceRoller := ui.NewDiceRoller(renderer)
+				diceRoller.ShowRoll(result.DiceRolls, result.TargetNumber)
+
+				lastShot = shotResultToDisplay(result)
+
+				if result.TapIn {
+					lastShot.Description += " (Tap in)"
+				}
+
+				if result.HoledOut {
+					break
+				}
+			}
+
+			reward := g.CompleteHole()
 			ctx := g.GetContext()
-			state := buildGameState(ctx, lastShot, fmt.Sprintf("Using %s", ctx.CurrentClub.Name))
+			statusMsg := fmt.Sprintf("Hole %d Complete! %d strokes (%+d) | +%d money",
+				ctx.Hole.Number, g.StrokesThisHole(), ctx.ScoreCard.ScoreThisHole(ctx.Hole), reward)
+			state := buildGameState(ctx, lastShot, "Press any key to continue...")
+			state.StatusMsg = statusMsg
 			renderer.Render(state)
 
-			var shape gogolf.ShotShape
-			if ctx.CurrentClub.Name == "Putter" {
-				shape = gogolf.Straight
-			} else {
-				shapeSelector := ui.NewShotShapeSelector(renderer)
-				shape = shapeSelector.SelectShotShape()
-			}
+			renderer.Terminal.ShowCursor()
+			ui.WaitForAnyKey()
+			renderer.Terminal.HideCursor()
 
-			modifiedClub := ctx.Golfer.GetModifiedClub(ctx.CurrentClub)
-			powerMeter := ui.NewPowerMeter(renderer)
-			powerMeter.SetClubDistance(float64(modifiedClub.Distance))
-			power := powerMeter.GetPower()
-
-			result := g.TakeShotWithShape(power, shape)
-
-			diceRoller := ui.NewDiceRoller(renderer)
-			diceRoller.ShowRoll(result.DiceRolls, result.TargetNumber)
-
-			lastShot = shotResultToDisplay(result)
-
-			if result.TapIn {
-				lastShot.Description += " (Tap in)"
-			}
-
-			if result.HoledOut {
-				break
-			}
+			g.NextHole()
 		}
 
-		reward := g.CompleteHole()
-		ctx := g.GetContext()
-		statusMsg := fmt.Sprintf("Hole %d Complete! %d strokes (%+d) | +%d money",
-			ctx.Hole.Number, g.StrokesThisHole(), ctx.ScoreCard.ScoreThisHole(ctx.Hole), reward)
-		state := buildGameState(ctx, lastShot, "Press any key to continue...")
-		state.StatusMsg = statusMsg
-		renderer.Render(state)
-
+		renderer.Terminal.Clear()
 		renderer.Terminal.ShowCursor()
-		ui.WaitForAnyKey()
-		renderer.Terminal.HideCursor()
+		fmt.Println("\n=== Round Complete ===")
+		fmt.Printf("Final Score: %d (%+d)\n", g.ScoreCard.TotalStrokes(), g.ScoreCard.Score())
+		fmt.Printf("Money: %d\n\n", g.Golfer.Money)
+		displayPlayerStats(g.Golfer)
 
-		g.NextHole()
+		if !showPostRoundMenu(saveManager, &g.Golfer) {
+			return
+		}
+		g = game.NewFromGolfer(g.Golfer, 3)
 	}
-
-	renderer.Terminal.Clear()
-	renderer.Terminal.ShowCursor()
-	fmt.Println("\n=== Round Complete ===")
-	fmt.Printf("Final Score: %d (%+d)\n", g.ScoreCard.TotalStrokes(), g.ScoreCard.Score())
-	fmt.Printf("Money: %d\n\n", g.Golfer.Money)
-	displayPlayerStats(g.Golfer)
-
-	showPostRoundMenu(saveManager, &g.Golfer)
 }
 
-func showPostRoundMenu(saveManager *gogolf.SaveManager, golfer *gogolf.Golfer) {
+func showPostRoundMenu(saveManager *gogolf.SaveManager, golfer *gogolf.Golfer) bool {
 	proshop := gogolf.NewProShop()
 
 	for {
 		options := []ui.MenuOption{
+			{Label: "Play Another Round", Value: "play"},
 			{Label: "Visit ProShop", Value: "shop"},
 			{Label: "Save Game", Value: "save"},
 			{Label: "Quit", Value: "quit"},
@@ -297,6 +303,8 @@ func showPostRoundMenu(saveManager *gogolf.SaveManager, golfer *gogolf.Golfer) {
 		choice := ui.ShowMenu("What would you like to do?", options)
 
 		switch options[choice].Value {
+		case "play":
+			return true
 		case "shop":
 			shopUI := ui.NewShopUI(proshop, os.Stdout, os.Stdin)
 			shopUI.Show(golfer)
@@ -304,7 +312,7 @@ func showPostRoundMenu(saveManager *gogolf.SaveManager, golfer *gogolf.Golfer) {
 			showSaveMenu(saveManager, *golfer)
 		case "quit":
 			fmt.Println("Thanks for playing!")
-			return
+			return false
 		}
 	}
 }
