@@ -95,26 +95,18 @@ func (c Course) ParUpToHole(holeNumber int) (par int) {
 	return
 }
 
-// GenerateSimpleCourse creates a course with grid-based lie detection
-// This is a simplified version that sets up basic fairway/rough/green patterns
-func GenerateSimpleCourse(holeCount int) (Course, ScoreCard) {
+func GenerateSimpleCourse(holeCount int) Course {
 	holes := []Hole{}
 
 	for i := 0; i < holeCount; i++ {
-		// Simple hole setup: par 4, ~300 yards
 		distance := Yard(300)
 		width := Yard(50)
 		par := 4
 
-		// Hole location in the green area (last 10 yards)
-		// Grid is 300 yards = 2160 units, so use 2110 (about 293 yards)
 		holeLocation := Point{X: int(width.Units() / 2), Y: int(distance.Units()) - int(Yard(10).Units())}
 
-		// Create hole with grid (50 yards wide, distance long, 10-yard cells)
 		hole := NewHoleWithGrid(i+1, par, holeLocation, Size{}, width, distance, Yard(10))
 
-		// Set up basic lies
-		// Tee area (first 10 yards)
 		teeAreaSize := Yard(10)
 		for y := 0; y < int(teeAreaSize.Units()); y += int(Yard(10).Units()) {
 			for x := 0; x < int(width.Units()); x += int(Yard(10).Units()) {
@@ -122,7 +114,6 @@ func GenerateSimpleCourse(holeCount int) (Course, ScoreCard) {
 			}
 		}
 
-		// Green area (last 20 yards around hole)
 		greenStartY := int(distance.Units()) - int(Yard(20).Units())
 		for y := greenStartY; y < int(distance.Units()); y += int(Yard(10).Units()) {
 			for x := 0; x < int(width.Units()); x += int(Yard(10).Units()) {
@@ -130,16 +121,8 @@ func GenerateSimpleCourse(holeCount int) (Course, ScoreCard) {
 			}
 		}
 
-		// Fairway is the default (already set in NewCourseGrid)
-		// Middle area remains as fairway
-
 		holes = append(holes, *hole)
 	}
 
-	course := Course{Holes: holes}
-	scoreCard := ScoreCard{
-		Course: course,
-		Scores: map[int]int{},
-	}
-	return course, scoreCard
+	return Course{Holes: holes}
 }

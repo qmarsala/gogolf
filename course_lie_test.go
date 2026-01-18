@@ -84,9 +84,8 @@ func TestGolfBall_GetLie(t *testing.T) {
 	}
 }
 
-// Test GenerateSimpleCourse creates holes with grids
 func TestGenerateSimpleCourse(t *testing.T) {
-	course, _ := GenerateSimpleCourse(3)
+	course := GenerateSimpleCourse(3)
 
 	if len(course.Holes) != 3 {
 		t.Errorf("Course has %d holes, want 3", len(course.Holes))

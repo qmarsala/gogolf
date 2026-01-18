@@ -4,6 +4,7 @@ import (
 	"gogolf"
 	"gogolf/dice"
 	"gogolf/progression"
+	"gogolf/scoring"
 	"math"
 	"math/rand/v2"
 )
@@ -12,7 +13,7 @@ type Game struct {
 	Golfer           gogolf.Golfer
 	Course           gogolf.Course
 	Ball             gogolf.GolfBall
-	ScoreCard        gogolf.ScoreCard
+	ScoreCard        scoring.ScoreCard
 	CurrentHoleIndex int
 	random           gogolf.RandomSource
 	lastShotResult   *ShotResult
@@ -22,7 +23,7 @@ type Context struct {
 	Golfer      gogolf.Golfer
 	Hole        gogolf.Hole
 	Ball        gogolf.GolfBall
-	ScoreCard   gogolf.ScoreCard
+	ScoreCard   scoring.ScoreCard
 	CurrentClub gogolf.Club
 	Lie         gogolf.LieType
 }
@@ -48,12 +49,12 @@ func New(playerName string, holeCount int) *Game {
 }
 
 func NewWithRandom(playerName string, holeCount int, rng gogolf.RandomSource) *Game {
-	course, scoreCard := gogolf.GenerateSimpleCourse(holeCount)
+	course := gogolf.GenerateSimpleCourse(holeCount)
 	return &Game{
 		Golfer:           gogolf.NewGolfer(playerName),
 		Course:           course,
 		Ball:             gogolf.GolfBall{Location: gogolf.Point{X: 0, Y: 0}},
-		ScoreCard:        scoreCard,
+		ScoreCard:        scoring.NewScoreCard(course),
 		CurrentHoleIndex: 0,
 		random:           rng,
 	}

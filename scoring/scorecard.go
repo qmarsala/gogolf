@@ -1,11 +1,20 @@
-package gogolf
+package scoring
+
+import "gogolf"
 
 type ScoreCard struct {
-	Course Course
+	Course gogolf.Course
 	Scores map[int]int
 }
 
-func (sc *ScoreCard) RecordStroke(h Hole) {
+func NewScoreCard(course gogolf.Course) ScoreCard {
+	return ScoreCard{
+		Course: course,
+		Scores: map[int]int{},
+	}
+}
+
+func (sc *ScoreCard) RecordStroke(h gogolf.Hole) {
 	sc.Scores[h.Number]++
 }
 
@@ -25,11 +34,11 @@ func (sc ScoreCard) TotalStrokes() (score int) {
 	return
 }
 
-func (sc ScoreCard) TotalStrokesThisHole(h Hole) (score int) {
+func (sc ScoreCard) TotalStrokesThisHole(h gogolf.Hole) (score int) {
 	return sc.Scores[h.Number]
 }
 
-func (sc ScoreCard) ScoreThisHole(h Hole) (score int) {
+func (sc ScoreCard) ScoreThisHole(h gogolf.Hole) (score int) {
 	return sc.TotalStrokesThisHole(h) - h.Par
 }
 
