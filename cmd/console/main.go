@@ -80,6 +80,7 @@ func shotResultToDisplay(result game.ShotResult) *ui.ShotDisplay {
 		ShapeSuccess:  result.ShapeSuccess,
 		Outcome:       result.Outcome.String(),
 		Margin:        result.Margin,
+		TargetNumber:  result.TargetNumber,
 		DiceRolls:     result.DiceRolls,
 		Description:   result.Description,
 		Rotation:      result.Rotation,
@@ -240,7 +241,7 @@ func main() {
 			result := g.TakeShotWithShape(power, shape)
 
 			diceRoller := ui.NewDiceRoller(renderer)
-			diceRoller.ShowRoll(result.DiceRolls)
+			diceRoller.ShowRoll(result.DiceRolls, result.TargetNumber)
 
 			lastShot = shotResultToDisplay(result)
 

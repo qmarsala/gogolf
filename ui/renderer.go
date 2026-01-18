@@ -117,7 +117,7 @@ func (r *Renderer) RenderLeftPanel(state GameState) {
 		row++
 		r.printInPanel(panel, row, fmt.Sprintf("├─ Club: %s", shot.ClubName), false)
 		row++
-		r.printInPanel(panel, row, fmt.Sprintf("├─ Dice: %s", formatDiceRolls(shot.DiceRolls)), false)
+		r.printInPanel(panel, row, fmt.Sprintf("├─ Target: %d | Dice: %s", shot.TargetNumber, formatDiceRolls(shot.DiceRolls)), false)
 		row++
 		r.printInPanel(panel, row, fmt.Sprintf("├─ Quality: %s (Margin: %+d)", colorizeOutcome(shot.Outcome), shot.Margin), false)
 		row++

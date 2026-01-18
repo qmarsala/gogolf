@@ -250,13 +250,16 @@ func NewDiceRoller(renderer *Renderer) *DiceRoller {
 }
 
 // ShowRoll displays an animated dice roll, stopping each die one at a time
-func (dr *DiceRoller) ShowRoll(finalRolls []int) {
+func (dr *DiceRoller) ShowRoll(finalRolls []int, targetNumber int) {
 	if len(finalRolls) != 3 {
 		return
 	}
 
 	panel := dr.renderer.Layout.LeftPanel
 	row := panel.Height - 6
+
+	dr.renderer.Terminal.MoveCursor(row-1, panel.X+2)
+	fmt.Printf("Target: %d                              ", targetNumber)
 
 	stopped := [3]bool{false, false, false}
 	displayed := [3]int{1, 1, 1}
@@ -303,7 +306,7 @@ func (dr *DiceRoller) ShowRoll(finalRolls []int) {
 
 	total := finalRolls[0] + finalRolls[1] + finalRolls[2]
 	dr.renderer.Terminal.MoveCursor(row+1, panel.X+2)
-	fmt.Printf("Total: %d                              ", total)
+	fmt.Printf("Total: %d (Target: %d)                  ", total, targetNumber)
 
 	time.Sleep(500 * time.Millisecond)
 }
@@ -325,6 +328,8 @@ func (dr *DiceRoller) drawDice(values [3]int, stopped [3]bool) {
 func (dr *DiceRoller) ClearDiceDisplay() {
 	panel := dr.renderer.Layout.LeftPanel
 	row := panel.Height - 6
+	dr.renderer.Terminal.MoveCursor(row-1, panel.X+2)
+	fmt.Print("                                        ")
 	dr.renderer.Terminal.MoveCursor(row, panel.X+2)
 	fmt.Print("                                        ")
 	dr.renderer.Terminal.MoveCursor(row+1, panel.X+2)
