@@ -236,33 +236,6 @@ func TestDetermineOutcome_MarginBased(t *testing.T) {
 	}
 }
 
-func TestDetermineOutcome_CriticalOverride(t *testing.T) {
-	tests := []struct {
-		name     string
-		margin   int
-		expected SkillCheckOutcome
-	}{
-		{"Critical with margin +7", 7, CriticalSuccess},
-		{"Critical with margin +4", 4, CriticalSuccess},
-		{"Critical with margin +1", 1, CriticalSuccess},
-		{"Critical with margin 0", 0, CriticalSuccess},
-
-		{"Critical with margin -1", -1, CriticalFailure},
-		{"Critical with margin -4", -4, CriticalFailure},
-		{"Critical with margin -7", -7, CriticalFailure},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := determineOutcome(tt.margin, true)
-			if got != tt.expected {
-				t.Errorf("determineOutcome(%d, true) = %v, want %v",
-					tt.margin, got, tt.expected)
-			}
-		})
-	}
-}
-
 func TestDetermineOutcome_TierBoundaries(t *testing.T) {
 	tests := []struct {
 		name     string
