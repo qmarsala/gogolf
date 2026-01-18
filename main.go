@@ -3,25 +3,11 @@ package main
 import (
 	"fmt"
 	"gogolf/ui"
-	"math"
-	"math/rand/v2"
 )
 
-// things to explore:
-// [ ] changing aim target - at least need to aim 'left' or 'right', but aiming shorter would be nice too
-// as it would allow flexibility with a full,3/4,1/2,1/4 shot system. (need to remove typing raw power, its cumbersome, annoying, and too easy in a way as you can be very precise)
-// [ ] wind - translate the final point like a draw for now, though this is a little different
-// [ ] greens adding break
-
-//todo:
-// [ ] go through brain storm comments and create some exploration tasks
-// [ ] refactor experimental code into longer term solutions
-
-// buildGameState creates a GameState from current game data for UI rendering
-func buildGameState(golfer Golfer, hole Hole, ball GolfBall, scoreCard ScoreCard, lastShot *ui.ShotDisplay, promptMsg string) ui.GameState {
-	// Build skills map
+func buildGameState(ctx GameContext, lastShot *ui.ShotDisplay, promptMsg string) ui.GameState {
 	skills := make(map[string]ui.SkillDisplay)
-	for name, skill := range golfer.Skills {
+	for name, skill := range ctx.Golfer.Skills {
 		skills[name] = ui.SkillDisplay{
 			Name:      skill.Name,
 			Level:     skill.Level,
@@ -31,9 +17,8 @@ func buildGameState(golfer Golfer, hole Hole, ball GolfBall, scoreCard ScoreCard
 		}
 	}
 
-	// Build abilities map
 	abilities := make(map[string]ui.AbilityDisplay)
-	for name, ability := range golfer.Abilities {
+	for name, ability := range ctx.Golfer.Abilities {
 		abilities[name] = ui.AbilityDisplay{
 			Name:      ability.Name,
 			Level:     ability.Level,
@@ -43,195 +28,121 @@ func buildGameState(golfer Golfer, hole Hole, ball GolfBall, scoreCard ScoreCard
 		}
 	}
 
-	// Build equipment display
 	equipment := ui.EquipmentDisplay{}
-	if golfer.Ball != nil {
-		equipment.BallName = golfer.Ball.Name
-		equipment.BallBonus = fmt.Sprintf("+%.0f dist", golfer.Ball.DistanceBonus)
+	if ctx.Golfer.Ball != nil {
+		equipment.BallName = ctx.Golfer.Ball.Name
+		equipment.BallBonus = fmt.Sprintf("+%.0f dist", ctx.Golfer.Ball.DistanceBonus)
 	}
-	if golfer.Glove != nil {
-		equipment.GloveName = golfer.Glove.Name
-		equipment.GloveBonus = fmt.Sprintf("+%.2f acc", golfer.Glove.AccuracyBonus)
+	if ctx.Golfer.Glove != nil {
+		equipment.GloveName = ctx.Golfer.Glove.Name
+		equipment.GloveBonus = fmt.Sprintf("+%.2f acc", ctx.Golfer.Glove.AccuracyBonus)
 	}
-	if golfer.Shoes != nil {
-		equipment.ShoesName = golfer.Shoes.Name
-		equipment.ShoesBonus = fmt.Sprintf("-%d lie pen", golfer.Shoes.LiePenaltyReduction)
+	if ctx.Golfer.Shoes != nil {
+		equipment.ShoesName = ctx.Golfer.Shoes.Name
+		equipment.ShoesBonus = fmt.Sprintf("-%d lie pen", ctx.Golfer.Shoes.LiePenaltyReduction)
 	}
-
-	// Get current lie
-	lie := ball.GetLie(&hole)
 
 	return ui.GameState{
-		PlayerName:        golfer.Name,
-		Money:             golfer.Money,
+		PlayerName:        ctx.Golfer.Name,
+		Money:             ctx.Golfer.Money,
 		Skills:            skills,
 		Abilities:         abilities,
 		Equipment:         equipment,
-		HoleNumber:        hole.Number,
-		TotalHoles:        len(scoreCard.Course.Holes),
-		Par:               hole.Par,
-		HoleDistance:      float64(hole.Distance),
-		BallLie:           lie.String(),
-		BallLieDifficulty: lie.DifficultyModifier(),
-		DistanceToHole:    float64(ball.Location.Distance(hole.HoleLocation).Yards()),
-		BallLocationX:     float64(ball.Location.X),
-		BallLocationY:     float64(ball.Location.Y),
-		HoleLocationX:     float64(hole.HoleLocation.X),
-		HoleLocationY:     float64(hole.HoleLocation.Y),
+		HoleNumber:        ctx.Hole.Number,
+		TotalHoles:        len(ctx.ScoreCard.Course.Holes),
+		Par:               ctx.Hole.Par,
+		HoleDistance:      float64(ctx.Hole.Distance),
+		BallLie:           ctx.Lie.String(),
+		BallLieDifficulty: ctx.Lie.DifficultyModifier(),
+		DistanceToHole:    float64(ctx.Ball.Location.Distance(ctx.Hole.HoleLocation).Yards()),
+		BallLocationX:     float64(ctx.Ball.Location.X),
+		BallLocationY:     float64(ctx.Ball.Location.Y),
+		HoleLocationX:     float64(ctx.Hole.HoleLocation.X),
+		HoleLocationY:     float64(ctx.Hole.HoleLocation.Y),
 		LastShot:          lastShot,
-		TotalStrokes:      scoreCard.TotalStrokes(),
-		ScoreToPar:        scoreCard.Score(),
-		StrokesThisHole:   scoreCard.TotalStrokesThisHole(hole),
+		TotalStrokes:      ctx.ScoreCard.TotalStrokes(),
+		ScoreToPar:        ctx.ScoreCard.Score(),
+		StrokesThisHole:   ctx.ScoreCard.TotalStrokesThisHole(ctx.Hole),
 		PromptMsg:         promptMsg,
 	}
 }
 
-func main() {
-	// Initialize UI renderer
-	renderer := ui.NewRenderer()
-	defer renderer.Terminal.ShowCursor() // Ensure cursor is restored on exit
+func shotResultToDisplay(result ShotResult) *ui.ShotDisplay {
+	return &ui.ShotDisplay{
+		ClubName:    result.ClubName,
+		Outcome:     result.Outcome.String(),
+		Margin:      result.Margin,
+		Description: result.Description,
+		Rotation:    result.Rotation,
+		RotationDir: result.RotationDir,
+		Power:       result.Power,
+		Distance:    result.Distance,
+		XPEarned:    result.XPEarned,
+		LevelUps:    result.LevelUps,
+	}
+}
 
-	// Check if terminal supports rich UI
+func main() {
+	renderer := ui.NewRenderer()
+	defer renderer.Terminal.ShowCursor()
+
 	if !renderer.Layout.SupportsRichUI() {
 		fmt.Println("Terminal too small for rich UI. Minimum 80x24 required.")
 		fmt.Println("Falling back to simple mode...")
-		// TODO: Implement simple fallback mode
 		return
 	}
 
 	renderer.Terminal.HideCursor()
 
-	ball := GolfBall{Location: Point{X: 0, Y: 0}}
-	course, scoreCard := GenerateSimpleCourse(3) // Use course with lie system
-	golfer := NewGolfer("Player")
+	game := NewGame("Player", 3)
 
-	random := rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64()))
-	var lastShot *ui.ShotDisplay // Track last shot for display
+	for !game.IsRoundComplete() {
+		game.TeeUp()
+		var lastShot *ui.ShotDisplay
 
-	for _, h := range course.Holes {
-		ball.TeeUp()
-		lastShot = nil // Reset shot display for new hole
-
-		for scoreCard.TotalStrokesThisHole(h) < 11 {
-			// Render UI with current state
-			club := golfer.GetBestClub(ball.Location.Distance(h.HoleLocation).Yards())
-			state := buildGameState(golfer, h, ball, scoreCard, lastShot, fmt.Sprintf("Using %s", club.Name))
+		for !game.IsHoleComplete() {
+			ctx := game.GetGameContext()
+			state := buildGameState(ctx, lastShot, fmt.Sprintf("Using %s", ctx.CurrentClub.Name))
 			renderer.Render(state)
 
-			// Get power using spacebar timing
 			powerMeter := ui.NewPowerMeter(renderer)
 			power := powerMeter.GetPower()
 
-			directionToHole := ball.Location.Direction(h.HoleLocation)
+			result := game.TakeShot(power)
+			lastShot = shotResultToDisplay(result)
 
-			// Get current lie and calculate difficulty modifier
-			lie := ball.GetLie(&h)
-			difficulty := lie.DifficultyModifier()
-
-			// Calculate dynamic target number based on club, skill, ability, and lie
-			targetNumber := golfer.CalculateTargetNumber(club, difficulty)
-			result := golfer.SkillCheck(NewD6(), targetNumber)
-
-			// Determine rotation direction (keep existing logic)
-			rotationDirection := float64(1)
-			if int(math.Abs(float64(result.Margin)))%2 == 0 {
-				rotationDirection *= -1
-			}
-
-			// Apply equipment bonuses to club
-			modifiedClub := golfer.GetModifiedClub(club)
-
-			// Use tier-based calculations with modified club
-			rotationDegrees := CalculateRotation(modifiedClub, result, random)
-			power = CalculatePower(modifiedClub, power, result)
-
-			// Award XP and detect level-ups
-			skill := golfer.GetSkillForClub(club)
-			ability := golfer.GetAbilityForClub(club)
-			prevSkillLevel := skill.Level
-			prevAbilityLevel := ability.Level
-
-			xpAward := calculateXP(result.Outcome)
-			golfer.AwardExperience(club, xpAward)
-
-			// Check for level-ups and collect messages
-			newSkill := golfer.GetSkillForClub(club)
-			newAbility := golfer.GetAbilityForClub(club)
-			var levelUps []string
-
-			if newSkill.Level > prevSkillLevel {
-				levelUps = append(levelUps, fmt.Sprintf("%s leveled up to %d!", newSkill.Name, newSkill.Level))
-			}
-			if newAbility.Level > prevAbilityLevel {
-				levelUps = append(levelUps, fmt.Sprintf("%s leveled up to %d!", newAbility.Name, newAbility.Level))
-			}
-
-			// Execute shot
-			directionToHole.Rotate(rotationDegrees * rotationDirection)
-			ballPath := ball.ReceiveHit(modifiedClub, float32(power), directionToHole)
-			if club.Name != "Putter" {
-				if rand.IntN(100)%2 == 0 {
-					experimentWithShotSimpleShapes_Draw(&ball, ballPath, h)
-				} else {
-					experimentWithShotSimpleShapes_Fade(&ball, ballPath, h)
-				}
-			}
-
-			scoreCard.RecordStroke(h)
-
-			// Build shot display for next render
-			rotationDir := "right"
-			if rotationDirection < 0 {
-				rotationDir = "left"
-			}
-			lastShot = &ui.ShotDisplay{
-				ClubName:    club.Name,
-				Outcome:     result.Outcome.String(),
-				Margin:      result.Margin,
-				Description: GetShotQualityDescription(result),
-				Rotation:    rotationDegrees,
-				RotationDir: rotationDir,
-				Power:       power,
-				Distance:    float64(Unit(ballPath.Magnitude()).Yards()),
-				XPEarned:    xpAward,
-				LevelUps:    levelUps,
-			}
-			if h.DetectHoleOut(ball, ballPath) {
-				break
-			} else if h.DetectTapIn(ball) {
-				scoreCard.RecordStroke(h)
+			if result.TapIn {
 				lastShot.Description += " (Tap in)"
+			}
+
+			if result.HoledOut {
 				break
 			}
 		}
 
-		// Award money for hole completion
-		golfer.AwardHoleReward(h.Par, scoreCard.TotalStrokesThisHole(h))
-
-		// Show hole completion screen
-		reward := CalculateHoleReward(h.Par, scoreCard.TotalStrokesThisHole(h))
+		reward := game.CompleteHole()
+		ctx := game.GetGameContext()
 		statusMsg := fmt.Sprintf("Hole %d Complete! %d strokes (%+d) | +%d money",
-			h.Number, scoreCard.TotalStrokesThisHole(h), scoreCard.ScoreThisHole(h), reward)
-		state := buildGameState(golfer, h, ball, scoreCard, lastShot, "Press any key to continue...")
+			ctx.Hole.Number, game.StrokesThisHole(), ctx.ScoreCard.ScoreThisHole(ctx.Hole), reward)
+		state := buildGameState(ctx, lastShot, "Press any key to continue...")
 		state.StatusMsg = statusMsg
 		renderer.Render(state)
 
-		// Wait for user to press any key to continue
 		renderer.Terminal.ShowCursor()
 		ui.WaitForAnyKey()
 		renderer.Terminal.HideCursor()
+
+		game.NextHole()
 	}
 
-	// Show round complete screen
 	renderer.Terminal.Clear()
 	renderer.Terminal.ShowCursor()
 	fmt.Println("\n=== Round Complete ===")
-	fmt.Printf("Final Score: %d (%+d)\n", scoreCard.TotalStrokes(), scoreCard.Score())
-	fmt.Printf("Money: %d\n\n", golfer.Money)
-	displayPlayerStats(golfer)
+	fmt.Printf("Final Score: %d (%+d)\n", game.ScoreCard.TotalStrokes(), game.ScoreCard.Score())
+	fmt.Printf("Money: %d\n\n", game.Golfer.Money)
+	displayPlayerStats(game.Golfer)
 }
 
-// displayPlayerStats shows the golfer's current skills and abilities
 func displayPlayerStats(golfer Golfer) {
 	fmt.Println("\n=== Player Stats ===")
 	fmt.Println("Skills:")
@@ -255,54 +166,4 @@ func displayPlayerStats(golfer Golfer) {
 		}
 	}
 	fmt.Println("===================")
-}
-
-// calculateXP determines experience points based on shot outcome
-func calculateXP(outcome SkillCheckOutcome) int {
-	switch outcome {
-	case CriticalSuccess:
-		return 15
-	case Excellent:
-		return 10
-	case Good:
-		return 7
-	case Marginal:
-		return 5
-	case Poor:
-		return 3
-	case Bad:
-		return 2
-	case CriticalFailure:
-		return 1
-	default:
-		return 1
-	}
-}
-
-func experimentWithShotSimpleShapes_Draw(ball *GolfBall, ballPath Vector, h Hole) {
-	fmt.Printf("pre draw ball: %+v | hole: %+v\n", ball.Location, h.HoleLocation)
-	directionToHole := ball.PrevLocation.Direction(h.HoleLocation)
-	drawRotationDegrees := -45
-	if directionToHole.Y < 0 {
-		drawRotationDegrees = 45
-	}
-	rotatedPath := ballPath.Rotate(float64(drawRotationDegrees))
-	// this should probably be a factor of total distance
-	// shorter shots can move as much as longer shots
-	translationDistance := Yard(math.Max(rand.Float64()*3, 1)).Units()
-	fmt.Println("Draw: ", translationDistance)
-	ball.Location = ball.Location.Move(rotatedPath, float64(translationDistance))
-}
-
-func experimentWithShotSimpleShapes_Fade(ball *GolfBall, ballPath Vector, h Hole) {
-	fmt.Printf("pre fade ball: %+v | hole: %+v\n", ball.Location, h.HoleLocation)
-	directionToHole := ball.PrevLocation.Direction(h.HoleLocation)
-	drawRotationDegrees := 45
-	if directionToHole.Y < 0 {
-		drawRotationDegrees = -45
-	}
-	rotatedPath := ballPath.Rotate(float64(drawRotationDegrees))
-	translationDistance := Yard(math.Max(rand.Float64()*3, 1)).Units()
-	fmt.Println("Fade: ", translationDistance)
-	ball.Location = ball.Location.Move(rotatedPath, float64(translationDistance))
 }
