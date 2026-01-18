@@ -1,14 +1,11 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"gogolf/ui"
 	"math"
 	"math/rand/v2"
 	"os"
-	"strconv"
-	"strings"
 )
 
 // things to explore:
@@ -119,19 +116,12 @@ func main() {
 		for scoreCard.TotalStrokesThisHole(h) < 11 {
 			// Render UI with current state
 			club := golfer.GetBestClub(ball.Location.Distance(h.HoleLocation).Yards())
-			state := buildGameState(golfer, h, ball, scoreCard, lastShot, fmt.Sprintf("Using %s - Enter power (0-1):", club.Name))
+			state := buildGameState(golfer, h, ball, scoreCard, lastShot, fmt.Sprintf("Using %s", club.Name))
 			renderer.Render(state)
 
-			// Get power input from user
-			// Position cursor after "> " and show it
-			promptRow := renderer.Layout.LeftPanel.Height - 1
-			renderer.Terminal.MoveCursor(promptRow, renderer.Layout.LeftPanel.X+4)
-			renderer.Terminal.ShowCursor()
-
-			reader := bufio.NewReader(os.Stdin)
-			powerInput, _ := reader.ReadString('\n')
-			renderer.Terminal.HideCursor()
-			power, _ := strconv.ParseFloat(strings.TrimSpace(powerInput), 64)
+			// Get power using spacebar timing
+			powerMeter := ui.NewPowerMeter(renderer)
+			power := powerMeter.GetPower()
 
 			directionToHole := ball.Location.Direction(h.HoleLocation)
 
@@ -227,14 +217,15 @@ func main() {
 		state.StatusMsg = statusMsg
 		renderer.Render(state)
 
-		// Wait for user to press enter
-		// Position cursor after "> " and show it
+		// Wait for user to press any key to continue
 		promptRow := renderer.Layout.LeftPanel.Height - 1
-		renderer.Terminal.MoveCursor(promptRow, renderer.Layout.LeftPanel.X+4)
+		renderer.Terminal.MoveCursor(promptRow, renderer.Layout.LeftPanel.X+2)
+		fmt.Print("Press any key to continue...")
 		renderer.Terminal.ShowCursor()
 
-		reader := bufio.NewReader(os.Stdin)
-		reader.ReadString('\n')
+		// Read single byte (any keypress)
+		buf := make([]byte, 1)
+		os.Stdin.Read(buf)
 		renderer.Terminal.HideCursor()
 	}
 
