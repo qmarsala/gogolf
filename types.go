@@ -215,3 +215,40 @@ type SkillCheckResult struct {
 	Margin     int
 	Outcome    SkillCheckOutcome
 }
+
+type ShotShape int
+
+const (
+	Straight ShotShape = iota
+	Draw
+	Fade
+	Hook
+	Slice
+)
+
+func (s ShotShape) String() string {
+	return [...]string{
+		"Straight",
+		"Draw",
+		"Fade",
+		"Hook",
+		"Slice",
+	}[s]
+}
+
+func (s ShotShape) DifficultyModifier() int {
+	switch s {
+	case Straight:
+		return -2
+	case Draw:
+		return 1
+	case Fade:
+		return 1
+	case Hook:
+		return -1
+	case Slice:
+		return -1
+	default:
+		return 0
+	}
+}
