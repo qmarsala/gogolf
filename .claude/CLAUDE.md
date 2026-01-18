@@ -5,6 +5,8 @@ Refer to [IMPLEMENTATION_PLAN.md](./IMPLEMENTATION_PLAN.md) to understand the cu
 
 
 # Development Best Practices
+* Always start by making a PLAN.
+    * The PLAN should clearly state the problem, potential solutions, and expected results
 * Always use TDD (test driven development).
     * Write tests based on expected input/output pairs. Avoid creating mock implementations, even for functionality that doesn’t exist yet in the codebase
     * Verify the test fails
