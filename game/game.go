@@ -1,6 +1,7 @@
-package gogolf
+package game
 
 import (
+	"gogolf"
 	"gogolf/dice"
 	"gogolf/progression"
 	"math"
@@ -8,27 +9,27 @@ import (
 )
 
 type Game struct {
-	Golfer           Golfer
-	Course           Course
-	Ball             GolfBall
-	ScoreCard        ScoreCard
+	Golfer           gogolf.Golfer
+	Course           gogolf.Course
+	Ball             gogolf.GolfBall
+	ScoreCard        gogolf.ScoreCard
 	CurrentHoleIndex int
-	random           RandomSource
+	random           gogolf.RandomSource
 	lastShotResult   *ShotResult
 }
 
-type GameContext struct {
-	Golfer      Golfer
-	Hole        Hole
-	Ball        GolfBall
-	ScoreCard   ScoreCard
-	CurrentClub Club
-	Lie         LieType
+type Context struct {
+	Golfer      gogolf.Golfer
+	Hole        gogolf.Hole
+	Ball        gogolf.GolfBall
+	ScoreCard   gogolf.ScoreCard
+	CurrentClub gogolf.Club
+	Lie         gogolf.LieType
 }
 
 type ShotResult struct {
 	ClubName    string
-	Outcome     SkillCheckOutcome
+	Outcome     gogolf.SkillCheckOutcome
 	Margin      int
 	Description string
 	Rotation    float64
@@ -41,17 +42,17 @@ type ShotResult struct {
 	TapIn       bool
 }
 
-func NewGame(playerName string, holeCount int) *Game {
+func New(playerName string, holeCount int) *Game {
 	rng := rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64()))
-	return NewGameWithRandom(playerName, holeCount, rng)
+	return NewWithRandom(playerName, holeCount, rng)
 }
 
-func NewGameWithRandom(playerName string, holeCount int, rng RandomSource) *Game {
-	course, scoreCard := GenerateSimpleCourse(holeCount)
+func NewWithRandom(playerName string, holeCount int, rng gogolf.RandomSource) *Game {
+	course, scoreCard := gogolf.GenerateSimpleCourse(holeCount)
 	return &Game{
-		Golfer:           NewGolfer(playerName),
+		Golfer:           gogolf.NewGolfer(playerName),
 		Course:           course,
-		Ball:             GolfBall{Location: Point{X: 0, Y: 0}},
+		Ball:             gogolf.GolfBall{Location: gogolf.Point{X: 0, Y: 0}},
 		ScoreCard:        scoreCard,
 		CurrentHoleIndex: 0,
 		random:           rng,
@@ -63,16 +64,16 @@ func (g *Game) TeeUp() {
 	g.lastShotResult = nil
 }
 
-func (g *Game) GetCurrentHole() Hole {
+func (g *Game) GetCurrentHole() gogolf.Hole {
 	return g.Course.Holes[g.CurrentHoleIndex]
 }
 
-func (g *Game) GetGameContext() GameContext {
+func (g *Game) GetContext() Context {
 	hole := g.GetCurrentHole()
 	club := g.Golfer.GetBestClub(g.Ball.Location.Distance(hole.HoleLocation).Yards())
 	lie := g.Ball.GetLie(&hole)
 
-	return GameContext{
+	return Context{
 		Golfer:      g.Golfer,
 		Hole:        hole,
 		Ball:        g.Ball,
@@ -100,8 +101,8 @@ func (g *Game) TakeShot(power float64) ShotResult {
 
 	modifiedClub := g.Golfer.GetModifiedClub(club)
 
-	rotationDegrees := CalculateRotation(modifiedClub, result, g.random)
-	adjustedPower := CalculatePower(modifiedClub, power, result)
+	rotationDegrees := gogolf.CalculateRotation(modifiedClub, result, g.random)
+	adjustedPower := gogolf.CalculatePower(modifiedClub, power, result)
 
 	skill := g.Golfer.GetSkillForClub(club)
 	ability := g.Golfer.GetAbilityForClub(club)
@@ -152,11 +153,11 @@ func (g *Game) TakeShot(power float64) ShotResult {
 		ClubName:    club.Name,
 		Outcome:     result.Outcome,
 		Margin:      result.Margin,
-		Description: GetShotQualityDescription(result),
+		Description: gogolf.GetShotQualityDescription(result),
 		Rotation:    rotationDegrees,
 		RotationDir: rotationDir,
 		Power:       power,
-		Distance:    float64(Unit(ballPath.Magnitude()).Yards()),
+		Distance:    float64(gogolf.Unit(ballPath.Magnitude()).Yards()),
 		XPEarned:    xpAward,
 		LevelUps:    levelUps,
 		HoledOut:    holedOut,
@@ -167,25 +168,25 @@ func (g *Game) TakeShot(power float64) ShotResult {
 	return shotResult
 }
 
-func (g *Game) applyDraw(ballPath Vector, h Hole) {
+func (g *Game) applyDraw(ballPath gogolf.Vector, h gogolf.Hole) {
 	directionToHole := g.Ball.PrevLocation.Direction(h.HoleLocation)
 	drawRotationDegrees := -45
 	if directionToHole.Y < 0 {
 		drawRotationDegrees = 45
 	}
 	rotatedPath := ballPath.Rotate(float64(drawRotationDegrees))
-	translationDistance := Yard(math.Max(g.random.Float64()*3, 1)).Units()
+	translationDistance := gogolf.Yard(math.Max(g.random.Float64()*3, 1)).Units()
 	g.Ball.Location = g.Ball.Location.Move(rotatedPath, float64(translationDistance))
 }
 
-func (g *Game) applyFade(ballPath Vector, h Hole) {
+func (g *Game) applyFade(ballPath gogolf.Vector, h gogolf.Hole) {
 	directionToHole := g.Ball.PrevLocation.Direction(h.HoleLocation)
 	drawRotationDegrees := 45
 	if directionToHole.Y < 0 {
 		drawRotationDegrees = -45
 	}
 	rotatedPath := ballPath.Rotate(float64(drawRotationDegrees))
-	translationDistance := Yard(math.Max(g.random.Float64()*3, 1)).Units()
+	translationDistance := gogolf.Yard(math.Max(g.random.Float64()*3, 1)).Units()
 	g.Ball.Location = g.Ball.Location.Move(rotatedPath, float64(translationDistance))
 }
 
@@ -222,21 +223,21 @@ func (g *Game) GetLastShotResult() *ShotResult {
 	return g.lastShotResult
 }
 
-func calculateXP(outcome SkillCheckOutcome) int {
+func calculateXP(outcome gogolf.SkillCheckOutcome) int {
 	switch outcome {
-	case CriticalSuccess:
+	case gogolf.CriticalSuccess:
 		return 15
-	case Excellent:
+	case gogolf.Excellent:
 		return 10
-	case Good:
+	case gogolf.Good:
 		return 7
-	case Marginal:
+	case gogolf.Marginal:
 		return 5
-	case Poor:
+	case gogolf.Poor:
 		return 3
-	case Bad:
+	case gogolf.Bad:
 		return 2
-	case CriticalFailure:
+	case gogolf.CriticalFailure:
 		return 1
 	default:
 		return 1

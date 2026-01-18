@@ -4,10 +4,11 @@ import (
 	"fmt"
 
 	"gogolf"
+	"gogolf/game"
 	"gogolf/ui"
 )
 
-func buildGameState(ctx gogolf.GameContext, lastShot *ui.ShotDisplay, promptMsg string) ui.GameState {
+func buildGameState(ctx game.Context, lastShot *ui.ShotDisplay, promptMsg string) ui.GameState {
 	skills := make(map[string]ui.SkillDisplay)
 	for name, skill := range ctx.Golfer.Skills {
 		skills[name] = ui.SkillDisplay{
@@ -69,7 +70,7 @@ func buildGameState(ctx gogolf.GameContext, lastShot *ui.ShotDisplay, promptMsg 
 	}
 }
 
-func shotResultToDisplay(result gogolf.ShotResult) *ui.ShotDisplay {
+func shotResultToDisplay(result game.ShotResult) *ui.ShotDisplay {
 	return &ui.ShotDisplay{
 		ClubName:    result.ClubName,
 		Outcome:     result.Outcome.String(),
@@ -96,21 +97,21 @@ func main() {
 
 	renderer.Terminal.HideCursor()
 
-	game := gogolf.NewGame("Player", 3)
+	g := game.New("Player", 3)
 
-	for !game.IsRoundComplete() {
-		game.TeeUp()
+	for !g.IsRoundComplete() {
+		g.TeeUp()
 		var lastShot *ui.ShotDisplay
 
-		for !game.IsHoleComplete() {
-			ctx := game.GetGameContext()
+		for !g.IsHoleComplete() {
+			ctx := g.GetContext()
 			state := buildGameState(ctx, lastShot, fmt.Sprintf("Using %s", ctx.CurrentClub.Name))
 			renderer.Render(state)
 
 			powerMeter := ui.NewPowerMeter(renderer)
 			power := powerMeter.GetPower()
 
-			result := game.TakeShot(power)
+			result := g.TakeShot(power)
 			lastShot = shotResultToDisplay(result)
 
 			if result.TapIn {
@@ -122,10 +123,10 @@ func main() {
 			}
 		}
 
-		reward := game.CompleteHole()
-		ctx := game.GetGameContext()
+		reward := g.CompleteHole()
+		ctx := g.GetContext()
 		statusMsg := fmt.Sprintf("Hole %d Complete! %d strokes (%+d) | +%d money",
-			ctx.Hole.Number, game.StrokesThisHole(), ctx.ScoreCard.ScoreThisHole(ctx.Hole), reward)
+			ctx.Hole.Number, g.StrokesThisHole(), ctx.ScoreCard.ScoreThisHole(ctx.Hole), reward)
 		state := buildGameState(ctx, lastShot, "Press any key to continue...")
 		state.StatusMsg = statusMsg
 		renderer.Render(state)
@@ -134,15 +135,15 @@ func main() {
 		ui.WaitForAnyKey()
 		renderer.Terminal.HideCursor()
 
-		game.NextHole()
+		g.NextHole()
 	}
 
 	renderer.Terminal.Clear()
 	renderer.Terminal.ShowCursor()
 	fmt.Println("\n=== Round Complete ===")
-	fmt.Printf("Final Score: %d (%+d)\n", game.ScoreCard.TotalStrokes(), game.ScoreCard.Score())
-	fmt.Printf("Money: %d\n\n", game.Golfer.Money)
-	displayPlayerStats(game.Golfer)
+	fmt.Printf("Final Score: %d (%+d)\n", g.ScoreCard.TotalStrokes(), g.ScoreCard.Score())
+	fmt.Printf("Money: %d\n\n", g.Golfer.Money)
+	displayPlayerStats(g.Golfer)
 }
 
 func displayPlayerStats(golfer gogolf.Golfer) {
