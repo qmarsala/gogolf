@@ -1,23 +1,24 @@
-package shop
+package ui
 
 import (
 	"bufio"
 	"fmt"
 	"gogolf"
+	"gogolf/shop"
 	"io"
 	"strconv"
 	"strings"
 )
 
 type ShopUI struct {
-	shop   ProShop
+	shop   shop.ProShop
 	output io.Writer
 	reader *bufio.Reader
 }
 
-func NewShopUI(shop ProShop, output io.Writer, input io.Reader) *ShopUI {
+func NewShopUI(proshop shop.ProShop, output io.Writer, input io.Reader) *ShopUI {
 	return &ShopUI{
-		shop:   shop,
+		shop:   proshop,
 		output: output,
 		reader: bufio.NewReader(input),
 	}

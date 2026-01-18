@@ -281,7 +281,7 @@ func showPostRoundMenu(saveManager *persistence.SaveManager, golfer *gogolf.Golf
 
 		switch options[choice].Value {
 		case "shop":
-			shopUI := shop.NewShopUI(proshop, os.Stdout, os.Stdin)
+			shopUI := ui.NewShopUI(proshop, os.Stdout, os.Stdin)
 			shopUI.Show(golfer)
 		case "save":
 			showSaveMenu(saveManager, *golfer)
