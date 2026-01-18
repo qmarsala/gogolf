@@ -72,10 +72,10 @@ func TestLie_AffectsTargetNumber(t *testing.T) {
 		t.Errorf("Rough target (%v) should be higher than bunker (%v)", roughTarget, bunkerTarget)
 	}
 
-	expectedTee := 6
-	expectedFairway := 4
-	expectedRough := 2
-	expectedBunker := 0
+	expectedTee := 4
+	expectedFairway := 2
+	expectedRough := 0
+	expectedBunker := -2
 
 	if teeTarget != expectedTee {
 		t.Errorf("Tee target = %v, want %v", teeTarget, expectedTee)

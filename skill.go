@@ -15,7 +15,7 @@ func NewSkill(name string) Skill {
 }
 
 func (s Skill) Value() int {
-	return s.Level * 2
+	return s.Level
 }
 
 func (s *Skill) AddExperience(xp int) {
