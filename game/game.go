@@ -86,8 +86,8 @@ func (g *Game) GetCurrentHole() gogolf.Hole {
 
 func (g *Game) GetContext() Context {
 	hole := g.GetCurrentHole()
-	club := g.Golfer.GetBestClub(g.Ball.Location.Distance(hole.HoleLocation).Yards())
 	lie := g.Ball.GetLie(&hole)
+	club := g.Golfer.GetBestClubForLie(g.Ball.Location.Distance(hole.HoleLocation).Yards(), lie)
 
 	return Context{
 		Golfer:      g.Golfer,
@@ -105,10 +105,9 @@ func (g *Game) TakeShot(power float64) ShotResult {
 
 func (g *Game) TakeShotWithShape(power float64, shape gogolf.ShotShape) ShotResult {
 	hole := g.GetCurrentHole()
-	club := g.Golfer.GetBestClub(g.Ball.Location.Distance(hole.HoleLocation).Yards())
-	directionToHole := g.Ball.Location.Direction(hole.HoleLocation)
-
 	lie := g.Ball.GetLie(&hole)
+	club := g.Golfer.GetBestClubForLie(g.Ball.Location.Distance(hole.HoleLocation).Yards(), lie)
+	directionToHole := g.Ball.Location.Direction(hole.HoleLocation)
 	difficulty := lie.DifficultyModifier()
 
 	var targetNumber int
