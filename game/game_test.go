@@ -283,3 +283,14 @@ func TestTakeShotDefaultsToStraight(t *testing.T) {
 		t.Errorf("TakeShot without shape should default to Straight, got %v", result.IntendedShape)
 	}
 }
+
+func TestTakeShotReturnsTargetNumber(t *testing.T) {
+	g := New("TestPlayer", 3)
+	g.TeeUp()
+
+	result := g.TakeShotWithShape(0.8, gogolf.Straight)
+
+	if result.TargetNumber == 0 {
+		t.Error("expected TargetNumber to be set in shot result")
+	}
+}

@@ -192,3 +192,17 @@ func TestRenderer_printInPanel_Centered(t *testing.T) {
 
 	renderer.printInPanel(panel, 1, "Centered Text", true)
 }
+
+func TestShotDisplay_HasTargetNumber(t *testing.T) {
+	shot := ShotDisplay{
+		ClubName:     "Driver",
+		Outcome:      "Good",
+		Margin:       2,
+		TargetNumber: 12,
+		DiceRolls:    []int{3, 4, 3},
+	}
+
+	if shot.TargetNumber != 12 {
+		t.Errorf("ShotDisplay.TargetNumber = %d, want 12", shot.TargetNumber)
+	}
+}
