@@ -1,15 +1,16 @@
-package gogolf
+package mechanics
 
 import (
+	"gogolf"
 	"math"
 	"math/rand/v2"
 	"testing"
 )
 
 func TestCalculateRotation_CriticalSuccess(t *testing.T) {
-	club := Club{Name: "Driver", Distance: 280, Accuracy: 0.75, Forgiveness: 0.8}
-	result := SkillCheckResult{
-		Outcome: CriticalSuccess,
+	club := gogolf.Club{Name: "Driver", Distance: 280, Accuracy: 0.75, Forgiveness: 0.8}
+	result := gogolf.SkillCheckResult{
+		Outcome: gogolf.CriticalSuccess,
 		Margin:  7,
 	}
 	random := rand.New(rand.NewPCG(1, 2))
@@ -17,7 +18,6 @@ func TestCalculateRotation_CriticalSuccess(t *testing.T) {
 	rotation := CalculateRotation(club, result, random)
 	clubAcc := float64(club.AccuracyDegrees())
 
-	// Critical success should have minimal rotation (10% of normal spread)
 	maxExpected := clubAcc * 0.1
 	if rotation < 0 || rotation > maxExpected {
 		t.Errorf("CriticalSuccess rotation = %.2f, expected 0 to %.2f", rotation, maxExpected)
@@ -25,9 +25,9 @@ func TestCalculateRotation_CriticalSuccess(t *testing.T) {
 }
 
 func TestCalculateRotation_Excellent(t *testing.T) {
-	club := Club{Name: "7 Iron", Distance: 180, Accuracy: 0.9, Forgiveness: 0.8}
-	result := SkillCheckResult{
-		Outcome: Excellent,
+	club := gogolf.Club{Name: "7 Iron", Distance: 180, Accuracy: 0.9, Forgiveness: 0.8}
+	result := gogolf.SkillCheckResult{
+		Outcome: gogolf.Excellent,
 		Margin:  5,
 	}
 	random := rand.New(rand.NewPCG(1, 2))
@@ -35,7 +35,6 @@ func TestCalculateRotation_Excellent(t *testing.T) {
 	rotation := CalculateRotation(club, result, random)
 	clubAcc := float64(club.AccuracyDegrees())
 
-	// Excellent should have reduced spread (50% of normal)
 	maxExpected := clubAcc * 0.5
 	if rotation < 0 || rotation > maxExpected {
 		t.Errorf("Excellent rotation = %.2f, expected 0 to %.2f", rotation, maxExpected)
@@ -43,25 +42,24 @@ func TestCalculateRotation_Excellent(t *testing.T) {
 }
 
 func TestCalculateRotation_Good(t *testing.T) {
-	club := Club{Name: "Putter", Distance: 40, Accuracy: 1.0, Forgiveness: 0.95}
-	result := SkillCheckResult{
-		Outcome: Good,
+	club := gogolf.Club{Name: "Putter", Distance: 40, Accuracy: 1.0, Forgiveness: 0.95}
+	result := gogolf.SkillCheckResult{
+		Outcome: gogolf.Good,
 		Margin:  2,
 	}
 	random := rand.New(rand.NewPCG(1, 2))
 
 	rotation := CalculateRotation(club, result, random)
 
-	// Good should be >= 0 (margin reduces rotation)
 	if rotation < 0 {
 		t.Errorf("Good rotation = %.2f, expected >= 0", rotation)
 	}
 }
 
 func TestCalculateRotation_Marginal(t *testing.T) {
-	club := Club{Name: "SW", Distance: 125, Accuracy: 0.95, Forgiveness: 0.8}
-	result := SkillCheckResult{
-		Outcome: Marginal,
+	club := gogolf.Club{Name: "SW", Distance: 125, Accuracy: 0.95, Forgiveness: 0.8}
+	result := gogolf.SkillCheckResult{
+		Outcome: gogolf.Marginal,
 		Margin:  0,
 	}
 	random := rand.New(rand.NewPCG(1, 2))
@@ -69,7 +67,6 @@ func TestCalculateRotation_Marginal(t *testing.T) {
 	rotation := CalculateRotation(club, result, random)
 	clubAcc := float64(club.AccuracyDegrees())
 
-	// Marginal should be up to 90% of club accuracy
 	maxExpected := clubAcc * 0.9
 	if rotation < 0 || rotation > maxExpected {
 		t.Errorf("Marginal rotation = %.2f, expected 0 to %.2f", rotation, maxExpected)
@@ -77,25 +74,24 @@ func TestCalculateRotation_Marginal(t *testing.T) {
 }
 
 func TestCalculateRotation_Poor(t *testing.T) {
-	club := Club{Name: "3 Wood", Distance: 250, Accuracy: 0.8, Forgiveness: 0.8}
-	result := SkillCheckResult{
-		Outcome: Poor,
+	club := gogolf.Club{Name: "3 Wood", Distance: 250, Accuracy: 0.8, Forgiveness: 0.8}
+	result := gogolf.SkillCheckResult{
+		Outcome: gogolf.Poor,
 		Margin:  -2,
 	}
 	random := rand.New(rand.NewPCG(1, 2))
 
 	rotation := CalculateRotation(club, result, random)
 
-	// Poor should have at least 1 degree rotation
 	if rotation < 1 {
 		t.Errorf("Poor rotation = %.2f, expected >= 1", rotation)
 	}
 }
 
 func TestCalculateRotation_Bad(t *testing.T) {
-	club := Club{Name: "4 Iron", Distance: 215, Accuracy: 0.85, Forgiveness: 0.8}
-	result := SkillCheckResult{
-		Outcome: Bad,
+	club := gogolf.Club{Name: "4 Iron", Distance: 215, Accuracy: 0.85, Forgiveness: 0.8}
+	result := gogolf.SkillCheckResult{
+		Outcome: gogolf.Bad,
 		Margin:  -5,
 	}
 	random := rand.New(rand.NewPCG(1, 2))
@@ -106,7 +102,7 @@ func TestCalculateRotation_Bad(t *testing.T) {
 		t.Errorf("Bad rotation = %.2f, expected >= 1", rotation)
 	}
 
-	poorResult := SkillCheckResult{Outcome: Poor, Margin: -2}
+	poorResult := gogolf.SkillCheckResult{Outcome: gogolf.Poor, Margin: -2}
 	poorRotation := CalculateRotation(club, poorResult, rand.New(rand.NewPCG(1, 2)))
 
 	if rotation <= poorRotation {
@@ -116,24 +112,23 @@ func TestCalculateRotation_Bad(t *testing.T) {
 }
 
 func TestCalculateRotation_CriticalFailure(t *testing.T) {
-	club := Club{Name: "Driver", Distance: 280, Accuracy: 0.75, Forgiveness: 0.8}
-	result := SkillCheckResult{
-		Outcome: CriticalFailure,
+	club := gogolf.Club{Name: "Driver", Distance: 280, Accuracy: 0.75, Forgiveness: 0.8}
+	result := gogolf.SkillCheckResult{
+		Outcome: gogolf.CriticalFailure,
 		Margin:  -8,
 	}
 	random := rand.New(rand.NewPCG(1, 2))
 
 	rotation := CalculateRotation(club, result, random)
 
-	// Critical failure should be 60-90 degrees
 	if rotation < 60 || rotation > 90 {
 		t.Errorf("CriticalFailure rotation = %.2f, expected 60 to 90", rotation)
 	}
 }
 
 func TestCalculatePower_CriticalSuccess(t *testing.T) {
-	club := Club{Name: "Driver", Accuracy: 0.75, Forgiveness: 0.8}
-	result := SkillCheckResult{Outcome: CriticalSuccess, Margin: 7}
+	club := gogolf.Club{Name: "Driver", Accuracy: 0.75, Forgiveness: 0.8}
+	result := gogolf.SkillCheckResult{Outcome: gogolf.CriticalSuccess, Margin: 7}
 	initialPower := 1.0
 
 	power := CalculatePower(club, initialPower, result)
@@ -145,20 +140,20 @@ func TestCalculatePower_CriticalSuccess(t *testing.T) {
 }
 
 func TestCalculatePower_ExcellentAndGood(t *testing.T) {
-	club := Club{Name: "7 Iron", Accuracy: 0.9, Forgiveness: 0.8}
+	club := gogolf.Club{Name: "7 Iron", Accuracy: 0.9, Forgiveness: 0.8}
 	initialPower := 0.85
 
 	tests := []struct {
-		outcome  SkillCheckOutcome
+		outcome  gogolf.SkillCheckOutcome
 		margin   int
 		expected float64
 	}{
-		{Excellent, 5, 0.85},
-		{Good, 2, 0.85},
+		{gogolf.Excellent, 5, 0.85},
+		{gogolf.Good, 2, 0.85},
 	}
 
 	for _, tt := range tests {
-		result := SkillCheckResult{Outcome: tt.outcome, Margin: tt.margin}
+		result := gogolf.SkillCheckResult{Outcome: tt.outcome, Margin: tt.margin}
 		power := CalculatePower(club, initialPower, result)
 
 		if !floatEquals(power, tt.expected, 0.001) {
@@ -168,8 +163,8 @@ func TestCalculatePower_ExcellentAndGood(t *testing.T) {
 }
 
 func TestCalculatePower_Marginal(t *testing.T) {
-	club := Club{Name: "Putter", Accuracy: 1.0, Forgiveness: 0.95}
-	result := SkillCheckResult{Outcome: Marginal, Margin: 0}
+	club := gogolf.Club{Name: "Putter", Accuracy: 1.0, Forgiveness: 0.95}
+	result := gogolf.SkillCheckResult{Outcome: gogolf.Marginal, Margin: 0}
 	initialPower := 1.0
 
 	power := CalculatePower(club, initialPower, result)
@@ -181,8 +176,8 @@ func TestCalculatePower_Marginal(t *testing.T) {
 }
 
 func TestCalculatePower_Poor(t *testing.T) {
-	club := Club{Name: "SW", Accuracy: 0.95, Forgiveness: 0.8}
-	result := SkillCheckResult{Outcome: Poor, Margin: -2}
+	club := gogolf.Club{Name: "SW", Accuracy: 0.95, Forgiveness: 0.8}
+	result := gogolf.SkillCheckResult{Outcome: gogolf.Poor, Margin: -2}
 	initialPower := 1.0
 
 	power := CalculatePower(club, initialPower, result)
@@ -198,8 +193,8 @@ func TestCalculatePower_Poor(t *testing.T) {
 }
 
 func TestCalculatePower_Bad(t *testing.T) {
-	club := Club{Name: "3 Wood", Accuracy: 0.8, Forgiveness: 0.8}
-	result := SkillCheckResult{Outcome: Bad, Margin: -5}
+	club := gogolf.Club{Name: "3 Wood", Accuracy: 0.8, Forgiveness: 0.8}
+	result := gogolf.SkillCheckResult{Outcome: gogolf.Bad, Margin: -5}
 	initialPower := 1.0
 
 	power := CalculatePower(club, initialPower, result)
@@ -209,7 +204,7 @@ func TestCalculatePower_Bad(t *testing.T) {
 		t.Errorf("Bad power = %.3f, expected %.3f", power, expected)
 	}
 
-	poorResult := SkillCheckResult{Outcome: Poor, Margin: -5}
+	poorResult := gogolf.SkillCheckResult{Outcome: gogolf.Poor, Margin: -5}
 	poorPower := CalculatePower(club, initialPower, poorResult)
 
 	if power >= poorPower {
@@ -218,8 +213,8 @@ func TestCalculatePower_Bad(t *testing.T) {
 }
 
 func TestCalculatePower_CriticalFailure(t *testing.T) {
-	club := Club{Name: "Driver", Accuracy: 0.75, Forgiveness: 0.8}
-	result := SkillCheckResult{Outcome: CriticalFailure, Margin: -8}
+	club := gogolf.Club{Name: "Driver", Accuracy: 0.75, Forgiveness: 0.8}
+	result := gogolf.SkillCheckResult{Outcome: gogolf.CriticalFailure, Margin: -8}
 	initialPower := 1.0
 
 	power := CalculatePower(club, initialPower, result)
@@ -231,8 +226,8 @@ func TestCalculatePower_CriticalFailure(t *testing.T) {
 }
 
 func TestCalculatePower_FloorEnforcement(t *testing.T) {
-	club := Club{Name: "Driver", Accuracy: 0.75, Forgiveness: 0.5}
-	result := SkillCheckResult{Outcome: Poor, Margin: -100}
+	club := gogolf.Club{Name: "Driver", Accuracy: 0.75, Forgiveness: 0.5}
+	result := gogolf.SkillCheckResult{Outcome: gogolf.Poor, Margin: -100}
 	initialPower := 1.0
 
 	power := CalculatePower(club, initialPower, result)
@@ -243,8 +238,8 @@ func TestCalculatePower_FloorEnforcement(t *testing.T) {
 }
 
 func TestCalculatePower_ScalesWithInitialPower(t *testing.T) {
-	club := Club{Name: "7 Iron", Accuracy: 0.9, Forgiveness: 0.8}
-	result := SkillCheckResult{Outcome: Good, Margin: 2}
+	club := gogolf.Club{Name: "7 Iron", Accuracy: 0.9, Forgiveness: 0.8}
+	result := gogolf.SkillCheckResult{Outcome: gogolf.Good, Margin: 2}
 
 	tests := []float64{0.5, 0.75, 1.0, 1.25}
 
@@ -260,20 +255,20 @@ func TestCalculatePower_ScalesWithInitialPower(t *testing.T) {
 
 func TestGetShotQualityDescription_AllOutcomes(t *testing.T) {
 	tests := []struct {
-		outcome       SkillCheckOutcome
+		outcome       gogolf.SkillCheckOutcome
 		shouldContain string
 	}{
-		{CriticalSuccess, "PURE STRIKE"},
-		{Excellent, "Great shot"},
-		{Good, "Good contact"},
-		{Marginal, "Just caught it"},
-		{Poor, "Slight miss"},
-		{Bad, "Poor contact"},
-		{CriticalFailure, "DISASTER"},
+		{gogolf.CriticalSuccess, "PURE STRIKE"},
+		{gogolf.Excellent, "Great shot"},
+		{gogolf.Good, "Good contact"},
+		{gogolf.Marginal, "Just caught it"},
+		{gogolf.Poor, "Slight miss"},
+		{gogolf.Bad, "Poor contact"},
+		{gogolf.CriticalFailure, "DISASTER"},
 	}
 
 	for _, tt := range tests {
-		result := SkillCheckResult{Outcome: tt.outcome}
+		result := gogolf.SkillCheckResult{Outcome: tt.outcome}
 		description := GetShotQualityDescription(result)
 
 		if description == "" {
@@ -285,13 +280,13 @@ func TestGetShotQualityDescription_AllOutcomes(t *testing.T) {
 }
 
 func TestCalculateRotation_DifferentClubs(t *testing.T) {
-	clubs := []Club{
+	clubs := []gogolf.Club{
 		{Name: "Driver", Accuracy: 0.75, Forgiveness: 0.8},
 		{Name: "7 Iron", Accuracy: 0.9, Forgiveness: 0.8},
 		{Name: "Putter", Accuracy: 1.0, Forgiveness: 0.95},
 	}
 
-	result := SkillCheckResult{Outcome: Good, Margin: 2}
+	result := gogolf.SkillCheckResult{Outcome: gogolf.Good, Margin: 2}
 	random := rand.New(rand.NewPCG(1, 2))
 
 	for _, club := range clubs {
