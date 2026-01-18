@@ -115,7 +115,7 @@ func main() {
 				lastShot.Description += " (Tap in)"
 			}
 
-			if result.HoledOut || result.TapIn {
+			if result.HoledOut {
 				break
 			}
 		}

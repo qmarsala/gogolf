@@ -142,6 +142,7 @@ func (g *Game) TakeShot(power float64) ShotResult {
 	tapIn := !holedOut && hole.DetectTapIn(g.Ball)
 
 	if tapIn {
+		holedOut = true
 		g.ScoreCard.RecordStroke(hole)
 	}
 
@@ -187,7 +188,7 @@ func (g *Game) applyFade(ballPath Vector, h Hole) {
 }
 
 func (g *Game) IsHoleComplete() bool {
-	if g.lastShotResult != nil && (g.lastShotResult.HoledOut || g.lastShotResult.TapIn) {
+	if g.lastShotResult != nil && g.lastShotResult.HoledOut {
 		return true
 	}
 	return g.StrokesThisHole() >= 11
