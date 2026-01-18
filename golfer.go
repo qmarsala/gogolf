@@ -96,6 +96,30 @@ func (g Golfer) GetBestClub(distance Yard) Club {
 	return c
 }
 
+func (g Golfer) GetBestClubForLie(distance Yard, lie LieType) Club {
+	if lie == Green {
+		for _, club := range g.Clubs {
+			if club.Name == "Putter" {
+				return club
+			}
+		}
+	}
+
+	c := g.Clubs[0]
+	closetDiff := float64(1000)
+	for _, v := range g.Clubs {
+		if v.Name == "Putter" {
+			continue
+		}
+		diff := math.Abs(float64(v.Distance) - float64(distance))
+		if diff <= closetDiff && v.Distance >= distance {
+			closetDiff = diff
+			c = v
+		}
+	}
+	return c
+}
+
 func (g Golfer) SkillCheck(d DiceRoller, targetNumber int) SkillCheckResult {
 	total, rolls := d.RollN(3)
 	margin := targetNumber - total
