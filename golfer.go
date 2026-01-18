@@ -120,8 +120,6 @@ func determineOutcome(margin int, isCritical bool) SkillCheckOutcome {
 	}
 
 	switch {
-	case margin >= 7:
-		return CriticalSuccess
 	case margin >= 4:
 		return Excellent
 	case margin >= 1:

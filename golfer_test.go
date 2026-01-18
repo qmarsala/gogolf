@@ -42,7 +42,7 @@ func TestGolfer_GetSkillForClub(t *testing.T) {
 	golfer := NewGolfer("Test")
 
 	tests := []struct {
-		clubName     string
+		clubName      string
 		expectedSkill string
 	}{
 		{"Driver", "Driver"},
@@ -103,10 +103,10 @@ func TestGolfer_CalculateTargetNumber_WithDifficulty(t *testing.T) {
 		difficulty int
 		expected   int
 	}{
-		{0, 14},   // Fairway: 6 + 8 + 0 = 14
-		{-2, 12},  // Rough: 6 + 8 + (-2) = 12
-		{-4, 10},  // Bunker: 6 + 8 + (-4) = 10
-		{2, 16},   // Tee: 6 + 8 + 2 = 16
+		{0, 14},  // Fairway: 6 + 8 + 0 = 14
+		{-2, 12}, // Rough: 6 + 8 + (-2) = 12
+		{-4, 10}, // Bunker: 6 + 8 + (-4) = 10
+		{2, 16},  // Tee: 6 + 8 + 2 = 16
 	}
 
 	for _, tt := range tests {
@@ -127,19 +127,19 @@ func TestGolfer_GetAbilityForClub(t *testing.T) {
 		clubName        string
 		expectedAbility string
 	}{
-		{"Driver", "Strength"},      // Woods use Strength
+		{"Driver", "Strength"}, // Woods use Strength
 		{"3 Wood", "Strength"},
-		{"4 Iron", "Control"},       // Long irons use Control
+		{"4 Iron", "Control"}, // Long irons use Control
 		{"5 Iron", "Control"},
-		{"6 Iron", "Control"},       // Mid irons use Control
+		{"6 Iron", "Control"}, // Mid irons use Control
 		{"7 Iron", "Control"},
-		{"8 Iron", "Touch"},         // Short irons use Touch
+		{"8 Iron", "Touch"}, // Short irons use Touch
 		{"9 Iron", "Touch"},
-		{"PW", "Touch"},             // Wedges use Touch
+		{"PW", "Touch"}, // Wedges use Touch
 		{"GW", "Touch"},
 		{"SW", "Touch"},
 		{"LW", "Touch"},
-		{"Putter", "Mental"},        // Putter uses Mental
+		{"Putter", "Mental"}, // Putter uses Mental
 	}
 
 	for _, tt := range tests {
@@ -200,10 +200,9 @@ func TestDetermineOutcome_MarginBased(t *testing.T) {
 		isCritical bool
 		expected   SkillCheckOutcome
 	}{
-		{"Margin +7", 7, false, CriticalSuccess},
-		{"Margin +8", 8, false, CriticalSuccess},
-		{"Margin +10", 10, false, CriticalSuccess},
-
+		{"Margin +7", 7, false, Excellent},
+		{"Margin +8", 8, false, Excellent},
+		{"Margin +10", 10, false, Excellent},
 		{"Margin +6", 6, false, Excellent},
 		{"Margin +5", 5, false, Excellent},
 		{"Margin +4", 4, false, Excellent},
@@ -221,7 +220,6 @@ func TestDetermineOutcome_MarginBased(t *testing.T) {
 		{"Margin -4", -4, false, Bad},
 		{"Margin -5", -5, false, Bad},
 		{"Margin -6", -6, false, Bad},
-
 		{"Margin -7", -7, false, Bad},
 		{"Margin -8", -8, false, Bad},
 		{"Margin -10", -10, false, Bad},
@@ -271,11 +269,9 @@ func TestDetermineOutcome_TierBoundaries(t *testing.T) {
 		margin   int
 		expected SkillCheckOutcome
 	}{
-		{"Just below Critical Success", 6, Excellent},
-		{"Just at Critical Success", 7, CriticalSuccess},
-
 		{"Just below Excellent", 3, Good},
 		{"Just at Excellent", 4, Excellent},
+		{"High margin still Excellent", 7, Excellent},
 
 		{"Just below Good", 0, Marginal},
 		{"Just at Good", 1, Good},
