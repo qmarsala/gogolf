@@ -171,6 +171,7 @@ func (g Golfer) GetAbilityForClub(club Club) Ability {
 
 // CalculateTargetNumber computes target number for skill check
 // Formula: skillValue + abilityValue + difficultyModifier + equipmentBonuses
+// Minimum target is 3 (the lowest possible 3d6 roll)
 func (g Golfer) CalculateTargetNumber(club Club, difficulty int) int {
 	skill := g.GetSkillForClub(club)
 	ability := g.GetAbilityForClub(club)
@@ -178,7 +179,11 @@ func (g Golfer) CalculateTargetNumber(club Club, difficulty int) int {
 	// Apply shoes bonus to reduce lie penalties
 	adjustedDifficulty := difficulty + g.GetTotalLiePenaltyReduction()
 
-	return skill.Value() + ability.Value() + adjustedDifficulty
+	target := skill.Value() + ability.Value() + adjustedDifficulty
+	if target < 3 {
+		return 3
+	}
+	return target
 }
 
 // CalculateTargetNumberWithShape computes target number including shot shape difficulty

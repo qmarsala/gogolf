@@ -310,7 +310,7 @@ func TestGolfer_CalculateTargetNumber_DynamicWithLevels(t *testing.T) {
 	difficulty := 0
 
 	targetNumber := golfer.CalculateTargetNumber(driverClub, difficulty)
-	expectedInitial := 2
+	expectedInitial := 3 // Raw value 2 clamped to minimum of 3
 
 	if targetNumber != expectedInitial {
 		t.Errorf("Initial target number = %v, want %v", targetNumber, expectedInitial)
@@ -407,7 +407,9 @@ func TestGolfer_CalculateTargetNumberWithShape(t *testing.T) {
 
 func TestGolfer_DrawFadeEasierThanStraight(t *testing.T) {
 	golfer := NewGolfer("Test")
-	club := Club{Name: "7-Iron"}
+	golfer.Skills["Mid Irons"] = Skill{Name: "Mid Irons", Level: 5, Experience: 0}
+	golfer.Abilities["Control"] = Ability{Name: "Control", Level: 5, Experience: 0}
+	club := Club{Name: "7 Iron"}
 
 	straightTarget := golfer.CalculateTargetNumberWithShape(club, 0, Straight)
 	drawTarget := golfer.CalculateTargetNumberWithShape(club, 0, Draw)

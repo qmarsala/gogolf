@@ -34,6 +34,8 @@ func TestGolfer_GetTotalLiePenaltyReduction_WithShoes(t *testing.T) {
 
 func TestCalculateTargetNumber_WithShoesBonus(t *testing.T) {
 	golfer := gogolf.NewGolfer("TestPlayer")
+	golfer.Skills["Driver"] = gogolf.Skill{Name: "Driver", Level: 5, Experience: 0}
+	golfer.Abilities["Strength"] = gogolf.Ability{Name: "Strength", Level: 5, Experience: 0}
 	club := gogolf.Club{Name: "Driver"}
 
 	baseTarget := golfer.CalculateTargetNumber(club, -2)

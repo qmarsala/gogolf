@@ -53,6 +53,8 @@ func TestLieType_DifficultyModifier(t *testing.T) {
 
 func TestLie_AffectsTargetNumber(t *testing.T) {
 	golfer := NewGolfer("TestPlayer")
+	golfer.Skills["Driver"] = Skill{Name: "Driver", Level: 5, Experience: 0}
+	golfer.Abilities["Strength"] = Ability{Name: "Strength", Level: 5, Experience: 0}
 	club := Club{Name: "Driver"}
 
 	teeTarget := golfer.CalculateTargetNumber(club, Tee.DifficultyModifier())
@@ -72,10 +74,10 @@ func TestLie_AffectsTargetNumber(t *testing.T) {
 		t.Errorf("Rough target (%v) should be higher than bunker (%v)", roughTarget, bunkerTarget)
 	}
 
-	expectedTee := 4
-	expectedFairway := 2
-	expectedRough := 0
-	expectedBunker := -2
+	expectedTee := 12
+	expectedFairway := 10
+	expectedRough := 8
+	expectedBunker := 6
 
 	if teeTarget != expectedTee {
 		t.Errorf("Tee target = %v, want %v", teeTarget, expectedTee)
