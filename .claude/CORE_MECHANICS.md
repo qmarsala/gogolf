@@ -14,13 +14,13 @@ This document captures the implemented game mechanics for reference when adding 
 **7-Tier Outcome System:**
 | Tier | Condition | XP Award |
 |------|-----------|----------|
-| Critical Success | All dice match + high margin | 15 |
+| Critical Success | All dice match | 15 |
 | Excellent | Margin +6 or more | 10 |
 | Good | Margin +3 to +5 | 7 |
 | Marginal | Margin 0 to +2 | 5 |
 | Poor | Margin -1 to -3 | 3 |
 | Bad | Margin -4 to -6 | 2 |
-| Critical Failure | All dice match + low margin | 1 |
+| Critical Failure | All dice match | 1 |
 
 ---
 
@@ -45,7 +45,7 @@ Club proficiencies:
 
 ### Leveling System
 - Levels: 1-9 (max)
-- Value contribution: `level * 2`
+- Value contribution: `level`
 - XP to next level: `(level + 1) * 50`
 - XP awarded after each shot to relevant skill and ability
 - Overflow XP carries to next level
@@ -70,12 +70,12 @@ targetNumber = skill.Value() + ability.Value() + lieDifficulty - shoePenaltyRedu
 ```
 
 **Example (Level 1 golfer, Driver from Tee):**
-- Skill value: 1 * 2 = 2
-- Ability value: 1 * 2 = 2
+- Skill value: 1
+- Ability value: 1
 - Tee lie bonus: +2
-- Target: 6
+- Target: 4
 
-Higher target numbers are easier to achieve (roll + modifiers must meet or exceed target).
+Successful rolls are when you roll at or below your target number
 
 ---
 
@@ -186,7 +186,7 @@ xpRequired = (currentLevel + 1) * 50
 
 **Skill/Ability value:**
 ```
-value = level * 2
+value = level
 ```
 
 **Target number:**
