@@ -230,8 +230,13 @@ func main() {
 			state := buildGameState(ctx, lastShot, fmt.Sprintf("Using %s", ctx.CurrentClub.Name))
 			renderer.Render(state)
 
-			shapeSelector := ui.NewShotShapeSelector(renderer)
-			shape := shapeSelector.SelectShotShape()
+			var shape gogolf.ShotShape
+			if ctx.CurrentClub.Name == "Putter" {
+				shape = gogolf.Straight
+			} else {
+				shapeSelector := ui.NewShotShapeSelector(renderer)
+				shape = shapeSelector.SelectShotShape()
+			}
 
 			modifiedClub := ctx.Golfer.GetModifiedClub(ctx.CurrentClub)
 			powerMeter := ui.NewPowerMeter(renderer)
