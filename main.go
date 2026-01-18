@@ -5,7 +5,6 @@ import (
 	"gogolf/ui"
 	"math"
 	"math/rand/v2"
-	"os"
 )
 
 // things to explore:
@@ -213,19 +212,13 @@ func main() {
 		reward := CalculateHoleReward(h.Par, scoreCard.TotalStrokesThisHole(h))
 		statusMsg := fmt.Sprintf("Hole %d Complete! %d strokes (%+d) | +%d money",
 			h.Number, scoreCard.TotalStrokesThisHole(h), scoreCard.ScoreThisHole(h), reward)
-		state := buildGameState(golfer, h, ball, scoreCard, lastShot, "Press Enter to continue...")
+		state := buildGameState(golfer, h, ball, scoreCard, lastShot, "Press any key to continue...")
 		state.StatusMsg = statusMsg
 		renderer.Render(state)
 
 		// Wait for user to press any key to continue
-		promptRow := renderer.Layout.LeftPanel.Height - 1
-		renderer.Terminal.MoveCursor(promptRow, renderer.Layout.LeftPanel.X+2)
-		fmt.Print("Press any key to continue...")
 		renderer.Terminal.ShowCursor()
-
-		// Read single byte (any keypress)
-		buf := make([]byte, 1)
-		os.Stdin.Read(buf)
+		ui.WaitForAnyKey()
 		renderer.Terminal.HideCursor()
 	}
 
