@@ -2,13 +2,15 @@
 
 ## Completed Work
 
-Phases 1-4 are complete. See [CORE_MECHANICS.md](CORE_MECHANICS.md) for documentation of implemented systems:
+Phases 1-6 are complete. See [CORE_MECHANICS.md](CORE_MECHANICS.md) for documentation of implemented systems:
 - Skills & Abilities System (PR #2)
 - Main Game Loop Integration (PR #3)
 - Course Grid & Lie System (PR #4)
 - Equipment System & ProShop (PR #5)
+- Save/Load System (PR #15)
+- ProShop UI & Browsing (PR #16)
 
-**Current test count:** 204 tests passing
+**Current test count:** 260 tests passing
 
 ---
 
@@ -39,7 +41,7 @@ Phases 1-4 are complete. See [CORE_MECHANICS.md](CORE_MECHANICS.md) for document
 
 ---
 
-## Phase 6: ProShop UI & Browsing
+## Phase 6: ProShop UI & Browsing ✅
 **Priority: MEDIUM** - Enhance equipment shopping experience
 
 ### Requirements
@@ -50,12 +52,13 @@ Phases 1-4 are complete. See [CORE_MECHANICS.md](CORE_MECHANICS.md) for document
 - Allow browsing without purchasing
 
 ### Implementation Tasks
-1. Create `DisplayProShop()` function to show inventory
-2. Create equipment comparison display (current vs. available)
-3. Add interactive menu for browsing categories (Balls/Gloves/Shoes)
-4. Add purchase confirmation prompts
-5. Integrate ProShop access into main game loop (e.g., between rounds)
-6. Display money and current equipment when entering shop
+1. ✅ Create `ShopUI` struct with testable I/O
+2. ✅ Create equipment formatting functions (balls, gloves, shoes)
+3. ✅ Add interactive menu for browsing categories (Balls/Gloves/Shoes)
+4. ✅ Add purchase confirmation prompts
+5. ✅ Integrate ProShop access into main game loop (post-round menu)
+6. ✅ Display money and current equipment when entering shop
+7. ✅ Show affordability indicator for items beyond player's budget
 
 ### Example UI Flow
 ```
@@ -104,14 +107,12 @@ Purchase Premium Ball for 50 money? (y/n)
 - Sprint 3: Course Depth (Lie System)
 - Sprint 4: Progression (Equipment)
 
-### Next Up
-**Sprint 5: Persistence**
-- Save/load system
-- Auto-save functionality
-- Multiple save slots
+### Completed
+- Sprint 5: Persistence (Save/Load)
+- Sprint 6: ProShop UI
 
-**Sprint 6: Polish**
-- ProShop browsing UI
+### Next Up
+**Sprint 7: Polish**
 - Advanced course features
 - Additional UI improvements
 

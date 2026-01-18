@@ -8,6 +8,7 @@ import (
 	"gogolf"
 	"gogolf/game"
 	"gogolf/persistence"
+	"gogolf/shop"
 	"gogolf/ui"
 )
 
@@ -263,8 +264,32 @@ func main() {
 	fmt.Printf("Money: %d\n\n", g.Golfer.Money)
 	displayPlayerStats(g.Golfer)
 
-	fmt.Println("\nWould you like to save your progress?")
-	showSaveMenu(saveManager, g.Golfer)
+	showPostRoundMenu(saveManager, &g.Golfer)
+}
+
+func showPostRoundMenu(saveManager *persistence.SaveManager, golfer *gogolf.Golfer) {
+	proshop := shop.NewProShop()
+
+	for {
+		options := []ui.MenuOption{
+			{Label: "Visit ProShop", Value: "shop"},
+			{Label: "Save Game", Value: "save"},
+			{Label: "Quit", Value: "quit"},
+		}
+
+		choice := ui.ShowMenu("What would you like to do?", options)
+
+		switch options[choice].Value {
+		case "shop":
+			shopUI := ui.NewShopUI(proshop, os.Stdout, os.Stdin)
+			shopUI.Show(golfer)
+		case "save":
+			showSaveMenu(saveManager, *golfer)
+		case "quit":
+			fmt.Println("Thanks for playing!")
+			return
+		}
+	}
 }
 
 func displayPlayerStats(golfer gogolf.Golfer) {
