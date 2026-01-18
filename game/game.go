@@ -3,6 +3,7 @@ package game
 import (
 	"gogolf"
 	"gogolf/dice"
+	"gogolf/mechanics"
 	"gogolf/progression"
 	"math"
 	"math/rand/v2"
@@ -101,8 +102,8 @@ func (g *Game) TakeShot(power float64) ShotResult {
 
 	modifiedClub := g.Golfer.GetModifiedClub(club)
 
-	rotationDegrees := gogolf.CalculateRotation(modifiedClub, result, g.random)
-	adjustedPower := gogolf.CalculatePower(modifiedClub, power, result)
+	rotationDegrees := mechanics.CalculateRotation(modifiedClub, result, g.random)
+	adjustedPower := mechanics.CalculatePower(modifiedClub, power, result)
 
 	skill := g.Golfer.GetSkillForClub(club)
 	ability := g.Golfer.GetAbilityForClub(club)
@@ -153,7 +154,7 @@ func (g *Game) TakeShot(power float64) ShotResult {
 		ClubName:    club.Name,
 		Outcome:     result.Outcome,
 		Margin:      result.Margin,
-		Description: gogolf.GetShotQualityDescription(result),
+		Description: mechanics.GetShotQualityDescription(result),
 		Rotation:    rotationDegrees,
 		RotationDir: rotationDir,
 		Power:       power,
