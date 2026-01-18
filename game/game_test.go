@@ -233,3 +233,53 @@ func TestNewFromGolferPreservesAbilities(t *testing.T) {
 		t.Errorf("expected Strength XP 50, got %d", g.Golfer.Abilities["Strength"].Experience)
 	}
 }
+
+func TestTakeShotWithShape(t *testing.T) {
+	g := New("TestPlayer", 3)
+	g.TeeUp()
+
+	shapes := []gogolf.ShotShape{gogolf.Straight, gogolf.Draw, gogolf.Fade, gogolf.Hook, gogolf.Slice}
+
+	for _, shape := range shapes {
+		g.TeeUp()
+		result := g.TakeShotWithShape(0.8, shape)
+
+		if result.IntendedShape != shape {
+			t.Errorf("TakeShotWithShape IntendedShape = %v, want %v", result.IntendedShape, shape)
+		}
+
+		validShapes := []gogolf.ShotShape{gogolf.Straight, gogolf.Draw, gogolf.Fade, gogolf.Hook, gogolf.Slice}
+		valid := false
+		for _, v := range validShapes {
+			if result.ActualShape == v {
+				valid = true
+				break
+			}
+		}
+		if !valid {
+			t.Errorf("TakeShotWithShape ActualShape = %v, not a valid shape", result.ActualShape)
+		}
+	}
+}
+
+func TestTakeShotWithShape_TracksShapeSuccess(t *testing.T) {
+	g := New("TestPlayer", 3)
+	g.TeeUp()
+
+	result := g.TakeShotWithShape(0.8, gogolf.Draw)
+
+	if result.IntendedShape != gogolf.Draw {
+		t.Errorf("expected IntendedShape Draw, got %v", result.IntendedShape)
+	}
+}
+
+func TestTakeShotDefaultsToStraight(t *testing.T) {
+	g := New("TestPlayer", 3)
+	g.TeeUp()
+
+	result := g.TakeShot(0.8)
+
+	if result.IntendedShape != gogolf.Straight {
+		t.Errorf("TakeShot without shape should default to Straight, got %v", result.IntendedShape)
+	}
+}
