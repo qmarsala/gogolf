@@ -26,18 +26,21 @@ type Context struct {
 }
 
 type ShotResult struct {
-	ClubName    string
-	Outcome     gogolf.SkillCheckOutcome
-	Margin      int
-	Description string
-	Rotation    float64
-	RotationDir string
-	Power       float64
-	Distance    float64
-	XPEarned    int
-	LevelUps    []string
-	HoledOut    bool
-	TapIn       bool
+	ClubName      string
+	IntendedShape gogolf.ShotShape
+	ActualShape   gogolf.ShotShape
+	ShapeSuccess  bool
+	Outcome       gogolf.SkillCheckOutcome
+	Margin        int
+	Description   string
+	Rotation      float64
+	RotationDir   string
+	Power         float64
+	Distance      float64
+	XPEarned      int
+	LevelUps      []string
+	HoledOut      bool
+	TapIn         bool
 }
 
 func New(playerName string, holeCount int) *Game {
@@ -95,6 +98,10 @@ func (g *Game) GetContext() Context {
 }
 
 func (g *Game) TakeShot(power float64) ShotResult {
+	return g.TakeShotWithShape(power, gogolf.Straight)
+}
+
+func (g *Game) TakeShotWithShape(power float64, shape gogolf.ShotShape) ShotResult {
 	hole := g.GetCurrentHole()
 	club := g.Golfer.GetBestClub(g.Ball.Location.Distance(hole.HoleLocation).Yards())
 	directionToHole := g.Ball.Location.Direction(hole.HoleLocation)
@@ -102,7 +109,7 @@ func (g *Game) TakeShot(power float64) ShotResult {
 	lie := g.Ball.GetLie(&hole)
 	difficulty := lie.DifficultyModifier()
 
-	targetNumber := g.Golfer.CalculateTargetNumber(club, difficulty)
+	targetNumber := g.Golfer.CalculateTargetNumberWithShape(club, difficulty, shape)
 	result := g.Golfer.SkillCheck(gogolf.NewD6(), targetNumber)
 
 	rotationDirection := float64(1)
@@ -137,12 +144,12 @@ func (g *Game) TakeShot(power float64) ShotResult {
 	directionToHole.Rotate(rotationDegrees * rotationDirection)
 	ballPath := g.Ball.ReceiveHit(modifiedClub, float32(adjustedPower), directionToHole)
 
+	var shapeResult gogolf.ShapeResult
 	if club.Name != "Putter" {
-		if g.random.IntN(100)%2 == 0 {
-			g.applyDraw(ballPath, hole)
-		} else {
-			g.applyFade(ballPath, hole)
-		}
+		shapeResult = gogolf.DetermineActualShape(shape, result, g.random)
+		g.applyShape(ballPath, hole, shapeResult)
+	} else {
+		shapeResult = gogolf.ShapeResult{Intended: shape, Actual: gogolf.Straight, Success: true}
 	}
 
 	g.ScoreCard.RecordStroke(hole)
@@ -161,43 +168,65 @@ func (g *Game) TakeShot(power float64) ShotResult {
 	}
 
 	shotResult := ShotResult{
-		ClubName:    club.Name,
-		Outcome:     result.Outcome,
-		Margin:      result.Margin,
-		Description: gogolf.GetShotQualityDescription(result),
-		Rotation:    rotationDegrees,
-		RotationDir: rotationDir,
-		Power:       power,
-		Distance:    float64(gogolf.Unit(ballPath.Magnitude()).Yards()),
-		XPEarned:    xpAward,
-		LevelUps:    levelUps,
-		HoledOut:    holedOut,
-		TapIn:       tapIn,
+		ClubName:      club.Name,
+		IntendedShape: shapeResult.Intended,
+		ActualShape:   shapeResult.Actual,
+		ShapeSuccess:  shapeResult.Success,
+		Outcome:       result.Outcome,
+		Margin:        result.Margin,
+		Description:   gogolf.GetShotQualityDescription(result),
+		Rotation:      rotationDegrees,
+		RotationDir:   rotationDir,
+		Power:         power,
+		Distance:      float64(gogolf.Unit(ballPath.Magnitude()).Yards()),
+		XPEarned:      xpAward,
+		LevelUps:      levelUps,
+		HoledOut:      holedOut,
+		TapIn:         tapIn,
 	}
 
 	g.lastShotResult = &shotResult
 	return shotResult
 }
 
-func (g *Game) applyDraw(ballPath gogolf.Vector, h gogolf.Hole) {
-	directionToHole := g.Ball.PrevLocation.Direction(h.HoleLocation)
-	drawRotationDegrees := -45
-	if directionToHole.Y < 0 {
-		drawRotationDegrees = 45
+func (g *Game) applyShape(ballPath gogolf.Vector, h gogolf.Hole, shapeResult gogolf.ShapeResult) {
+	if shapeResult.Actual == gogolf.Straight {
+		return
 	}
-	rotatedPath := ballPath.Rotate(float64(drawRotationDegrees))
-	translationDistance := gogolf.Yard(math.Max(g.random.Float64()*3, 1)).Units()
-	g.Ball.Location = g.Ball.Location.Move(rotatedPath, float64(translationDistance))
+
+	direction := 1.0
+	intensity := 1.0
+
+	switch shapeResult.Actual {
+	case gogolf.Draw:
+		direction = -1.0
+	case gogolf.Fade:
+		direction = 1.0
+	case gogolf.Hook:
+		direction = -1.0
+		intensity = 1.5
+	case gogolf.Slice:
+		direction = 1.0
+		intensity = 1.5
+	}
+
+	if !shapeResult.Success {
+		intensity *= 1.3
+	}
+
+	g.applyCurve(ballPath, h, direction, intensity)
 }
 
-func (g *Game) applyFade(ballPath gogolf.Vector, h gogolf.Hole) {
+func (g *Game) applyCurve(ballPath gogolf.Vector, h gogolf.Hole, direction float64, intensity float64) {
 	directionToHole := g.Ball.PrevLocation.Direction(h.HoleLocation)
-	drawRotationDegrees := 45
+
+	baseRotation := 30.0 * direction
 	if directionToHole.Y < 0 {
-		drawRotationDegrees = -45
+		baseRotation *= -1
 	}
-	rotatedPath := ballPath.Rotate(float64(drawRotationDegrees))
-	translationDistance := gogolf.Yard(math.Max(g.random.Float64()*3, 1)).Units()
+
+	rotatedPath := ballPath.Rotate(baseRotation * intensity)
+	translationDistance := gogolf.Yard(math.Max(g.random.Float64()*3*intensity, 1)).Units()
 	g.Ball.Location = g.Ball.Location.Move(rotatedPath, float64(translationDistance))
 }
 
