@@ -68,14 +68,17 @@ type EquipmentDisplay struct {
 
 // ShotDisplay represents the result of a shot for display
 type ShotDisplay struct {
-	ClubName    string
-	Outcome     string // e.g., "Good", "Critical Success"
-	Margin      int
-	Description string  // Quality description
-	Rotation    float64 // Degrees
-	RotationDir string  // "left" or "right"
-	Power       float64 // Percentage 0-1
-	Distance    float64 // Yards traveled
-	XPEarned    int
-	LevelUps    []string // e.g., ["Driver: Level 2!", "Strength: Level 3!"]
+	ClubName      string
+	IntendedShape string
+	ActualShape   string
+	ShapeSuccess  bool
+	Outcome       string // e.g., "Good", "Critical Success"
+	Margin        int
+	Description   string  // Quality description
+	Rotation      float64 // Degrees
+	RotationDir   string  // "left" or "right"
+	Power         float64 // Percentage 0-1
+	Distance      float64 // Yards traveled
+	XPEarned      int
+	LevelUps      []string // e.g., ["Driver: Level 2!", "Strength: Level 3!"]
 }

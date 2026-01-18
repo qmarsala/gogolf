@@ -89,3 +89,29 @@ func WaitForAnyKey() {
 		}
 	}
 }
+
+// readSingleKey reads a single key press and returns the character
+func readSingleKey() byte {
+	handle, _, _ := procGetStdHandle.Call(uintptr(stdInputHandle))
+
+	for {
+		var record inputRecord
+		var numRead uint32
+
+		ret, _, _ := procReadConsole.Call(
+			handle,
+			uintptr(unsafe.Pointer(&record)),
+			1,
+			uintptr(unsafe.Pointer(&numRead)),
+			0,
+		)
+
+		if ret == 0 || numRead == 0 {
+			continue
+		}
+
+		if record.EventType == keyEvent && record.KeyEvent.KeyDown == keyDown {
+			return byte(record.KeyEvent.UnicodeChar)
+		}
+	}
+}

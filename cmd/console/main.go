@@ -74,16 +74,19 @@ func buildGameState(ctx game.Context, lastShot *ui.ShotDisplay, promptMsg string
 
 func shotResultToDisplay(result game.ShotResult) *ui.ShotDisplay {
 	return &ui.ShotDisplay{
-		ClubName:    result.ClubName,
-		Outcome:     result.Outcome.String(),
-		Margin:      result.Margin,
-		Description: result.Description,
-		Rotation:    result.Rotation,
-		RotationDir: result.RotationDir,
-		Power:       result.Power,
-		Distance:    result.Distance,
-		XPEarned:    result.XPEarned,
-		LevelUps:    result.LevelUps,
+		ClubName:      result.ClubName,
+		IntendedShape: result.IntendedShape.String(),
+		ActualShape:   result.ActualShape.String(),
+		ShapeSuccess:  result.ShapeSuccess,
+		Outcome:       result.Outcome.String(),
+		Margin:        result.Margin,
+		Description:   result.Description,
+		Rotation:      result.Rotation,
+		RotationDir:   result.RotationDir,
+		Power:         result.Power,
+		Distance:      result.Distance,
+		XPEarned:      result.XPEarned,
+		LevelUps:      result.LevelUps,
 	}
 }
 
@@ -225,10 +228,13 @@ func main() {
 			state := buildGameState(ctx, lastShot, fmt.Sprintf("Using %s", ctx.CurrentClub.Name))
 			renderer.Render(state)
 
+			shapeSelector := ui.NewShotShapeSelector(renderer)
+			shape := shapeSelector.SelectShotShape()
+
 			powerMeter := ui.NewPowerMeter(renderer)
 			power := powerMeter.GetPower()
 
-			result := g.TakeShot(power)
+			result := g.TakeShotWithShape(power, shape)
 			lastShot = shotResultToDisplay(result)
 
 			if result.TapIn {

@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"gogolf"
 	"time"
 )
 
@@ -162,4 +163,59 @@ func (pm *PowerMeter) drawMeterBar(elapsed time.Duration, stopped bool) string {
 	bar += "]"
 
 	return bar
+}
+
+// ShotShapeSelector manages shot shape selection in the game UI
+type ShotShapeSelector struct {
+	renderer *Renderer
+}
+
+// NewShotShapeSelector creates a shot shape selector
+func NewShotShapeSelector(renderer *Renderer) *ShotShapeSelector {
+	return &ShotShapeSelector{renderer: renderer}
+}
+
+// SelectShotShape displays shape options and returns selected shape
+// Default is Straight if user just presses Enter or space
+func (s *ShotShapeSelector) SelectShotShape() gogolf.ShotShape {
+	panel := s.renderer.Layout.LeftPanel
+	row := panel.Height - 5
+
+	s.renderer.Terminal.MoveCursor(row, panel.X+2)
+	fmt.Print("Shot shape: [1]Straight [2]Draw [3]Fade [4]Hook [5]Slice")
+	s.renderer.Terminal.MoveCursor(row+1, panel.X+2)
+	fmt.Print("Press 1-5 or Enter for Straight:                        ")
+
+	key := s.waitForShapeKey()
+
+	s.renderer.Terminal.MoveCursor(row, panel.X+2)
+	fmt.Print("                                                        ")
+	s.renderer.Terminal.MoveCursor(row+1, panel.X+2)
+	fmt.Print("                                                        ")
+
+	switch key {
+	case '2':
+		return gogolf.Draw
+	case '3':
+		return gogolf.Fade
+	case '4':
+		return gogolf.Hook
+	case '5':
+		return gogolf.Slice
+	default:
+		return gogolf.Straight
+	}
+}
+
+// waitForShapeKey waits for a valid shape selection key
+func (s *ShotShapeSelector) waitForShapeKey() byte {
+	for {
+		key := readSingleKey()
+		if key == ' ' || key == '\r' || key == '\n' || key == '1' {
+			return '1'
+		}
+		if key >= '2' && key <= '5' {
+			return key
+		}
+	}
 }
