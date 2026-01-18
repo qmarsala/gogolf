@@ -374,3 +374,47 @@ func TestGolfer_AwardExperience_LevelUpDetection(t *testing.T) {
 		t.Errorf("Ability level = %v, want 2", newAbilityLevel)
 	}
 }
+
+func TestGolfer_CalculateTargetNumberWithShape(t *testing.T) {
+	golfer := NewGolfer("Test")
+	golfer.Skills["Driver"] = Skill{Name: "Driver", Level: 3, Experience: 0}
+	golfer.Abilities["Strength"] = Ability{Name: "Strength", Level: 4, Experience: 0}
+
+	club := Club{Name: "Driver"}
+	lieDifficulty := 0
+
+	tests := []struct {
+		shape    ShotShape
+		expected int
+	}{
+		{Straight, 12},
+		{Draw, 15},
+		{Fade, 15},
+		{Hook, 13},
+		{Slice, 13},
+	}
+
+	for _, tt := range tests {
+		targetNumber := golfer.CalculateTargetNumberWithShape(club, lieDifficulty, tt.shape)
+		if targetNumber != tt.expected {
+			t.Errorf("CalculateTargetNumberWithShape(%v) = %v, want %v",
+				tt.shape, targetNumber, tt.expected)
+		}
+	}
+}
+
+func TestGolfer_DrawFadeEasierThanStraight(t *testing.T) {
+	golfer := NewGolfer("Test")
+	club := Club{Name: "7-Iron"}
+
+	straightTarget := golfer.CalculateTargetNumberWithShape(club, 0, Straight)
+	drawTarget := golfer.CalculateTargetNumberWithShape(club, 0, Draw)
+	fadeTarget := golfer.CalculateTargetNumberWithShape(club, 0, Fade)
+
+	if drawTarget <= straightTarget {
+		t.Errorf("Draw target (%d) should be higher than Straight (%d)", drawTarget, straightTarget)
+	}
+	if fadeTarget <= straightTarget {
+		t.Errorf("Fade target (%d) should be higher than Straight (%d)", fadeTarget, straightTarget)
+	}
+}
