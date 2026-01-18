@@ -23,11 +23,11 @@ func TestAbility_Value(t *testing.T) {
 		level         int
 		expectedValue int
 	}{
-		{1, 2},
-		{2, 4},
-		{3, 6},
-		{5, 10},
-		{9, 18},
+		{1, 1},
+		{2, 2},
+		{3, 3},
+		{5, 5},
+		{9, 9},
 	}
 
 	for _, tt := range tests {

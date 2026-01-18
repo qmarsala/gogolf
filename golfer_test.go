@@ -84,8 +84,8 @@ func TestGolfer_CalculateTargetNumber(t *testing.T) {
 
 	targetNumber := golfer.CalculateTargetNumber(club, difficulty)
 
-	// Expected: skill(6) + ability(8) + difficulty(0) = 14
-	expected := 14
+	// Expected: skill(3) + ability(4) + difficulty(0) = 7
+	expected := 7
 	if targetNumber != expected {
 		t.Errorf("CalculateTargetNumber() = %v, want %v", targetNumber, expected)
 	}
@@ -103,10 +103,10 @@ func TestGolfer_CalculateTargetNumber_WithDifficulty(t *testing.T) {
 		difficulty int
 		expected   int
 	}{
-		{0, 14},  // Fairway: 6 + 8 + 0 = 14
-		{-2, 12}, // Rough: 6 + 8 + (-2) = 12
-		{-4, 10}, // Bunker: 6 + 8 + (-4) = 10
-		{2, 16},  // Tee: 6 + 8 + 2 = 16
+		{0, 7},  // Fairway: 3 + 4 + 0 = 7
+		{-2, 5}, // Rough: 3 + 4 + (-2) = 5
+		{-4, 3}, // Bunker: 3 + 4 + (-4) = 3
+		{2, 9},  // Tee: 3 + 4 + 2 = 9
 	}
 
 	for _, tt := range tests {
@@ -200,17 +200,17 @@ func TestDetermineOutcome_MarginBased(t *testing.T) {
 		isCritical bool
 		expected   SkillCheckOutcome
 	}{
-		{"Margin +7", 7, false, Excellent},
-		{"Margin +8", 8, false, Excellent},
 		{"Margin +10", 10, false, Excellent},
+		{"Margin +8", 8, false, Excellent},
+		{"Margin +7", 7, false, Excellent},
 		{"Margin +6", 6, false, Excellent},
-		{"Margin +5", 5, false, Excellent},
-		{"Margin +4", 4, false, Excellent},
 
+		{"Margin +5", 5, false, Good},
+		{"Margin +4", 4, false, Good},
 		{"Margin +3", 3, false, Good},
-		{"Margin +2", 2, false, Good},
-		{"Margin +1", 1, false, Good},
 
+		{"Margin +2", 2, false, Marginal},
+		{"Margin +1", 1, false, Marginal},
 		{"Margin 0", 0, false, Marginal},
 
 		{"Margin -1", -1, false, Poor},
@@ -242,21 +242,25 @@ func TestDetermineOutcome_TierBoundaries(t *testing.T) {
 		margin   int
 		expected SkillCheckOutcome
 	}{
-		{"Just below Excellent", 3, Good},
-		{"Just at Excellent", 4, Excellent},
-		{"High margin still Excellent", 7, Excellent},
+		{"Just below Excellent", 5, Good},
+		{"Just at Excellent", 6, Excellent},
+		{"High margin still Excellent", 10, Excellent},
 
-		{"Just below Good", 0, Marginal},
-		{"Just at Good", 1, Good},
+		{"Just below Good", 2, Marginal},
+		{"Just at Good", 3, Good},
+		{"Top of Good", 5, Good},
 
 		{"Just below Marginal", -1, Poor},
 		{"At Marginal", 0, Marginal},
+		{"Top of Marginal", 2, Marginal},
 
 		{"Just below Poor", -4, Bad},
 		{"Just at Poor", -3, Poor},
+		{"Top of Poor", -1, Poor},
 
 		{"Just below Bad", -7, Bad},
 		{"Just at Bad", -6, Bad},
+		{"Top of Bad", -4, Bad},
 	}
 
 	for _, tt := range tests {
@@ -277,7 +281,7 @@ func TestGolfer_CalculateTargetNumber_DynamicWithLevels(t *testing.T) {
 	difficulty := 0
 
 	targetNumber := golfer.CalculateTargetNumber(driverClub, difficulty)
-	expectedInitial := 4
+	expectedInitial := 2
 
 	if targetNumber != expectedInitial {
 		t.Errorf("Initial target number = %v, want %v", targetNumber, expectedInitial)
@@ -287,7 +291,7 @@ func TestGolfer_CalculateTargetNumber_DynamicWithLevels(t *testing.T) {
 	golfer.Abilities["Strength"] = Ability{Name: "Strength", Level: 4, Experience: 0}
 
 	targetNumber = golfer.CalculateTargetNumber(driverClub, difficulty)
-	expectedLeveled := 14
+	expectedLeveled := 7
 
 	if targetNumber != expectedLeveled {
 		t.Errorf("After level-up target number = %v, want %v", targetNumber, expectedLeveled)
@@ -356,11 +360,11 @@ func TestGolfer_CalculateTargetNumberWithShape(t *testing.T) {
 		shape    ShotShape
 		expected int
 	}{
-		{Straight, 12},
-		{Draw, 15},
-		{Fade, 15},
-		{Hook, 13},
-		{Slice, 13},
+		{Straight, 5},
+		{Draw, 8},
+		{Fade, 8},
+		{Hook, 6},
+		{Slice, 6},
 	}
 
 	for _, tt := range tests {

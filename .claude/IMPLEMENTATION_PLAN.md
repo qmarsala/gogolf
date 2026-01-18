@@ -1,140 +1,128 @@
 # GoGolf Implementation Plan
 
-## Completed Work
+## Current Sprint: Mechanics Alignment
 
-Phases 1-7 are complete. See [CORE_MECHANICS.md](CORE_MECHANICS.md) for documentation of implemented systems:
-- Skills & Abilities System (PR #2)
-- Main Game Loop Integration (PR #3)
-- Course Grid & Lie System (PR #4)
-- Equipment System & ProShop (PR #5)
-- Save/Load System (PR #15)
-- ProShop UI & Browsing (PR #16)
-- Shot Shape System (PR #17)
-
-**Current test count:** 278 tests passing
+This sprint focuses on aligning the codebase with the updated [CORE_MECHANICS.md](CORE_MECHANICS.md) design document.
 
 ---
 
-## Phase 5: Save/Load System ✅
-**Priority: HIGH** - Required for RPG progression persistence
+## Task 1: Skill/Ability Value Calculation
 
-### Requirements
-- JSON serialization for human-readable save files
-- Save golfer state (name, skills, abilities, equipment, currency)
-- Auto-save after each round
-- Manual save/load options
-- Multiple save slots (3-5 slots)
+**Problem:** Code uses `level * 2` but design specifies `level`
 
-### Implementation Tasks
-1. ✅ Create `SaveData` struct with all player data (PR #14)
-2. ✅ Implement JSON serialization/deserialization (PR #14)
-3. ✅ Create save file management (write, read, list, delete) (PR #14)
-4. ✅ Handle save file versioning for future updates (PR #14)
-5. ✅ Integrate into game startup (new game vs load game menu) (PR #14)
-6. ✅ Add save prompt after round completion (PR #14)
-7. ✅ Add `NewFromGolfer` to create game from loaded golfer (PR #14)
+### Files to Update
 
-### Design Considerations
-- Save file format should be human-readable (JSON)
-- Handle backward compatibility as game evolves
-- Graceful error handling for corrupted saves
-- Clear save/load confirmation messages
+| File | Line | Current | Target |
+|------|------|---------|--------|
+| `skill.go` | 17-19 | `return s.Level * 2` | `return s.Level` |
+| `ability.go` | 17-19 | `return a.Level * 2` | `return a.Level` |
+
+### Tests to Update
+
+| File | Lines | Change |
+|------|-------|--------|
+| `skill_test.go` | 21-42 | Update expected values: Level 1→1, 2→2, 3→3, 5→5, 9→9 |
+| `ability_test.go` | 21-42 | Update expected values: Level 1→1, 2→2, 3→3, 5→5, 9→9 |
+| `golfer_test.go` | 76-92 | Update CalculateTargetNumber: skill(3)+ability(4)+difficulty(0) = 7 |
+| `golfer_test.go` | 273-295 | Update DynamicWithLevels: initial=2, after leveling=7 |
+| `golfer_test.go` | 347-373 | Update CalculateTargetNumberWithShape test expectations |
 
 ---
 
-## Phase 6: ProShop UI & Browsing ✅
-**Priority: MEDIUM** - Enhance equipment shopping experience
+## Task 2: Outcome Threshold Alignment
 
-### Requirements
-- Text-based menu system (fits CLI nature)
-- Display equipment with stats and prices
-- Compare with currently equipped items
-- Show affordability based on current money
-- Allow browsing without purchasing
+**Problem:** Code thresholds don't match CORE_MECHANICS.md table
 
-### Implementation Tasks
-1. ✅ Create `ShopUI` struct with testable I/O
-2. ✅ Create equipment formatting functions (balls, gloves, shoes)
-3. ✅ Add interactive menu for browsing categories (Balls/Gloves/Shoes)
-4. ✅ Add purchase confirmation prompts
-5. ✅ Integrate ProShop access into main game loop (post-round menu)
-6. ✅ Display money and current equipment when entering shop
-7. ✅ Show affordability indicator for items beyond player's budget
+### Design Document Says:
+| Tier | Condition |
+|------|-----------|
+| Excellent | Margin +6 or more |
+| Good | Margin +3 to +5 |
+| Marginal | Margin 0 to +2 |
+| Poor | Margin -1 to -3 |
+| Bad | Margin -4 to -6 |
 
-### Example UI Flow
-```
-=== ProShop ===
-Money: 150
-
-1. Balls
-2. Gloves
-3. Shoes
-4. Back to Game
-
-> 1
-
-=== Balls ===
-Currently equipped: Standard Ball (+3 distance, 0.5 spin)
-
-Available:
-1. Budget Ball - 20 money (+0 distance, 0.3 spin)
-2. Premium Ball - 50 money (+5 distance, 0.7 spin)
-3. Pro V1 - 75 money (+8 distance, 0.9 spin)
-4. Back
-
-> 2
-Purchase Premium Ball for 50 money? (y/n)
+### Code Currently Has (golfer.go:122-133):
+```go
+case margin >= 4:  return Excellent
+case margin >= 1:  return Good
+case margin == 0:  return Marginal
+case margin >= -3: return Poor
+default:           return Bad
 ```
 
----
-
-## Phase 7: Advanced Course Features
-**Priority: LOW** - Polish and depth
-
-### Features
-- Wind (affects shot difficulty and ball flight)
-- Elevation changes (uphill/downhill)
-- Greens with break/slope
-- Hazards (water, trees, OB)
-- Course variety (links, parkland, desert)
+### Decision Required:
+- Option A: Update code to match document (stricter thresholds)
+- Option B: Update document to match code (current gameplay balance)
 
 ---
 
-## Sprint Roadmap
+## Task 3: Verify Roll-Under Logic
 
-### Completed
-- Sprint 1: Foundation (Skills System)
-- Sprint 2: Game Loop Integration
-- Sprint 3: Course Depth (Lie System)
-- Sprint 4: Progression (Equipment)
+**Status:** Already correct ✓
 
-### Completed
-- Sprint 5: Persistence (Save/Load)
-- Sprint 6: ProShop UI
-
-### Next Up
-**Sprint 7: Polish**
-- Advanced course features
-- Additional UI improvements
-
----
-
-## Key Design Principles
-
-### TDD Requirements (from CLAUDE.md)
-- Write tests first (expected input/output)
-- Verify test fails
-- Commit failing tests
-- Implement minimal code to pass
-- Commit working code
-
-### RPG Core Loop
-```
-Action → Skill Check → XP Gain → Level Up → Better Stats → Harder Courses
+The current implementation in `golfer.go:99-112`:
+```go
+margin := targetNumber - total
+Success: margin >= 0
 ```
 
-### Golf Realism
-- Lie matters (rough is harder than fairway)
-- Club selection matters (right tool for the job)
-- Course management (risk/reward decisions)
-- Equipment helps but skill is primary
+This correctly implements "roll at or below target":
+- Roll 8 vs Target 10 → margin = +2 → Success ✓
+- Roll 12 vs Target 10 → margin = -2 → Failure ✓
+
+No changes needed for this task.
+
+---
+
+## Implementation Order
+
+Following TDD approach from CLAUDE.md:
+
+### Step 1: Update Tests First
+1. Update `skill_test.go` expected values
+2. Update `ability_test.go` expected values
+3. Update `golfer_test.go` target number expectations
+4. Verify tests fail
+
+### Step 2: Commit Failing Tests
+```
+git commit -m "test: update expectations for level=value formula"
+```
+
+### Step 3: Update Implementation
+1. Change `skill.go` Value() to return `s.Level`
+2. Change `ability.go` Value() to return `a.Level`
+3. Run tests to verify pass
+
+### Step 4: Commit Working Code
+```
+git commit -m "refactor: skill/ability value equals level (not level*2)"
+```
+
+### Step 5: Address Outcome Thresholds (if needed)
+1. Decide on correct thresholds
+2. Update tests or document accordingly
+3. Follow same TDD flow
+
+---
+
+## Test Commands
+
+```bash
+go test ./...                    # Run all tests
+go test -v -run TestSkill_Value  # Run specific test
+go test -v -run TestAbility_Value
+go test -v -run TestGolfer_CalculateTargetNumber
+```
+
+---
+
+## Completion Checklist
+
+- [ ] Skill.Value() returns level (not level*2)
+- [ ] Ability.Value() returns level (not level*2)
+- [ ] All tests updated and passing
+- [ ] Outcome thresholds aligned (code ↔ document)
+- [ ] Failing tests committed before implementation
+- [ ] Working code committed after implementation
