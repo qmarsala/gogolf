@@ -9,11 +9,12 @@ import (
 
 // PowerMeter manages the spacebar-based power input
 type PowerMeter struct {
-	renderer       *Renderer
-	maxPower       float64
-	maxTime        time.Duration
-	sweetSpotStart float64 // Sweet spot starts at 75% of bar
-	sweetSpotEnd   float64 // Sweet spot ends at 85% of bar
+	renderer        *Renderer
+	maxPower        float64
+	maxTime         time.Duration
+	sweetSpotStart  float64 // Sweet spot starts at 75% of bar
+	sweetSpotEnd    float64 // Sweet spot ends at 85% of bar
+	clubMaxDistance float64 // Max distance of current club in yards
 }
 
 // NewPowerMeter creates a power meter with default settings
@@ -62,11 +63,12 @@ func (pm *PowerMeter) GetPower() float64 {
 			case <-ticker.C:
 				elapsed := time.Since(startTime)
 				power := pm.calculatePower(elapsed)
+				projectedDist := pm.calculateProjectedDistance(power)
 
-				// Draw power meter (not stopped yet)
+				// Draw power meter with projected distance
 				pm.renderer.Terminal.MoveCursor(meterRow, panel.X+2)
 				meterBar := pm.drawMeterBar(elapsed, false)
-				fmt.Printf("Power: %s %.0f%%   ", meterBar, power*100)
+				fmt.Printf("Power: %s %s   ", meterBar, pm.formatDistanceDisplay(power, projectedDist))
 
 				// Check if max time reached
 				if elapsed >= pm.maxTime {
@@ -85,11 +87,12 @@ func (pm *PowerMeter) GetPower() float64 {
 
 	// Wait for power value
 	finalPower := <-powerChan
+	finalDist := pm.calculateProjectedDistance(finalPower)
 
 	// Show final position with marker
 	pm.renderer.Terminal.MoveCursor(meterRow, panel.X+2)
 	meterBar := pm.drawMeterBar(finalElapsed, true)
-	fmt.Printf("Power: %s %.0f%%   ", meterBar, finalPower*100)
+	fmt.Printf("Power: %s %s   ", meterBar, pm.formatDistanceDisplay(finalPower, finalDist))
 
 	// Brief pause to show result
 	time.Sleep(500 * time.Millisecond)
@@ -164,6 +167,21 @@ func (pm *PowerMeter) drawMeterBar(elapsed time.Duration, stopped bool) string {
 	bar += "]"
 
 	return bar
+}
+
+// SetClubDistance sets the max distance of the current club
+func (pm *PowerMeter) SetClubDistance(distance float64) {
+	pm.clubMaxDistance = distance
+}
+
+// calculateProjectedDistance returns the projected shot distance based on power
+func (pm *PowerMeter) calculateProjectedDistance(power float64) float64 {
+	return pm.clubMaxDistance * power
+}
+
+// formatDistanceDisplay creates a string showing power percentage and projected distance
+func (pm *PowerMeter) formatDistanceDisplay(power float64, projectedDistance float64) string {
+	return fmt.Sprintf("%.0f%% | %.0f yards", power*100, projectedDistance)
 }
 
 // ShotShapeSelector manages shot shape selection in the game UI

@@ -232,7 +232,9 @@ func main() {
 			shapeSelector := ui.NewShotShapeSelector(renderer)
 			shape := shapeSelector.SelectShotShape()
 
+			modifiedClub := ctx.Golfer.GetModifiedClub(ctx.CurrentClub)
 			powerMeter := ui.NewPowerMeter(renderer)
+			powerMeter.SetClubDistance(float64(modifiedClub.Distance))
 			power := powerMeter.GetPower()
 
 			result := g.TakeShotWithShape(power, shape)
