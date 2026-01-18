@@ -105,8 +105,8 @@ func (pm *PowerMeter) GetPower() float64 {
 	fmt.Print("                                                        ")
 
 	if pm.isPutting && pm.putterMaxYards > 0 {
-		selectedFeet := finalDist
-		selectedYards := selectedFeet / 3.0
+		selectedFeet := gogolf.Foot(finalDist)
+		selectedYards := float64(selectedFeet.Yards())
 		return selectedYards / pm.putterMaxYards
 	}
 

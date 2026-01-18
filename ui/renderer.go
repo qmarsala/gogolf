@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"gogolf"
 	"strings"
 )
 
@@ -107,7 +108,7 @@ func (r *Renderer) RenderLeftPanel(state GameState) {
 	r.printInPanel(panel, row, fmt.Sprintf("Current Lie: %s%s", state.BallLie, difficultyStr), false)
 	row++
 	if state.IsOnGreen {
-		distanceFeet := state.DistanceToHole * 3
+		distanceFeet := gogolf.Yard(state.DistanceToHole).Feet()
 		r.printInPanel(panel, row, fmt.Sprintf("Distance to hole: %.1f feet", distanceFeet), false)
 	} else {
 		r.printInPanel(panel, row, fmt.Sprintf("Distance to hole: %.1f yards", state.DistanceToHole), false)
