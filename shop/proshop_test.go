@@ -1,13 +1,15 @@
-package gogolf
+package shop
 
-import "testing"
+import (
+	"gogolf"
+	"testing"
+)
 
-// Test ProShop struct exists and has inventory
 func TestProShop_HasInventory(t *testing.T) {
 	shop := ProShop{
-		Balls:  []Ball{},
-		Gloves: []Glove{},
-		Shoes:  []Shoes{},
+		Balls:  []gogolf.Ball{},
+		Gloves: []gogolf.Glove{},
+		Shoes:  []gogolf.Shoes{},
 	}
 
 	if shop.Balls == nil {
@@ -21,7 +23,6 @@ func TestProShop_HasInventory(t *testing.T) {
 	}
 }
 
-// Test NewProShop creates a shop with starter inventory
 func TestNewProShop(t *testing.T) {
 	shop := NewProShop()
 
@@ -36,7 +37,6 @@ func TestNewProShop(t *testing.T) {
 	}
 }
 
-// Test ProShop has variety of ball options
 func TestNewProShop_BallVariety(t *testing.T) {
 	shop := NewProShop()
 
@@ -44,7 +44,6 @@ func TestNewProShop_BallVariety(t *testing.T) {
 		t.Errorf("ProShop has %d balls, want at least 3 options", len(shop.Balls))
 	}
 
-	// Check that balls have different prices/stats
 	foundCheap := false
 	foundExpensive := false
 	for _, ball := range shop.Balls {
@@ -64,7 +63,6 @@ func TestNewProShop_BallVariety(t *testing.T) {
 	}
 }
 
-// Test ProShop has variety of glove options
 func TestNewProShop_GloveVariety(t *testing.T) {
 	shop := NewProShop()
 
@@ -73,7 +71,6 @@ func TestNewProShop_GloveVariety(t *testing.T) {
 	}
 }
 
-// Test ProShop has variety of shoe options
 func TestNewProShop_ShoeVariety(t *testing.T) {
 	shop := NewProShop()
 
@@ -82,14 +79,12 @@ func TestNewProShop_ShoeVariety(t *testing.T) {
 	}
 }
 
-// Test PurchaseBall succeeds with enough money
 func TestProShop_PurchaseBall_Success(t *testing.T) {
 	shop := NewProShop()
-	golfer := NewGolfer("TestPlayer")
+	golfer := gogolf.NewGolfer("TestPlayer")
 	golfer.Money = 100
 
-	// Find a ball we can afford
-	var targetBall *Ball
+	var targetBall *gogolf.Ball
 	for i := range shop.Balls {
 		if shop.Balls[i].Cost <= 100 {
 			targetBall = &shop.Balls[i]
@@ -121,14 +116,12 @@ func TestProShop_PurchaseBall_Success(t *testing.T) {
 	}
 }
 
-// Test PurchaseBall fails with insufficient funds
 func TestProShop_PurchaseBall_InsufficientFunds(t *testing.T) {
 	shop := NewProShop()
-	golfer := NewGolfer("TestPlayer")
-	golfer.Money = 10 // Not enough for most balls
+	golfer := gogolf.NewGolfer("TestPlayer")
+	golfer.Money = 10
 
-	// Find an expensive ball
-	var expensiveBall *Ball
+	var expensiveBall *gogolf.Ball
 	for i := range shop.Balls {
 		if shop.Balls[i].Cost > 10 {
 			expensiveBall = &shop.Balls[i]
@@ -152,10 +145,9 @@ func TestProShop_PurchaseBall_InsufficientFunds(t *testing.T) {
 	}
 }
 
-// Test PurchaseBall fails for non-existent item
 func TestProShop_PurchaseBall_NotFound(t *testing.T) {
 	shop := NewProShop()
-	golfer := NewGolfer("TestPlayer")
+	golfer := gogolf.NewGolfer("TestPlayer")
 	golfer.Money = 1000
 
 	success := shop.PurchaseBall(&golfer, "NonExistent Ball")
@@ -165,14 +157,12 @@ func TestProShop_PurchaseBall_NotFound(t *testing.T) {
 	}
 }
 
-// Test PurchaseGlove works correctly
 func TestProShop_PurchaseGlove_Success(t *testing.T) {
 	shop := NewProShop()
-	golfer := NewGolfer("TestPlayer")
+	golfer := gogolf.NewGolfer("TestPlayer")
 	golfer.Money = 100
 
-	// Find a glove we can afford
-	var targetGlove *Glove
+	var targetGlove *gogolf.Glove
 	for i := range shop.Gloves {
 		if shop.Gloves[i].Cost <= 100 {
 			targetGlove = &shop.Gloves[i]
@@ -195,14 +185,12 @@ func TestProShop_PurchaseGlove_Success(t *testing.T) {
 	}
 }
 
-// Test PurchaseShoes works correctly
 func TestProShop_PurchaseShoes_Success(t *testing.T) {
 	shop := NewProShop()
-	golfer := NewGolfer("TestPlayer")
+	golfer := gogolf.NewGolfer("TestPlayer")
 	golfer.Money = 100
 
-	// Find shoes we can afford
-	var targetShoes *Shoes
+	var targetShoes *gogolf.Shoes
 	for i := range shop.Shoes {
 		if shop.Shoes[i].Cost <= 100 {
 			targetShoes = &shop.Shoes[i]

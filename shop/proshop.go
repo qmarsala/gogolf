@@ -1,16 +1,16 @@
-package gogolf
+package shop
 
-// ProShop represents the equipment shop where players can purchase items
+import "gogolf"
+
 type ProShop struct {
-	Balls  []Ball
-	Gloves []Glove
-	Shoes  []Shoes
+	Balls  []gogolf.Ball
+	Gloves []gogolf.Glove
+	Shoes  []gogolf.Shoes
 }
 
-// NewProShop creates a ProShop with starter inventory
 func NewProShop() ProShop {
 	return ProShop{
-		Balls: []Ball{
+		Balls: []gogolf.Ball{
 			{
 				Name:          "Budget Ball",
 				DistanceBonus: 0,
@@ -36,7 +36,7 @@ func NewProShop() ProShop {
 				Cost:          75,
 			},
 		},
-		Gloves: []Glove{
+		Gloves: []gogolf.Glove{
 			{
 				Name:          "Basic Glove",
 				AccuracyBonus: 0.02,
@@ -53,7 +53,7 @@ func NewProShop() ProShop {
 				Cost:          65,
 			},
 		},
-		Shoes: []Shoes{
+		Shoes: []gogolf.Shoes{
 			{
 				Name:                "Casual Spikes",
 				LiePenaltyReduction: 1,
@@ -73,11 +73,8 @@ func NewProShop() ProShop {
 	}
 }
 
-// PurchaseBall attempts to purchase and equip a ball by name
-// Returns true if successful, false if insufficient funds or item not found
-func (shop ProShop) PurchaseBall(golfer *Golfer, ballName string) bool {
-	// Find the ball in inventory
-	var targetBall *Ball
+func (shop ProShop) PurchaseBall(golfer *gogolf.Golfer, ballName string) bool {
+	var targetBall *gogolf.Ball
 	for i := range shop.Balls {
 		if shop.Balls[i].Name == ballName {
 			targetBall = &shop.Balls[i]
@@ -86,24 +83,19 @@ func (shop ProShop) PurchaseBall(golfer *Golfer, ballName string) bool {
 	}
 
 	if targetBall == nil {
-		return false // Ball not found
+		return false
 	}
 
-	// Attempt to spend money
 	if !golfer.SpendMoney(targetBall.Cost) {
-		return false // Insufficient funds
+		return false
 	}
 
-	// Equip the ball
 	golfer.EquipBall(targetBall)
 	return true
 }
 
-// PurchaseGlove attempts to purchase and equip a glove by name
-// Returns true if successful, false if insufficient funds or item not found
-func (shop ProShop) PurchaseGlove(golfer *Golfer, gloveName string) bool {
-	// Find the glove in inventory
-	var targetGlove *Glove
+func (shop ProShop) PurchaseGlove(golfer *gogolf.Golfer, gloveName string) bool {
+	var targetGlove *gogolf.Glove
 	for i := range shop.Gloves {
 		if shop.Gloves[i].Name == gloveName {
 			targetGlove = &shop.Gloves[i]
@@ -112,24 +104,19 @@ func (shop ProShop) PurchaseGlove(golfer *Golfer, gloveName string) bool {
 	}
 
 	if targetGlove == nil {
-		return false // Glove not found
+		return false
 	}
 
-	// Attempt to spend money
 	if !golfer.SpendMoney(targetGlove.Cost) {
-		return false // Insufficient funds
+		return false
 	}
 
-	// Equip the glove
 	golfer.EquipGlove(targetGlove)
 	return true
 }
 
-// PurchaseShoes attempts to purchase and equip shoes by name
-// Returns true if successful, false if insufficient funds or item not found
-func (shop ProShop) PurchaseShoes(golfer *Golfer, shoesName string) bool {
-	// Find the shoes in inventory
-	var targetShoes *Shoes
+func (shop ProShop) PurchaseShoes(golfer *gogolf.Golfer, shoesName string) bool {
+	var targetShoes *gogolf.Shoes
 	for i := range shop.Shoes {
 		if shop.Shoes[i].Name == shoesName {
 			targetShoes = &shop.Shoes[i]
@@ -138,15 +125,13 @@ func (shop ProShop) PurchaseShoes(golfer *Golfer, shoesName string) bool {
 	}
 
 	if targetShoes == nil {
-		return false // Shoes not found
+		return false
 	}
 
-	// Attempt to spend money
 	if !golfer.SpendMoney(targetShoes.Cost) {
-		return false // Insufficient funds
+		return false
 	}
 
-	// Equip the shoes
 	golfer.EquipShoes(targetShoes)
 	return true
 }
