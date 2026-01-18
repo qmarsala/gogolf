@@ -1,14 +1,10 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"gogolf/ui"
 	"math"
 	"math/rand/v2"
-	"os"
-	"strconv"
-	"strings"
 )
 
 // things to explore:
@@ -119,19 +115,12 @@ func main() {
 		for scoreCard.TotalStrokesThisHole(h) < 11 {
 			// Render UI with current state
 			club := golfer.GetBestClub(ball.Location.Distance(h.HoleLocation).Yards())
-			state := buildGameState(golfer, h, ball, scoreCard, lastShot, fmt.Sprintf("Using %s - Enter power (0-1):", club.Name))
+			state := buildGameState(golfer, h, ball, scoreCard, lastShot, fmt.Sprintf("Using %s", club.Name))
 			renderer.Render(state)
 
-			// Get power input from user
-			// Position cursor after "> " and show it
-			promptRow := renderer.Layout.LeftPanel.Height - 1
-			renderer.Terminal.MoveCursor(promptRow, renderer.Layout.LeftPanel.X+4)
-			renderer.Terminal.ShowCursor()
-
-			reader := bufio.NewReader(os.Stdin)
-			powerInput, _ := reader.ReadString('\n')
-			renderer.Terminal.HideCursor()
-			power, _ := strconv.ParseFloat(strings.TrimSpace(powerInput), 64)
+			// Get power using spacebar timing
+			powerMeter := ui.NewPowerMeter(renderer)
+			power := powerMeter.GetPower()
 
 			directionToHole := ball.Location.Direction(h.HoleLocation)
 
@@ -223,18 +212,13 @@ func main() {
 		reward := CalculateHoleReward(h.Par, scoreCard.TotalStrokesThisHole(h))
 		statusMsg := fmt.Sprintf("Hole %d Complete! %d strokes (%+d) | +%d money",
 			h.Number, scoreCard.TotalStrokesThisHole(h), scoreCard.ScoreThisHole(h), reward)
-		state := buildGameState(golfer, h, ball, scoreCard, lastShot, "Press Enter to continue...")
+		state := buildGameState(golfer, h, ball, scoreCard, lastShot, "Press any key to continue...")
 		state.StatusMsg = statusMsg
 		renderer.Render(state)
 
-		// Wait for user to press enter
-		// Position cursor after "> " and show it
-		promptRow := renderer.Layout.LeftPanel.Height - 1
-		renderer.Terminal.MoveCursor(promptRow, renderer.Layout.LeftPanel.X+4)
+		// Wait for user to press any key to continue
 		renderer.Terminal.ShowCursor()
-
-		reader := bufio.NewReader(os.Stdin)
-		reader.ReadString('\n')
+		ui.WaitForAnyKey()
 		renderer.Terminal.HideCursor()
 	}
 
