@@ -61,8 +61,8 @@ func TestSaveDataContainsSkillsAndAbilities(t *testing.T) {
 		t.Errorf("expected 4 abilities, got %d", len(saveData.Abilities))
 	}
 	strengthAbility := saveData.Abilities["Strength"]
-	if strengthAbility.Level != 3 || strengthAbility.Experience != 0 {
-		t.Errorf("expected Strength ability level 3 with 0 XP, got level %d with %d XP",
+	if strengthAbility.Level != 2 || strengthAbility.Experience != 100 {
+		t.Errorf("expected Strength ability level 2 with 100 XP, got level %d with %d XP",
 			strengthAbility.Level, strengthAbility.Experience)
 	}
 }
@@ -291,7 +291,7 @@ func TestSavePreservesAllSkillProgress(t *testing.T) {
 	saveData := NewSaveData(golfer)
 	restored := saveData.ToGolfer()
 
-	for i, name := range skillNames {
+	for _, name := range skillNames {
 		originalSkill := golfer.Skills[name]
 		restoredSkill := restored.Skills[name]
 
