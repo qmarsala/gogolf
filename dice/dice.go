@@ -1,4 +1,4 @@
-package main
+package dice
 
 import "math/rand/v2"
 
@@ -56,8 +56,7 @@ type SkillCheckResult struct {
 	Outcome    SkillCheckOutcome
 }
 
-func determineOutcome(margin int, isCritical bool) SkillCheckOutcome {
-	// Critical rolls override margin-based tiers
+func DetermineOutcome(margin int, isCritical bool) SkillCheckOutcome {
 	if isCritical {
 		if margin >= 0 {
 			return CriticalSuccess
@@ -65,7 +64,6 @@ func determineOutcome(margin int, isCritical bool) SkillCheckOutcome {
 		return CriticalFailure
 	}
 
-	// Margin-based tier determination
 	switch {
 	case margin >= 7:
 		return CriticalSuccess

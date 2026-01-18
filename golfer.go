@@ -1,6 +1,10 @@
 package main
 
-import "math"
+import (
+	"gogolf/dice"
+	"gogolf/progression"
+	"math"
+)
 
 type Club struct {
 	Name     string
@@ -49,35 +53,34 @@ type Golfer struct {
 	Name      string
 	Target    Point
 	Clubs     []Club
-	Skills    map[string]Skill
-	Abilities map[string]Ability
-	Money     int // Currency for purchasing equipment
-	Ball      *Ball  // Equipped golf ball
-	Glove     *Glove // Equipped glove
-	Shoes     *Shoes // Equipped shoes
+	Skills    map[string]progression.Skill
+	Abilities map[string]progression.Ability
+	Money     int
+	Ball      *Ball
+	Glove     *Glove
+	Shoes     *Shoes
 }
 
-// NewGolfer creates a new golfer with default skills and abilities at level 1
 func NewGolfer(name string) Golfer {
 	return Golfer{
 		Name:  name,
 		Clubs: DefaultClubs(),
-		Skills: map[string]Skill{
-			"Driver":       NewSkill("Driver"),
-			"Woods":        NewSkill("Woods"),
-			"Long Irons":   NewSkill("Long Irons"),
-			"Mid Irons":    NewSkill("Mid Irons"),
-			"Short Irons":  NewSkill("Short Irons"),
-			"Wedges":       NewSkill("Wedges"),
-			"Putter":       NewSkill("Putter"),
+		Skills: map[string]progression.Skill{
+			"Driver":      progression.NewSkill("Driver"),
+			"Woods":       progression.NewSkill("Woods"),
+			"Long Irons":  progression.NewSkill("Long Irons"),
+			"Mid Irons":   progression.NewSkill("Mid Irons"),
+			"Short Irons": progression.NewSkill("Short Irons"),
+			"Wedges":      progression.NewSkill("Wedges"),
+			"Putter":      progression.NewSkill("Putter"),
 		},
-		Abilities: map[string]Ability{
-			"Strength": NewAbility("Strength"),
-			"Control":  NewAbility("Control"),
-			"Touch":    NewAbility("Touch"),
-			"Mental":   NewAbility("Mental"),
+		Abilities: map[string]progression.Ability{
+			"Strength": progression.NewAbility("Strength"),
+			"Control":  progression.NewAbility("Control"),
+			"Touch":    progression.NewAbility("Touch"),
+			"Mental":   progression.NewAbility("Mental"),
 		},
-		Money: 100, // Starter money for basic equipment
+		Money: 100,
 	}
 }
 
@@ -95,23 +98,22 @@ func (g Golfer) GetBestClub(distance Yard) Club {
 	return c
 }
 
-func (g Golfer) SkillCheck(d Dice, targetNumber int) SkillCheckResult {
+func (g Golfer) SkillCheck(d dice.Dice, targetNumber int) dice.SkillCheckResult {
 	total, rolls := d.RollN(3)
 	margin := targetNumber - total
 	isCritical := rolls[0] == rolls[1] && rolls[0] == rolls[2]
 
-	return SkillCheckResult{
+	return dice.SkillCheckResult{
 		Success:    margin >= 0,
 		IsCritical: isCritical,
 		RollTotal:  total,
 		Rolls:      rolls,
 		Margin:     margin,
-		Outcome:    determineOutcome(margin, isCritical),
+		Outcome:    dice.DetermineOutcome(margin, isCritical),
 	}
 }
 
-// GetSkillForClub returns the skill associated with a club
-func (g Golfer) GetSkillForClub(club Club) Skill {
+func (g Golfer) GetSkillForClub(club Club) progression.Skill {
 	switch club.Name {
 	case "Driver":
 		return g.Skills["Driver"]
@@ -128,12 +130,11 @@ func (g Golfer) GetSkillForClub(club Club) Skill {
 	case "Putter":
 		return g.Skills["Putter"]
 	default:
-		return g.Skills["Driver"] // fallback
+		return g.Skills["Driver"]
 	}
 }
 
-// GetAbilityForClub returns the ability associated with a club
-func (g Golfer) GetAbilityForClub(club Club) Ability {
+func (g Golfer) GetAbilityForClub(club Club) progression.Ability {
 	switch club.Name {
 	case "Driver", "3 Wood", "5 Wood":
 		return g.Abilities["Strength"]
@@ -144,7 +145,7 @@ func (g Golfer) GetAbilityForClub(club Club) Ability {
 	case "Putter":
 		return g.Abilities["Mental"]
 	default:
-		return g.Abilities["Strength"] // fallback
+		return g.Abilities["Strength"]
 	}
 }
 
@@ -176,9 +177,13 @@ func (g *Golfer) AwardExperience(club Club, xp int) {
 	g.Abilities[ability.Name] = ability
 }
 
-// AddMoney increases the golfer's money by the specified amount
 func (g *Golfer) AddMoney(amount int) {
 	g.Money += amount
+}
+
+func (g *Golfer) AwardHoleReward(par, strokes int) {
+	reward := progression.CalculateHoleReward(par, strokes)
+	g.AddMoney(reward)
 }
 
 // SpendMoney decreases the golfer's money by the specified amount

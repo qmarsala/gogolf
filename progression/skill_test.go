@@ -1,8 +1,7 @@
-package main
+package progression
 
 import "testing"
 
-// Test Skill creation with valid initial values
 func TestNewSkill(t *testing.T) {
 	skill := NewSkill("Driver")
 
@@ -19,17 +18,16 @@ func TestNewSkill(t *testing.T) {
 	}
 }
 
-// Test Skill.Value() returns correct value based on level
 func TestSkill_Value(t *testing.T) {
 	tests := []struct {
 		level         int
 		expectedValue int
 	}{
-		{1, 2},  // Level 1 = 2 value
-		{2, 4},  // Level 2 = 4 value
-		{3, 6},  // Level 3 = 6 value
-		{5, 10}, // Level 5 = 10 value
-		{9, 18}, // Level 9 = 18 value (max level)
+		{1, 2},
+		{2, 4},
+		{3, 6},
+		{5, 10},
+		{9, 18},
 	}
 
 	for _, tt := range tests {
@@ -43,7 +41,6 @@ func TestSkill_Value(t *testing.T) {
 	}
 }
 
-// Test Skill.AddExperience() increases experience
 func TestSkill_AddExperience(t *testing.T) {
 	skill := NewSkill("Putter")
 
@@ -58,17 +55,15 @@ func TestSkill_AddExperience(t *testing.T) {
 	}
 }
 
-// Test Skill.AddExperience() triggers level up at threshold
 func TestSkill_AddExperience_LevelUp(t *testing.T) {
 	skill := NewSkill("Woods")
-	// Level 1 → 2 requires 100 XP
 
 	skill.AddExperience(99)
 	if skill.Level != 1 {
 		t.Errorf("At 99 XP, level = %v, want 1 (no level up yet)", skill.Level)
 	}
 
-	skill.AddExperience(1) // Total 100 XP
+	skill.AddExperience(1)
 	if skill.Level != 2 {
 		t.Errorf("At 100 XP, level = %v, want 2 (leveled up)", skill.Level)
 	}
@@ -78,7 +73,6 @@ func TestSkill_AddExperience_LevelUp(t *testing.T) {
 	}
 }
 
-// Test Skill.AddExperience() respects max level 9
 func TestSkill_AddExperience_MaxLevel(t *testing.T) {
 	skill := Skill{Name: "Wedges", Level: 9, Experience: 0}
 
@@ -88,23 +82,21 @@ func TestSkill_AddExperience_MaxLevel(t *testing.T) {
 		t.Errorf("At max level, level = %v, want 9 (no level up beyond max)", skill.Level)
 	}
 
-	// Experience should not accumulate at max level
 	if skill.Experience != 0 {
 		t.Errorf("At max level, experience = %v, want 0 (no XP accumulation)", skill.Experience)
 	}
 }
 
-// Test Skill.ExperienceToNextLevel() returns correct threshold
 func TestSkill_ExperienceToNextLevel(t *testing.T) {
 	tests := []struct {
 		level    int
 		expected int
 	}{
-		{1, 100}, // Level 1 → 2 = 100 XP
-		{2, 150}, // Level 2 → 3 = 150 XP
-		{3, 200}, // Level 3 → 4 = 200 XP
-		{8, 450}, // Level 8 → 9 = 450 XP
-		{9, 0},   // Level 9 (max) = 0 (no next level)
+		{1, 100},
+		{2, 150},
+		{3, 200},
+		{8, 450},
+		{9, 0},
 	}
 
 	for _, tt := range tests {
@@ -118,7 +110,6 @@ func TestSkill_ExperienceToNextLevel(t *testing.T) {
 	}
 }
 
-// Test Skill.CanLevelUp() returns true when enough XP
 func TestSkill_CanLevelUp(t *testing.T) {
 	skill := NewSkill("Long Irons")
 
@@ -142,7 +133,6 @@ func TestSkill_CanLevelUp(t *testing.T) {
 	}
 }
 
-// Test skill type names match expected club categories
 func TestSkillTypes(t *testing.T) {
 	expectedSkills := []string{
 		"Driver",
@@ -162,23 +152,19 @@ func TestSkillTypes(t *testing.T) {
 	}
 }
 
-// Test multiple level ups in sequence
 func TestSkill_MultipleLevelUps(t *testing.T) {
 	skill := NewSkill("Mid Irons")
 
-	// Level 1 → 2 (100 XP)
 	skill.AddExperience(100)
 	if skill.Level != 2 {
 		t.Errorf("After 100 XP, level = %v, want 2", skill.Level)
 	}
 
-	// Level 2 → 3 (150 XP)
 	skill.AddExperience(150)
 	if skill.Level != 3 {
 		t.Errorf("After 150 more XP, level = %v, want 3", skill.Level)
 	}
 
-	// Level 3 → 4 (200 XP)
 	skill.AddExperience(200)
 	if skill.Level != 4 {
 		t.Errorf("After 200 more XP, level = %v, want 4", skill.Level)

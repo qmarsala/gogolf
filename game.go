@@ -1,6 +1,8 @@
 package main
 
 import (
+	"gogolf/dice"
+	"gogolf/progression"
 	"math"
 	"math/rand/v2"
 )
@@ -26,7 +28,7 @@ type GameContext struct {
 
 type ShotResult struct {
 	ClubName    string
-	Outcome     SkillCheckOutcome
+	Outcome     dice.SkillCheckOutcome
 	Margin      int
 	Description string
 	Rotation    float64
@@ -89,7 +91,7 @@ func (g *Game) TakeShot(power float64) ShotResult {
 	difficulty := lie.DifficultyModifier()
 
 	targetNumber := g.Golfer.CalculateTargetNumber(club, difficulty)
-	result := g.Golfer.SkillCheck(NewD6(), targetNumber)
+	result := g.Golfer.SkillCheck(dice.NewD6(), targetNumber)
 
 	rotationDirection := float64(1)
 	if int(math.Abs(float64(result.Margin)))%2 == 0 {
@@ -213,28 +215,28 @@ func (g *Game) CompleteHole() int {
 	hole := g.GetCurrentHole()
 	strokes := g.StrokesThisHole()
 	g.Golfer.AwardHoleReward(hole.Par, strokes)
-	return CalculateHoleReward(hole.Par, strokes)
+	return progression.CalculateHoleReward(hole.Par, strokes)
 }
 
 func (g *Game) GetLastShotResult() *ShotResult {
 	return g.lastShotResult
 }
 
-func calculateXP(outcome SkillCheckOutcome) int {
+func calculateXP(outcome dice.SkillCheckOutcome) int {
 	switch outcome {
-	case CriticalSuccess:
+	case dice.CriticalSuccess:
 		return 15
-	case Excellent:
+	case dice.Excellent:
 		return 10
-	case Good:
+	case dice.Good:
 		return 7
-	case Marginal:
+	case dice.Marginal:
 		return 5
-	case Poor:
+	case dice.Poor:
 		return 3
-	case Bad:
+	case dice.Bad:
 		return 2
-	case CriticalFailure:
+	case dice.CriticalFailure:
 		return 1
 	default:
 		return 1
