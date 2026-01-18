@@ -1,4 +1,4 @@
-package progression
+package gogolf
 
 func CalculateHoleReward(par, strokes int) int {
 	if strokes == 1 {

@@ -1,4 +1,4 @@
-package dice
+package gogolf
 
 import "math/rand/v2"
 

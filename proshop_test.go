@@ -1,15 +1,14 @@
-package shop
+package gogolf
 
 import (
-	"gogolf"
 	"testing"
 )
 
 func TestProShop_HasInventory(t *testing.T) {
 	shop := ProShop{
-		Balls:  []gogolf.Ball{},
-		Gloves: []gogolf.Glove{},
-		Shoes:  []gogolf.Shoes{},
+		Balls:  []Ball{},
+		Gloves: []Glove{},
+		Shoes:  []Shoes{},
 	}
 
 	if shop.Balls == nil {
@@ -81,10 +80,10 @@ func TestNewProShop_ShoeVariety(t *testing.T) {
 
 func TestProShop_PurchaseBall_Success(t *testing.T) {
 	shop := NewProShop()
-	golfer := gogolf.NewGolfer("TestPlayer")
+	golfer := NewGolfer("TestPlayer")
 	golfer.Money = 100
 
-	var targetBall *gogolf.Ball
+	var targetBall *Ball
 	for i := range shop.Balls {
 		if shop.Balls[i].Cost <= 100 {
 			targetBall = &shop.Balls[i]
@@ -118,10 +117,10 @@ func TestProShop_PurchaseBall_Success(t *testing.T) {
 
 func TestProShop_PurchaseBall_InsufficientFunds(t *testing.T) {
 	shop := NewProShop()
-	golfer := gogolf.NewGolfer("TestPlayer")
+	golfer := NewGolfer("TestPlayer")
 	golfer.Money = 10
 
-	var expensiveBall *gogolf.Ball
+	var expensiveBall *Ball
 	for i := range shop.Balls {
 		if shop.Balls[i].Cost > 10 {
 			expensiveBall = &shop.Balls[i]
@@ -147,7 +146,7 @@ func TestProShop_PurchaseBall_InsufficientFunds(t *testing.T) {
 
 func TestProShop_PurchaseBall_NotFound(t *testing.T) {
 	shop := NewProShop()
-	golfer := gogolf.NewGolfer("TestPlayer")
+	golfer := NewGolfer("TestPlayer")
 	golfer.Money = 1000
 
 	success := shop.PurchaseBall(&golfer, "NonExistent Ball")
@@ -159,10 +158,10 @@ func TestProShop_PurchaseBall_NotFound(t *testing.T) {
 
 func TestProShop_PurchaseGlove_Success(t *testing.T) {
 	shop := NewProShop()
-	golfer := gogolf.NewGolfer("TestPlayer")
+	golfer := NewGolfer("TestPlayer")
 	golfer.Money = 100
 
-	var targetGlove *gogolf.Glove
+	var targetGlove *Glove
 	for i := range shop.Gloves {
 		if shop.Gloves[i].Cost <= 100 {
 			targetGlove = &shop.Gloves[i]
@@ -187,10 +186,10 @@ func TestProShop_PurchaseGlove_Success(t *testing.T) {
 
 func TestProShop_PurchaseShoes_Success(t *testing.T) {
 	shop := NewProShop()
-	golfer := gogolf.NewGolfer("TestPlayer")
+	golfer := NewGolfer("TestPlayer")
 	golfer.Money = 100
 
-	var targetShoes *gogolf.Shoes
+	var targetShoes *Shoes
 	for i := range shop.Shoes {
 		if shop.Shoes[i].Cost <= 100 {
 			targetShoes = &shop.Shoes[i]

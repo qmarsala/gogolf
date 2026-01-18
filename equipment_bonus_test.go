@@ -2,7 +2,6 @@ package gogolf_test
 
 import (
 	"gogolf"
-	"gogolf/mechanics"
 	"math/rand/v2"
 	"testing"
 )
@@ -60,7 +59,7 @@ func TestCalculateRotation_WithGloveBonus(t *testing.T) {
 		Margin:  3,
 	}
 
-	rotationWithout := mechanics.CalculateRotation(club, result, random)
+	rotationWithout := gogolf.CalculateRotation(club, result, random)
 
 	random = rand.New(rand.NewPCG(12345, 67890))
 
@@ -68,7 +67,7 @@ func TestCalculateRotation_WithGloveBonus(t *testing.T) {
 	golfer.EquipGlove(glove)
 
 	modifiedClub := golfer.GetModifiedClub(club)
-	rotationWith := mechanics.CalculateRotation(modifiedClub, result, random)
+	rotationWith := gogolf.CalculateRotation(modifiedClub, result, random)
 
 	if rotationWith >= rotationWithout {
 		t.Errorf("Rotation with glove (%f) should be less than without (%f)", rotationWith, rotationWithout)

@@ -1,16 +1,14 @@
-package shop
-
-import "gogolf"
+package gogolf
 
 type ProShop struct {
-	Balls  []gogolf.Ball
-	Gloves []gogolf.Glove
-	Shoes  []gogolf.Shoes
+	Balls  []Ball
+	Gloves []Glove
+	Shoes  []Shoes
 }
 
 func NewProShop() ProShop {
 	return ProShop{
-		Balls: []gogolf.Ball{
+		Balls: []Ball{
 			{
 				Name:          "Budget Ball",
 				DistanceBonus: 0,
@@ -36,7 +34,7 @@ func NewProShop() ProShop {
 				Cost:          75,
 			},
 		},
-		Gloves: []gogolf.Glove{
+		Gloves: []Glove{
 			{
 				Name:          "Basic Glove",
 				AccuracyBonus: 0.02,
@@ -53,7 +51,7 @@ func NewProShop() ProShop {
 				Cost:          65,
 			},
 		},
-		Shoes: []gogolf.Shoes{
+		Shoes: []Shoes{
 			{
 				Name:                "Casual Spikes",
 				LiePenaltyReduction: 1,
@@ -73,8 +71,8 @@ func NewProShop() ProShop {
 	}
 }
 
-func (shop ProShop) PurchaseBall(golfer *gogolf.Golfer, ballName string) bool {
-	var targetBall *gogolf.Ball
+func (shop ProShop) PurchaseBall(golfer *Golfer, ballName string) bool {
+	var targetBall *Ball
 	for i := range shop.Balls {
 		if shop.Balls[i].Name == ballName {
 			targetBall = &shop.Balls[i]
@@ -94,8 +92,8 @@ func (shop ProShop) PurchaseBall(golfer *gogolf.Golfer, ballName string) bool {
 	return true
 }
 
-func (shop ProShop) PurchaseGlove(golfer *gogolf.Golfer, gloveName string) bool {
-	var targetGlove *gogolf.Glove
+func (shop ProShop) PurchaseGlove(golfer *Golfer, gloveName string) bool {
+	var targetGlove *Glove
 	for i := range shop.Gloves {
 		if shop.Gloves[i].Name == gloveName {
 			targetGlove = &shop.Gloves[i]
@@ -115,8 +113,8 @@ func (shop ProShop) PurchaseGlove(golfer *gogolf.Golfer, gloveName string) bool 
 	return true
 }
 
-func (shop ProShop) PurchaseShoes(golfer *gogolf.Golfer, shoesName string) bool {
-	var targetShoes *gogolf.Shoes
+func (shop ProShop) PurchaseShoes(golfer *Golfer, shoesName string) bool {
+	var targetShoes *Shoes
 	for i := range shop.Shoes {
 		if shop.Shoes[i].Name == shoesName {
 			targetShoes = &shop.Shoes[i]

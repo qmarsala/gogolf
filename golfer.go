@@ -1,7 +1,6 @@
 package gogolf
 
 import (
-	"gogolf/progression"
 	"math"
 )
 
@@ -52,8 +51,8 @@ type Golfer struct {
 	Name      string
 	Target    Point
 	Clubs     []Club
-	Skills    map[string]progression.Skill
-	Abilities map[string]progression.Ability
+	Skills    map[string]Skill
+	Abilities map[string]Ability
 	Money     int
 	Ball      *Ball
 	Glove     *Glove
@@ -64,20 +63,20 @@ func NewGolfer(name string) Golfer {
 	return Golfer{
 		Name:  name,
 		Clubs: DefaultClubs(),
-		Skills: map[string]progression.Skill{
-			"Driver":      progression.NewSkill("Driver"),
-			"Woods":       progression.NewSkill("Woods"),
-			"Long Irons":  progression.NewSkill("Long Irons"),
-			"Mid Irons":   progression.NewSkill("Mid Irons"),
-			"Short Irons": progression.NewSkill("Short Irons"),
-			"Wedges":      progression.NewSkill("Wedges"),
-			"Putter":      progression.NewSkill("Putter"),
+		Skills: map[string]Skill{
+			"Driver":      NewSkill("Driver"),
+			"Woods":       NewSkill("Woods"),
+			"Long Irons":  NewSkill("Long Irons"),
+			"Mid Irons":   NewSkill("Mid Irons"),
+			"Short Irons": NewSkill("Short Irons"),
+			"Wedges":      NewSkill("Wedges"),
+			"Putter":      NewSkill("Putter"),
 		},
-		Abilities: map[string]progression.Ability{
-			"Strength": progression.NewAbility("Strength"),
-			"Control":  progression.NewAbility("Control"),
-			"Touch":    progression.NewAbility("Touch"),
-			"Mental":   progression.NewAbility("Mental"),
+		Abilities: map[string]Ability{
+			"Strength": NewAbility("Strength"),
+			"Control":  NewAbility("Control"),
+			"Touch":    NewAbility("Touch"),
+			"Mental":   NewAbility("Mental"),
 		},
 		Money: 100,
 	}
@@ -138,7 +137,7 @@ func determineOutcome(margin int, isCritical bool) SkillCheckOutcome {
 	}
 }
 
-func (g Golfer) GetSkillForClub(club Club) progression.Skill {
+func (g Golfer) GetSkillForClub(club Club) Skill {
 	switch club.Name {
 	case "Driver":
 		return g.Skills["Driver"]
@@ -159,7 +158,7 @@ func (g Golfer) GetSkillForClub(club Club) progression.Skill {
 	}
 }
 
-func (g Golfer) GetAbilityForClub(club Club) progression.Ability {
+func (g Golfer) GetAbilityForClub(club Club) Ability {
 	switch club.Name {
 	case "Driver", "3 Wood", "5 Wood":
 		return g.Abilities["Strength"]
@@ -207,7 +206,7 @@ func (g *Golfer) AddMoney(amount int) {
 }
 
 func (g *Golfer) AwardHoleReward(par, strokes int) {
-	reward := progression.CalculateHoleReward(par, strokes)
+	reward := CalculateHoleReward(par, strokes)
 	g.AddMoney(reward)
 }
 

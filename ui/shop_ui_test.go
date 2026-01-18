@@ -3,7 +3,6 @@ package ui
 import (
 	"bytes"
 	"gogolf"
-	"gogolf/shop"
 	"strings"
 	"testing"
 )
@@ -73,7 +72,7 @@ func TestFormatShoesDisplay(t *testing.T) {
 }
 
 func TestShopUI_ShowMainMenu_DisplaysMoneyAndEquipment(t *testing.T) {
-	proshop := shop.NewProShop()
+	proshop := gogolf.NewProShop()
 	golfer := gogolf.NewGolfer("TestPlayer")
 	golfer.Money = 150
 
@@ -94,7 +93,7 @@ func TestShopUI_ShowMainMenu_DisplaysMoneyAndEquipment(t *testing.T) {
 }
 
 func TestShopUI_ShowMainMenu_DisplaysCategories(t *testing.T) {
-	proshop := shop.NewProShop()
+	proshop := gogolf.NewProShop()
 	golfer := gogolf.NewGolfer("TestPlayer")
 
 	output := &bytes.Buffer{}
@@ -117,7 +116,7 @@ func TestShopUI_ShowMainMenu_DisplaysCategories(t *testing.T) {
 }
 
 func TestShopUI_BallsMenu_DisplaysCurrentEquipment(t *testing.T) {
-	proshop := shop.NewProShop()
+	proshop := gogolf.NewProShop()
 	golfer := gogolf.NewGolfer("TestPlayer")
 	golfer.Ball = &gogolf.Ball{Name: "Standard Ball", DistanceBonus: 3, SpinControl: 0.5}
 
@@ -138,7 +137,7 @@ func TestShopUI_BallsMenu_DisplaysCurrentEquipment(t *testing.T) {
 }
 
 func TestShopUI_BallsMenu_DisplaysAvailableBalls(t *testing.T) {
-	proshop := shop.NewProShop()
+	proshop := gogolf.NewProShop()
 	golfer := gogolf.NewGolfer("TestPlayer")
 
 	output := &bytes.Buffer{}
@@ -158,7 +157,7 @@ func TestShopUI_BallsMenu_DisplaysAvailableBalls(t *testing.T) {
 }
 
 func TestShopUI_PurchaseBall_Success(t *testing.T) {
-	proshop := shop.NewProShop()
+	proshop := gogolf.NewProShop()
 	golfer := gogolf.NewGolfer("TestPlayer")
 	golfer.Money = 100
 
@@ -181,7 +180,7 @@ func TestShopUI_PurchaseBall_Success(t *testing.T) {
 }
 
 func TestShopUI_PurchaseBall_Declined(t *testing.T) {
-	proshop := shop.NewProShop()
+	proshop := gogolf.NewProShop()
 	golfer := gogolf.NewGolfer("TestPlayer")
 	golfer.Money = 100
 	initialMoney := golfer.Money
@@ -202,7 +201,7 @@ func TestShopUI_PurchaseBall_Declined(t *testing.T) {
 }
 
 func TestShopUI_PurchaseBall_InsufficientFunds(t *testing.T) {
-	proshop := shop.NewProShop()
+	proshop := gogolf.NewProShop()
 	golfer := gogolf.NewGolfer("TestPlayer")
 	golfer.Money = 10
 
@@ -227,7 +226,7 @@ func TestShopUI_PurchaseBall_InsufficientFunds(t *testing.T) {
 }
 
 func TestShopUI_GlovesMenu_DisplaysAvailableGloves(t *testing.T) {
-	proshop := shop.NewProShop()
+	proshop := gogolf.NewProShop()
 	golfer := gogolf.NewGolfer("TestPlayer")
 
 	output := &bytes.Buffer{}
@@ -247,7 +246,7 @@ func TestShopUI_GlovesMenu_DisplaysAvailableGloves(t *testing.T) {
 }
 
 func TestShopUI_ShoesMenu_DisplaysAvailableShoes(t *testing.T) {
-	proshop := shop.NewProShop()
+	proshop := gogolf.NewProShop()
 	golfer := gogolf.NewGolfer("TestPlayer")
 
 	output := &bytes.Buffer{}
@@ -267,7 +266,7 @@ func TestShopUI_ShoesMenu_DisplaysAvailableShoes(t *testing.T) {
 }
 
 func TestShopUI_PurchaseGlove_Success(t *testing.T) {
-	proshop := shop.NewProShop()
+	proshop := gogolf.NewProShop()
 	golfer := gogolf.NewGolfer("TestPlayer")
 	golfer.Money = 100
 
@@ -287,7 +286,7 @@ func TestShopUI_PurchaseGlove_Success(t *testing.T) {
 }
 
 func TestShopUI_PurchaseShoes_Success(t *testing.T) {
-	proshop := shop.NewProShop()
+	proshop := gogolf.NewProShop()
 	golfer := gogolf.NewGolfer("TestPlayer")
 	golfer.Money = 100
 
@@ -307,7 +306,7 @@ func TestShopUI_PurchaseShoes_Success(t *testing.T) {
 }
 
 func TestShopUI_DisplaysAffordabilityIndicator(t *testing.T) {
-	proshop := shop.NewProShop()
+	proshop := gogolf.NewProShop()
 	golfer := gogolf.NewGolfer("TestPlayer")
 	golfer.Money = 30 // Can afford Budget Ball (20) but not Premium (50)
 
@@ -327,7 +326,7 @@ func TestShopUI_DisplaysAffordabilityIndicator(t *testing.T) {
 }
 
 func TestShopUI_NoEquipmentShowsNone(t *testing.T) {
-	proshop := shop.NewProShop()
+	proshop := gogolf.NewProShop()
 	golfer := gogolf.NewGolfer("TestPlayer")
 	// No equipment equipped
 

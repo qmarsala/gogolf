@@ -2,9 +2,6 @@ package game
 
 import (
 	"gogolf"
-	"gogolf/dice"
-	"gogolf/mechanics"
-	"gogolf/progression"
 	"math"
 	"math/rand/v2"
 )
@@ -106,7 +103,7 @@ func (g *Game) TakeShot(power float64) ShotResult {
 	difficulty := lie.DifficultyModifier()
 
 	targetNumber := g.Golfer.CalculateTargetNumber(club, difficulty)
-	result := g.Golfer.SkillCheck(dice.NewD6(), targetNumber)
+	result := g.Golfer.SkillCheck(gogolf.NewD6(), targetNumber)
 
 	rotationDirection := float64(1)
 	if int(math.Abs(float64(result.Margin)))%2 == 0 {
@@ -115,8 +112,8 @@ func (g *Game) TakeShot(power float64) ShotResult {
 
 	modifiedClub := g.Golfer.GetModifiedClub(club)
 
-	rotationDegrees := mechanics.CalculateRotation(modifiedClub, result, g.random)
-	adjustedPower := mechanics.CalculatePower(modifiedClub, power, result)
+	rotationDegrees := gogolf.CalculateRotation(modifiedClub, result, g.random)
+	adjustedPower := gogolf.CalculatePower(modifiedClub, power, result)
 
 	skill := g.Golfer.GetSkillForClub(club)
 	ability := g.Golfer.GetAbilityForClub(club)
@@ -167,7 +164,7 @@ func (g *Game) TakeShot(power float64) ShotResult {
 		ClubName:    club.Name,
 		Outcome:     result.Outcome,
 		Margin:      result.Margin,
-		Description: mechanics.GetShotQualityDescription(result),
+		Description: gogolf.GetShotQualityDescription(result),
 		Rotation:    rotationDegrees,
 		RotationDir: rotationDir,
 		Power:       power,
@@ -230,7 +227,7 @@ func (g *Game) CompleteHole() int {
 	hole := g.GetCurrentHole()
 	strokes := g.StrokesThisHole()
 	g.Golfer.AwardHoleReward(hole.Par, strokes)
-	return progression.CalculateHoleReward(hole.Par, strokes)
+	return gogolf.CalculateHoleReward(hole.Par, strokes)
 }
 
 func (g *Game) GetLastShotResult() *ShotResult {

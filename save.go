@@ -1,10 +1,8 @@
-package persistence
+package gogolf
 
 import (
 	"encoding/json"
 	"fmt"
-	"gogolf"
-	"gogolf/progression"
 	"os"
 	"path/filepath"
 	"sort"
@@ -20,7 +18,7 @@ type SkillData struct {
 	Experience int    `json:"experience"`
 }
 
-func NewSkillData(skill progression.Skill) SkillData {
+func NewSkillData(skill Skill) SkillData {
 	return SkillData{
 		Name:       skill.Name,
 		Level:      skill.Level,
@@ -28,8 +26,8 @@ func NewSkillData(skill progression.Skill) SkillData {
 	}
 }
 
-func (sd SkillData) ToSkill() progression.Skill {
-	return progression.Skill{
+func (sd SkillData) ToSkill() Skill {
+	return Skill{
 		Name:       sd.Name,
 		Level:      sd.Level,
 		Experience: sd.Experience,
@@ -42,7 +40,7 @@ type AbilityData struct {
 	Experience int    `json:"experience"`
 }
 
-func NewAbilityData(ability progression.Ability) AbilityData {
+func NewAbilityData(ability Ability) AbilityData {
 	return AbilityData{
 		Name:       ability.Name,
 		Level:      ability.Level,
@@ -50,8 +48,8 @@ func NewAbilityData(ability progression.Ability) AbilityData {
 	}
 }
 
-func (ad AbilityData) ToAbility() progression.Ability {
-	return progression.Ability{
+func (ad AbilityData) ToAbility() Ability {
+	return Ability{
 		Name:       ad.Name,
 		Level:      ad.Level,
 		Experience: ad.Experience,
@@ -65,12 +63,12 @@ type SaveData struct {
 	Money      int                    `json:"money"`
 	Skills     map[string]SkillData   `json:"skills"`
 	Abilities  map[string]AbilityData `json:"abilities"`
-	Ball       *gogolf.Ball           `json:"ball,omitempty"`
-	Glove      *gogolf.Glove          `json:"glove,omitempty"`
-	Shoes      *gogolf.Shoes          `json:"shoes,omitempty"`
+	Ball       *Ball                  `json:"ball,omitempty"`
+	Glove      *Glove                 `json:"glove,omitempty"`
+	Shoes      *Shoes                 `json:"shoes,omitempty"`
 }
 
-func NewSaveData(golfer gogolf.Golfer) SaveData {
+func NewSaveData(golfer Golfer) SaveData {
 	skills := make(map[string]SkillData)
 	for name, skill := range golfer.Skills {
 		skills[name] = NewSkillData(skill)
@@ -94,8 +92,8 @@ func NewSaveData(golfer gogolf.Golfer) SaveData {
 	}
 }
 
-func (sd SaveData) ToGolfer() gogolf.Golfer {
-	golfer := gogolf.NewGolfer(sd.GolferName)
+func (sd SaveData) ToGolfer() Golfer {
+	golfer := NewGolfer(sd.GolferName)
 	golfer.Money = sd.Money
 
 	for name, skillData := range sd.Skills {
@@ -138,7 +136,7 @@ func (sm *SaveManager) validateSlot(slot int) error {
 	return nil
 }
 
-func (sm *SaveManager) Save(slot int, golfer gogolf.Golfer) error {
+func (sm *SaveManager) Save(slot int, golfer Golfer) error {
 	if err := sm.validateSlot(slot); err != nil {
 		return err
 	}
@@ -160,19 +158,19 @@ func (sm *SaveManager) Save(slot int, golfer gogolf.Golfer) error {
 	return nil
 }
 
-func (sm *SaveManager) Load(slot int) (gogolf.Golfer, error) {
+func (sm *SaveManager) Load(slot int) (Golfer, error) {
 	if err := sm.validateSlot(slot); err != nil {
-		return gogolf.Golfer{}, err
+		return Golfer{}, err
 	}
 
 	jsonBytes, err := os.ReadFile(sm.slotPath(slot))
 	if err != nil {
-		return gogolf.Golfer{}, fmt.Errorf("failed to read save file: %w", err)
+		return Golfer{}, fmt.Errorf("failed to read save file: %w", err)
 	}
 
 	var saveData SaveData
 	if err := json.Unmarshal(jsonBytes, &saveData); err != nil {
-		return gogolf.Golfer{}, fmt.Errorf("failed to parse save file: %w", err)
+		return Golfer{}, fmt.Errorf("failed to parse save file: %w", err)
 	}
 
 	return saveData.ToGolfer(), nil

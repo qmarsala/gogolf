@@ -1,9 +1,7 @@
-package persistence
+package gogolf
 
 import (
 	"encoding/json"
-	"gogolf"
-	"gogolf/progression"
 	"os"
 	"path/filepath"
 	"testing"
@@ -11,11 +9,11 @@ import (
 )
 
 func TestSaveDataContainsGolferState(t *testing.T) {
-	golfer := gogolf.NewGolfer("TestPlayer")
+	golfer := NewGolfer("TestPlayer")
 	golfer.Money = 250
-	golfer.Ball = &gogolf.Ball{Name: "Pro V1", DistanceBonus: 8, SpinControl: 0.9, Cost: 75}
-	golfer.Glove = &gogolf.Glove{Name: "Leather Pro", AccuracyBonus: 0.05, Cost: 45}
-	golfer.Shoes = &gogolf.Shoes{Name: "Tour Edition", LiePenaltyReduction: 3, Cost: 80}
+	golfer.Ball = &Ball{Name: "Pro V1", DistanceBonus: 8, SpinControl: 0.9, Cost: 75}
+	golfer.Glove = &Glove{Name: "Leather Pro", AccuracyBonus: 0.05, Cost: 45}
+	golfer.Shoes = &Shoes{Name: "Tour Edition", LiePenaltyReduction: 3, Cost: 80}
 
 	saveData := NewSaveData(golfer)
 
@@ -37,7 +35,7 @@ func TestSaveDataContainsGolferState(t *testing.T) {
 }
 
 func TestSaveDataContainsSkillsAndAbilities(t *testing.T) {
-	golfer := gogolf.NewGolfer("TestPlayer")
+	golfer := NewGolfer("TestPlayer")
 	skill := golfer.Skills["Driver"]
 	(&skill).AddExperience(150)
 	golfer.Skills["Driver"] = skill
@@ -68,7 +66,7 @@ func TestSaveDataContainsSkillsAndAbilities(t *testing.T) {
 }
 
 func TestSaveDataHasVersionAndTimestamp(t *testing.T) {
-	golfer := gogolf.NewGolfer("TestPlayer")
+	golfer := NewGolfer("TestPlayer")
 	before := time.Now()
 	saveData := NewSaveData(golfer)
 	after := time.Now()
@@ -82,7 +80,7 @@ func TestSaveDataHasVersionAndTimestamp(t *testing.T) {
 }
 
 func TestSaveDataSerializesToJSON(t *testing.T) {
-	golfer := gogolf.NewGolfer("TestPlayer")
+	golfer := NewGolfer("TestPlayer")
 	golfer.Money = 150
 	saveData := NewSaveData(golfer)
 
@@ -111,9 +109,9 @@ func TestSaveDataSerializesToJSON(t *testing.T) {
 }
 
 func TestRestoreGolferFromSaveData(t *testing.T) {
-	original := gogolf.NewGolfer("TestPlayer")
+	original := NewGolfer("TestPlayer")
 	original.Money = 300
-	original.Ball = &gogolf.Ball{Name: "Premium Ball", DistanceBonus: 5, SpinControl: 0.7, Cost: 50}
+	original.Ball = &Ball{Name: "Premium Ball", DistanceBonus: 5, SpinControl: 0.7, Cost: 50}
 
 	skill := original.Skills["Putter"]
 	(&skill).AddExperience(100)
@@ -144,7 +142,7 @@ func TestSaveAndLoadFile(t *testing.T) {
 	tempDir := t.TempDir()
 	manager := NewSaveManager(tempDir)
 
-	golfer := gogolf.NewGolfer("FileTestPlayer")
+	golfer := NewGolfer("FileTestPlayer")
 	golfer.Money = 500
 
 	err := manager.Save(1, golfer)
@@ -174,8 +172,8 @@ func TestListSaveSlots(t *testing.T) {
 	tempDir := t.TempDir()
 	manager := NewSaveManager(tempDir)
 
-	golfer1 := gogolf.NewGolfer("Player1")
-	golfer2 := gogolf.NewGolfer("Player2")
+	golfer1 := NewGolfer("Player1")
+	golfer2 := NewGolfer("Player2")
 
 	manager.Save(1, golfer1)
 	manager.Save(3, golfer2)
@@ -209,7 +207,7 @@ func TestDeleteSaveSlot(t *testing.T) {
 	tempDir := t.TempDir()
 	manager := NewSaveManager(tempDir)
 
-	golfer := gogolf.NewGolfer("ToDelete")
+	golfer := NewGolfer("ToDelete")
 	manager.Save(2, golfer)
 
 	err := manager.Delete(2)
@@ -236,7 +234,7 @@ func TestLoadNonExistentSlotReturnsError(t *testing.T) {
 func TestSaveSlotValidation(t *testing.T) {
 	tempDir := t.TempDir()
 	manager := NewSaveManager(tempDir)
-	golfer := gogolf.NewGolfer("Test")
+	golfer := NewGolfer("Test")
 
 	err := manager.Save(0, golfer)
 	if err == nil {
@@ -250,7 +248,7 @@ func TestSaveSlotValidation(t *testing.T) {
 }
 
 func TestSaveDataWithNilEquipment(t *testing.T) {
-	golfer := gogolf.NewGolfer("NoEquipment")
+	golfer := NewGolfer("NoEquipment")
 
 	saveData := NewSaveData(golfer)
 
@@ -279,7 +277,7 @@ func TestSaveDataWithNilEquipment(t *testing.T) {
 }
 
 func TestSavePreservesAllSkillProgress(t *testing.T) {
-	golfer := gogolf.NewGolfer("SkillTest")
+	golfer := NewGolfer("SkillTest")
 
 	skillNames := []string{"Driver", "Woods", "Long Irons", "Mid Irons", "Short Irons", "Wedges", "Putter"}
 	for i, name := range skillNames {
@@ -361,7 +359,7 @@ func TestAbilityDataToAbility(t *testing.T) {
 }
 
 func TestNewSkillDataFromSkill(t *testing.T) {
-	skill := progression.Skill{
+	skill := Skill{
 		Name:       "Woods",
 		Level:      2,
 		Experience: 50,
@@ -381,7 +379,7 @@ func TestNewSkillDataFromSkill(t *testing.T) {
 }
 
 func TestNewAbilityDataFromAbility(t *testing.T) {
-	ability := progression.Ability{
+	ability := Ability{
 		Name:       "Touch",
 		Level:      5,
 		Experience: 0,
@@ -408,7 +406,7 @@ func TestSlotExistsCheck(t *testing.T) {
 		t.Error("slot 1 should not exist initially")
 	}
 
-	golfer := gogolf.NewGolfer("Test")
+	golfer := NewGolfer("Test")
 	manager.Save(1, golfer)
 
 	if !manager.SlotExists(1) {

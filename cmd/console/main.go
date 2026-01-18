@@ -7,8 +7,6 @@ import (
 
 	"gogolf"
 	"gogolf/game"
-	"gogolf/persistence"
-	"gogolf/shop"
 	"gogolf/ui"
 )
 
@@ -97,7 +95,7 @@ func getSaveDir() string {
 	return filepath.Join(homeDir, ".gogolf_saves")
 }
 
-func showStartupMenu(saveManager *persistence.SaveManager) *game.Game {
+func showStartupMenu(saveManager *gogolf.SaveManager) *game.Game {
 	for {
 		options := []ui.MenuOption{
 			{Label: "New Game", Value: "new"},
@@ -128,7 +126,7 @@ func showStartupMenu(saveManager *persistence.SaveManager) *game.Game {
 	}
 }
 
-func showLoadMenu(saveManager *persistence.SaveManager) *game.Game {
+func showLoadMenu(saveManager *gogolf.SaveManager) *game.Game {
 	slots := saveManager.ListSaveSlots()
 
 	if len(slots) == 0 {
@@ -165,10 +163,10 @@ func showLoadMenu(saveManager *persistence.SaveManager) *game.Game {
 	return game.NewFromGolfer(golfer, 3)
 }
 
-func showSaveMenu(saveManager *persistence.SaveManager, golfer gogolf.Golfer) {
-	options := make([]ui.MenuOption, 0, persistence.MaxSaveSlots+1)
+func showSaveMenu(saveManager *gogolf.SaveManager, golfer gogolf.Golfer) {
+	options := make([]ui.MenuOption, 0, gogolf.MaxSaveSlots+1)
 
-	for slot := 1; slot <= persistence.MaxSaveSlots; slot++ {
+	for slot := 1; slot <= gogolf.MaxSaveSlots; slot++ {
 		label := fmt.Sprintf("Slot %d: ", slot)
 		if saveManager.SlotExists(slot) {
 			slots := saveManager.ListSaveSlots()
@@ -203,7 +201,7 @@ func showSaveMenu(saveManager *persistence.SaveManager, golfer gogolf.Golfer) {
 }
 
 func main() {
-	saveManager := persistence.NewSaveManager(getSaveDir())
+	saveManager := gogolf.NewSaveManager(getSaveDir())
 
 	g := showStartupMenu(saveManager)
 
@@ -267,8 +265,8 @@ func main() {
 	showPostRoundMenu(saveManager, &g.Golfer)
 }
 
-func showPostRoundMenu(saveManager *persistence.SaveManager, golfer *gogolf.Golfer) {
-	proshop := shop.NewProShop()
+func showPostRoundMenu(saveManager *gogolf.SaveManager, golfer *gogolf.Golfer) {
+	proshop := gogolf.NewProShop()
 
 	for {
 		options := []ui.MenuOption{
