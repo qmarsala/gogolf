@@ -1,6 +1,9 @@
 package main
 
-import "math"
+import (
+	"gogolf/dice"
+	"math"
+)
 
 type Club struct {
 	Name     string
@@ -95,18 +98,18 @@ func (g Golfer) GetBestClub(distance Yard) Club {
 	return c
 }
 
-func (g Golfer) SkillCheck(d Dice, targetNumber int) SkillCheckResult {
+func (g Golfer) SkillCheck(d dice.Dice, targetNumber int) dice.SkillCheckResult {
 	total, rolls := d.RollN(3)
 	margin := targetNumber - total
 	isCritical := rolls[0] == rolls[1] && rolls[0] == rolls[2]
 
-	return SkillCheckResult{
+	return dice.SkillCheckResult{
 		Success:    margin >= 0,
 		IsCritical: isCritical,
 		RollTotal:  total,
 		Rolls:      rolls,
 		Margin:     margin,
-		Outcome:    determineOutcome(margin, isCritical),
+		Outcome:    dice.DetermineOutcome(margin, isCritical),
 	}
 }
 

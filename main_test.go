@@ -1,20 +1,22 @@
 package main
 
-import "testing"
+import (
+	"gogolf/dice"
+	"testing"
+)
 
-// Test calculateXP returns correct XP values for each outcome tier
 func TestCalculateXP(t *testing.T) {
 	tests := []struct {
-		outcome  SkillCheckOutcome
+		outcome  dice.SkillCheckOutcome
 		expected int
 	}{
-		{CriticalSuccess, 15},
-		{Excellent, 10},
-		{Good, 7},
-		{Marginal, 5},
-		{Poor, 3},
-		{Bad, 2},
-		{CriticalFailure, 1},
+		{dice.CriticalSuccess, 15},
+		{dice.Excellent, 10},
+		{dice.Good, 7},
+		{dice.Marginal, 5},
+		{dice.Poor, 3},
+		{dice.Bad, 2},
+		{dice.CriticalFailure, 1},
 	}
 
 	for _, tt := range tests {
@@ -65,8 +67,7 @@ func TestGameLoopIntegration_XPAward(t *testing.T) {
 	initialSkillXP := golfer.Skills["Putter"].Experience
 	initialAbilityXP := golfer.Abilities["Mental"].Experience
 
-	// Award 10 XP (Excellent shot)
-	xp := calculateXP(Excellent)
+	xp := calculateXP(dice.Excellent)
 	golfer.AwardExperience(club, xp)
 
 	if golfer.Skills["Putter"].Experience != initialSkillXP+10 {
