@@ -1,4 +1,4 @@
-package main
+package gogolf
 
 // Ball represents a golf ball with performance characteristics
 type Ball struct {

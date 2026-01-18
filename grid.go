@@ -1,4 +1,4 @@
-package main
+package gogolf
 
 // GridCell represents a single cell in the course grid
 type GridCell struct {

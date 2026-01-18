@@ -1,4 +1,4 @@
-package main
+package gogolf
 
 type ScoreCard struct {
 	Course Course

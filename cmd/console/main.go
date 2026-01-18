@@ -2,10 +2,12 @@ package main
 
 import (
 	"fmt"
+
+	"gogolf"
 	"gogolf/ui"
 )
 
-func buildGameState(ctx GameContext, lastShot *ui.ShotDisplay, promptMsg string) ui.GameState {
+func buildGameState(ctx gogolf.GameContext, lastShot *ui.ShotDisplay, promptMsg string) ui.GameState {
 	skills := make(map[string]ui.SkillDisplay)
 	for name, skill := range ctx.Golfer.Skills {
 		skills[name] = ui.SkillDisplay{
@@ -67,7 +69,7 @@ func buildGameState(ctx GameContext, lastShot *ui.ShotDisplay, promptMsg string)
 	}
 }
 
-func shotResultToDisplay(result ShotResult) *ui.ShotDisplay {
+func shotResultToDisplay(result gogolf.ShotResult) *ui.ShotDisplay {
 	return &ui.ShotDisplay{
 		ClubName:    result.ClubName,
 		Outcome:     result.Outcome.String(),
@@ -94,7 +96,7 @@ func main() {
 
 	renderer.Terminal.HideCursor()
 
-	game := NewGame("Player", 3)
+	game := gogolf.NewGame("Player", 3)
 
 	for !game.IsRoundComplete() {
 		game.TeeUp()
@@ -143,7 +145,7 @@ func main() {
 	displayPlayerStats(game.Golfer)
 }
 
-func displayPlayerStats(golfer Golfer) {
+func displayPlayerStats(golfer gogolf.Golfer) {
 	fmt.Println("\n=== Player Stats ===")
 	fmt.Println("Skills:")
 	for _, skillName := range []string{"Driver", "Woods", "Long Irons", "Mid Irons", "Short Irons", "Wedges", "Putter"} {

@@ -1,4 +1,4 @@
-package main
+package gogolf
 
 // ProShop represents the equipment shop where players can purchase items
 type ProShop struct {
