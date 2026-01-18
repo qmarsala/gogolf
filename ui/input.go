@@ -9,12 +9,14 @@ import (
 
 // PowerMeter manages the spacebar-based power input
 type PowerMeter struct {
-	renderer        *Renderer
-	maxPower        float64
-	maxTime         time.Duration
-	sweetSpotStart  float64 // Sweet spot starts at 75% of bar
-	sweetSpotEnd    float64 // Sweet spot ends at 85% of bar
-	clubMaxDistance float64 // Max distance of current club in yards
+	renderer         *Renderer
+	maxPower         float64
+	maxTime          time.Duration
+	sweetSpotStart   float64 // Sweet spot starts at 75% of bar
+	sweetSpotEnd     float64 // Sweet spot ends at 85% of bar
+	clubMaxDistance  float64 // Max distance of current club in yards (or feet for putting)
+	isPutting        bool
+	puttDistanceFeet float64
 }
 
 // NewPowerMeter creates a power meter with default settings
@@ -172,6 +174,25 @@ func (pm *PowerMeter) drawMeterBar(elapsed time.Duration, stopped bool) string {
 // SetClubDistance sets the max distance of the current club
 func (pm *PowerMeter) SetClubDistance(distance float64) {
 	pm.clubMaxDistance = distance
+	pm.isPutting = false
+}
+
+// SetPuttingMode configures the meter for putting with auto-scaled distance
+func (pm *PowerMeter) SetPuttingMode(distanceFeet float64) {
+	pm.isPutting = true
+	pm.puttDistanceFeet = distanceFeet
+
+	maxDistance := distanceFeet * 1.5
+	if maxDistance < 10 {
+		maxDistance = 10
+	}
+	pm.clubMaxDistance = maxDistance
+}
+
+// ClearPuttingMode resets the meter to normal mode
+func (pm *PowerMeter) ClearPuttingMode() {
+	pm.isPutting = false
+	pm.puttDistanceFeet = 0
 }
 
 // calculateProjectedDistance returns the projected shot distance based on power
@@ -181,6 +202,9 @@ func (pm *PowerMeter) calculateProjectedDistance(power float64) float64 {
 
 // formatDistanceDisplay creates a string showing power percentage and projected distance
 func (pm *PowerMeter) formatDistanceDisplay(power float64, projectedDistance float64) string {
+	if pm.isPutting {
+		return fmt.Sprintf("%.0f%% | %.0f feet", power*100, projectedDistance)
+	}
 	return fmt.Sprintf("%.0f%% | %.0f yards", power*100, projectedDistance)
 }
 
