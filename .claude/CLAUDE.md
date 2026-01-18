@@ -26,3 +26,6 @@ Because of this inspiration, the basic mechanics of the game are as follows:
     * Commit failing test(s)
     * Implement just enough code to pass test(s)
     * Commit working code
+* Keep comments to a minimum
+    * Remove unhelpful comments when encountered
+    * Prefer self-documenting code, with no comments
