@@ -19,6 +19,7 @@ type GameState struct {
 	BallLie           string
 	BallLieDifficulty int
 	DistanceToHole    float64
+	IsOnGreen         bool
 	BallLocationX     float64
 	BallLocationY     float64
 	HoleLocationX     float64

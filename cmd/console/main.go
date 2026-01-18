@@ -60,6 +60,7 @@ func buildGameState(ctx game.Context, lastShot *ui.ShotDisplay, promptMsg string
 		BallLie:           ctx.Lie.String(),
 		BallLieDifficulty: ctx.Lie.DifficultyModifier(),
 		DistanceToHole:    float64(ctx.Ball.Location.Distance(ctx.Hole.HoleLocation).Yards()),
+		IsOnGreen:         ctx.Lie == gogolf.Green,
 		BallLocationX:     float64(ctx.Ball.Location.X),
 		BallLocationY:     float64(ctx.Ball.Location.Y),
 		HoleLocationX:     float64(ctx.Hole.HoleLocation.X),
