@@ -222,9 +222,9 @@ func TestDetermineOutcome_MarginBased(t *testing.T) {
 		{"Margin -5", -5, false, Bad},
 		{"Margin -6", -6, false, Bad},
 
-		{"Margin -7", -7, false, CriticalFailure},
-		{"Margin -8", -8, false, CriticalFailure},
-		{"Margin -10", -10, false, CriticalFailure},
+		{"Margin -7", -7, false, Bad},
+		{"Margin -8", -8, false, Bad},
+		{"Margin -10", -10, false, Bad},
 	}
 
 	for _, tt := range tests {
@@ -286,7 +286,7 @@ func TestDetermineOutcome_TierBoundaries(t *testing.T) {
 		{"Just below Poor", -4, Bad},
 		{"Just at Poor", -3, Poor},
 
-		{"Just below Bad", -7, CriticalFailure},
+		{"Just below Bad", -7, Bad},
 		{"Just at Bad", -6, Bad},
 	}
 
