@@ -188,3 +188,48 @@ func TestCalculateXP(t *testing.T) {
 		}
 	}
 }
+
+func TestNewFromGolfer(t *testing.T) {
+	golfer := gogolf.NewGolfer("LoadedPlayer")
+	golfer.Money = 500
+	golfer.Ball = &gogolf.Ball{Name: "Pro V1", DistanceBonus: 8, SpinControl: 0.9, Cost: 75}
+
+	skill := golfer.Skills["Driver"]
+	(&skill).AddExperience(200)
+	golfer.Skills["Driver"] = skill
+
+	g := NewFromGolfer(golfer, 3)
+
+	if g.Golfer.Name != "LoadedPlayer" {
+		t.Errorf("expected golfer name 'LoadedPlayer', got '%s'", g.Golfer.Name)
+	}
+	if g.Golfer.Money != 500 {
+		t.Errorf("expected money 500, got %d", g.Golfer.Money)
+	}
+	if g.Golfer.Ball == nil || g.Golfer.Ball.Name != "Pro V1" {
+		t.Errorf("expected ball 'Pro V1', got %v", g.Golfer.Ball)
+	}
+	if g.Golfer.Skills["Driver"].Level != 2 {
+		t.Errorf("expected Driver level 2, got %d", g.Golfer.Skills["Driver"].Level)
+	}
+	if len(g.Course.Holes) != 3 {
+		t.Errorf("expected 3 holes, got %d", len(g.Course.Holes))
+	}
+}
+
+func TestNewFromGolferPreservesAbilities(t *testing.T) {
+	golfer := gogolf.NewGolfer("TestPlayer")
+
+	ability := golfer.Abilities["Strength"]
+	(&ability).AddExperience(150)
+	golfer.Abilities["Strength"] = ability
+
+	g := NewFromGolfer(golfer, 1)
+
+	if g.Golfer.Abilities["Strength"].Level != 2 {
+		t.Errorf("expected Strength level 2, got %d", g.Golfer.Abilities["Strength"].Level)
+	}
+	if g.Golfer.Abilities["Strength"].Experience != 50 {
+		t.Errorf("expected Strength XP 50, got %d", g.Golfer.Abilities["Strength"].Experience)
+	}
+}
