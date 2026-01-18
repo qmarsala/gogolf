@@ -111,7 +111,12 @@ func (g *Game) TakeShotWithShape(power float64, shape gogolf.ShotShape) ShotResu
 	lie := g.Ball.GetLie(&hole)
 	difficulty := lie.DifficultyModifier()
 
-	targetNumber := g.Golfer.CalculateTargetNumberWithShape(club, difficulty, shape)
+	var targetNumber int
+	if club.Name == "Putter" {
+		targetNumber = g.Golfer.CalculateTargetNumber(club, difficulty)
+	} else {
+		targetNumber = g.Golfer.CalculateTargetNumberWithShape(club, difficulty, shape)
+	}
 	result := g.Golfer.SkillCheck(gogolf.NewD6(), targetNumber)
 
 	rotationDirection := float64(1)

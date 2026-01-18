@@ -294,3 +294,69 @@ func TestTakeShotReturnsTargetNumber(t *testing.T) {
 		t.Error("expected TargetNumber to be set in shot result")
 	}
 }
+
+func TestTakeShotWithShoesBonus(t *testing.T) {
+	golfer := gogolf.NewGolfer("TestPlayer")
+	shoes := &gogolf.Shoes{Name: "Tour Edition", LiePenaltyReduction: 3, Cost: 80}
+	golfer.EquipShoes(shoes)
+
+	g := NewFromGolfer(golfer, 1)
+	g.TeeUp()
+
+	resultWithShoes := g.TakeShotWithShape(0.8, gogolf.Straight)
+
+	g2 := New("TestPlayer2", 1)
+	g2.TeeUp()
+
+	resultWithoutShoes := g2.TakeShotWithShape(0.8, gogolf.Straight)
+
+	if resultWithShoes.TargetNumber <= resultWithoutShoes.TargetNumber {
+		t.Errorf("Target with shoes (%d) should be > target without shoes (%d)",
+			resultWithShoes.TargetNumber, resultWithoutShoes.TargetNumber)
+	}
+}
+
+func TestNewFromGolferPreservesShoes(t *testing.T) {
+	golfer := gogolf.NewGolfer("TestPlayer")
+	shoes := &gogolf.Shoes{Name: "Tour Edition", LiePenaltyReduction: 3, Cost: 80}
+	golfer.EquipShoes(shoes)
+
+	g := NewFromGolfer(golfer, 1)
+
+	if g.Golfer.Shoes == nil {
+		t.Fatal("expected shoes to be preserved, got nil")
+	}
+	if g.Golfer.Shoes.Name != "Tour Edition" {
+		t.Errorf("expected shoes 'Tour Edition', got '%s'", g.Golfer.Shoes.Name)
+	}
+	if g.Golfer.Shoes.LiePenaltyReduction != 3 {
+		t.Errorf("expected LiePenaltyReduction 3, got %d", g.Golfer.Shoes.LiePenaltyReduction)
+	}
+}
+
+func TestPutterDoesNotApplyShapeModifier(t *testing.T) {
+	golfer := gogolf.NewGolfer("TestPlayer")
+	golfer.Skills["Putter"] = gogolf.Skill{Name: "Putter", Level: 5, Experience: 0}
+	golfer.Abilities["Mental"] = gogolf.Ability{Name: "Mental", Level: 5, Experience: 0}
+
+	g := NewFromGolfer(golfer, 1)
+
+	hole := g.GetCurrentHole()
+	g.Ball.Location = hole.HoleLocation
+	g.Ball.Location.X -= 50
+
+	result := g.TakeShotWithShape(0.5, gogolf.Straight)
+
+	if result.ClubName != "Putter" {
+		t.Skipf("Expected putter but got %s", result.ClubName)
+	}
+
+	putter := gogolf.Club{Name: "Putter"}
+	lie := g.Ball.GetLie(&hole)
+	expectedTarget := golfer.CalculateTargetNumber(putter, lie.DifficultyModifier())
+
+	if result.TargetNumber != expectedTarget {
+		t.Errorf("Putter target = %d, want %d (should not apply Straight -2 modifier)",
+			result.TargetNumber, expectedTarget)
+	}
+}

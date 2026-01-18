@@ -51,6 +51,26 @@ func TestCalculateTargetNumber_WithShoesBonus(t *testing.T) {
 	}
 }
 
+func TestCalculateTargetNumber_PuttingOnGreenWithTourEditionShoes(t *testing.T) {
+	golfer := gogolf.NewGolfer("TestPlayer")
+	putter := gogolf.Club{Name: "Putter"}
+
+	shoes := &gogolf.Shoes{Name: "Tour Edition", LiePenaltyReduction: 3, Cost: 80}
+	golfer.EquipShoes(shoes)
+
+	greenDifficulty := gogolf.Green.DifficultyModifier()
+
+	// In game, putter does not apply shape modifier
+	target := golfer.CalculateTargetNumber(putter, greenDifficulty)
+
+	// skill (1) + ability (1) + green (+1) + shoes (+3) = 6
+	expectedTarget := 6
+	if target != expectedTarget {
+		t.Errorf("Putter on green with Tour Edition shoes = %d, want %d (skill=1, ability=1, green=%d, shoes=+3)",
+			target, expectedTarget, greenDifficulty)
+	}
+}
+
 func TestCalculateRotation_WithGloveBonus(t *testing.T) {
 	golfer := gogolf.NewGolfer("TestPlayer")
 	club := gogolf.Club{Name: "Driver", Accuracy: 0.75, Forgiveness: 0.8}
