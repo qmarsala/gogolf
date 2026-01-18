@@ -123,8 +123,12 @@ func main() {
 			renderer.Render(state)
 
 			// Get power input from user
-			reader := bufio.NewReader(os.Stdin)
+			// Position cursor after "> " and show it
+			promptRow := renderer.Layout.LeftPanel.Height - 1
+			renderer.Terminal.MoveCursor(promptRow, renderer.Layout.LeftPanel.X+4)
 			renderer.Terminal.ShowCursor()
+
+			reader := bufio.NewReader(os.Stdin)
 			powerInput, _ := reader.ReadString('\n')
 			renderer.Terminal.HideCursor()
 			power, _ := strconv.ParseFloat(strings.TrimSpace(powerInput), 64)
@@ -224,8 +228,12 @@ func main() {
 		renderer.Render(state)
 
 		// Wait for user to press enter
-		reader := bufio.NewReader(os.Stdin)
+		// Position cursor after "> " and show it
+		promptRow := renderer.Layout.LeftPanel.Height - 1
+		renderer.Terminal.MoveCursor(promptRow, renderer.Layout.LeftPanel.X+4)
 		renderer.Terminal.ShowCursor()
+
+		reader := bufio.NewReader(os.Stdin)
 		reader.ReadString('\n')
 		renderer.Terminal.HideCursor()
 	}
