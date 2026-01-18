@@ -422,3 +422,51 @@ func TestGolfer_DrawFadeEasierThanStraight(t *testing.T) {
 		t.Errorf("Fade target (%d) should be higher than Straight (%d)", fadeTarget, straightTarget)
 	}
 }
+
+func TestGolfer_GetBestClubForLie_OnGreenReturnsPutter(t *testing.T) {
+	golfer := NewGolfer("Test")
+
+	club := golfer.GetBestClubForLie(10, Green)
+
+	if club.Name != "Putter" {
+		t.Errorf("GetBestClubForLie on Green = %v, want Putter", club.Name)
+	}
+}
+
+func TestGolfer_GetBestClubForLie_OnGreenAlwaysPutter(t *testing.T) {
+	golfer := NewGolfer("Test")
+
+	distances := []Yard{5, 10, 20, 30, 40}
+	for _, distance := range distances {
+		club := golfer.GetBestClubForLie(distance, Green)
+		if club.Name != "Putter" {
+			t.Errorf("GetBestClubForLie(%v, Green) = %v, want Putter", distance, club.Name)
+		}
+	}
+}
+
+func TestGolfer_GetBestClubForLie_OffGreenNeverPutter(t *testing.T) {
+	golfer := NewGolfer("Test")
+
+	nonGreenLies := []LieType{Tee, Fairway, FirstCut, Rough, DeepRough, Bunker}
+
+	for _, lie := range nonGreenLies {
+		club := golfer.GetBestClubForLie(30, lie)
+		if club.Name == "Putter" {
+			t.Errorf("GetBestClubForLie(30, %v) = Putter, should not be Putter off green", lie)
+		}
+	}
+}
+
+func TestGolfer_GetBestClubForLie_ShortDistanceOffGreenUsesWedge(t *testing.T) {
+	golfer := NewGolfer("Test")
+
+	club := golfer.GetBestClubForLie(10, Fairway)
+
+	if club.Name == "Putter" {
+		t.Errorf("GetBestClubForLie(10, Fairway) = Putter, want a wedge")
+	}
+	if club.Name != "LW" {
+		t.Errorf("GetBestClubForLie(10, Fairway) = %v, want LW (closest club for short chip)", club.Name)
+	}
+}
