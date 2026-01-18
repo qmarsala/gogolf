@@ -200,3 +200,65 @@ func TestPowerMeter_FormatDistanceDisplay(t *testing.T) {
 func containsSubstring(s, substr string) bool {
 	return len(s) >= len(substr) && (s == substr || len(s) > 0 && (containsSubstring(s[1:], substr) || s[:len(substr)] == substr))
 }
+
+func TestPowerMeter_SetPuttingMode(t *testing.T) {
+	renderer := NewRenderer()
+	pm := NewPowerMeter(renderer)
+
+	pm.SetPuttingMode(15)
+
+	if !pm.isPutting {
+		t.Error("SetPuttingMode should set isPutting to true")
+	}
+	if pm.puttDistanceFeet != 15 {
+		t.Errorf("puttDistanceFeet = %f, want 15", pm.puttDistanceFeet)
+	}
+}
+
+func TestPowerMeter_PuttingModeScalesDistance(t *testing.T) {
+	renderer := NewRenderer()
+	pm := NewPowerMeter(renderer)
+
+	pm.SetPuttingMode(20)
+
+	expectedMax := 30.0
+	if pm.clubMaxDistance != expectedMax {
+		t.Errorf("clubMaxDistance = %f, want %f (20 + 50%% buffer)", pm.clubMaxDistance, expectedMax)
+	}
+}
+
+func TestPowerMeter_PuttingModeMinimumDistance(t *testing.T) {
+	renderer := NewRenderer()
+	pm := NewPowerMeter(renderer)
+
+	pm.SetPuttingMode(3)
+
+	expectedMin := 10.0
+	if pm.clubMaxDistance < expectedMin {
+		t.Errorf("clubMaxDistance = %f, want at least %f (minimum)", pm.clubMaxDistance, expectedMin)
+	}
+}
+
+func TestPowerMeter_PuttingModeDisplaysFeet(t *testing.T) {
+	renderer := NewRenderer()
+	pm := NewPowerMeter(renderer)
+	pm.SetPuttingMode(15)
+
+	display := pm.formatDistanceDisplay(0.5, 11.25)
+
+	if !containsSubstring(display, "feet") {
+		t.Errorf("putting mode should display feet, got: %s", display)
+	}
+}
+
+func TestPowerMeter_ClearPuttingMode(t *testing.T) {
+	renderer := NewRenderer()
+	pm := NewPowerMeter(renderer)
+
+	pm.SetPuttingMode(15)
+	pm.ClearPuttingMode()
+
+	if pm.isPutting {
+		t.Error("ClearPuttingMode should set isPutting to false")
+	}
+}
