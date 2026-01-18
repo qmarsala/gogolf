@@ -60,6 +60,19 @@ func NewWithRandom(playerName string, holeCount int, rng gogolf.RandomSource) *G
 	}
 }
 
+func NewFromGolfer(golfer gogolf.Golfer, holeCount int) *Game {
+	rng := rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64()))
+	course, scoreCard := gogolf.GenerateSimpleCourse(holeCount)
+	return &Game{
+		Golfer:           golfer,
+		Course:           course,
+		Ball:             gogolf.GolfBall{Location: gogolf.Point{X: 0, Y: 0}},
+		ScoreCard:        scoreCard,
+		CurrentHoleIndex: 0,
+		random:           rng,
+	}
+}
+
 func (g *Game) TeeUp() {
 	g.Ball.TeeUp()
 	g.lastShotResult = nil

@@ -8,11 +8,11 @@ Phases 1-4 are complete. See [CORE_MECHANICS.md](CORE_MECHANICS.md) for document
 - Course Grid & Lie System (PR #4)
 - Equipment System & ProShop (PR #5)
 
-**Current test count:** 184 tests passing
+**Current test count:** 204 tests passing
 
 ---
 
-## Phase 5: Save/Load System
+## Phase 5: Save/Load System ✅
 **Priority: HIGH** - Required for RPG progression persistence
 
 ### Requirements
@@ -23,12 +23,13 @@ Phases 1-4 are complete. See [CORE_MECHANICS.md](CORE_MECHANICS.md) for document
 - Multiple save slots (3-5 slots)
 
 ### Implementation Tasks
-1. Create `SaveGame` struct with all player data
-2. Implement JSON serialization/deserialization
-3. Create save file management (write, read, list)
-4. Add auto-save after round completion
-5. Add manual save/load commands
-6. Handle save file versioning for future updates
+1. ✅ Create `SaveData` struct with all player data (PR #14)
+2. ✅ Implement JSON serialization/deserialization (PR #14)
+3. ✅ Create save file management (write, read, list, delete) (PR #14)
+4. ✅ Handle save file versioning for future updates (PR #14)
+5. ✅ Integrate into game startup (new game vs load game menu) (PR #14)
+6. ✅ Add save prompt after round completion (PR #14)
+7. ✅ Add `NewFromGolfer` to create game from loaded golfer (PR #14)
 
 ### Design Considerations
 - Save file format should be human-readable (JSON)

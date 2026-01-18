@@ -2,9 +2,12 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 
 	"gogolf"
 	"gogolf/game"
+	"gogolf/persistence"
 	"gogolf/ui"
 )
 
@@ -85,7 +88,124 @@ func shotResultToDisplay(result game.ShotResult) *ui.ShotDisplay {
 	}
 }
 
+func getSaveDir() string {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return ".gogolf_saves"
+	}
+	return filepath.Join(homeDir, ".gogolf_saves")
+}
+
+func showStartupMenu(saveManager *persistence.SaveManager) *game.Game {
+	for {
+		options := []ui.MenuOption{
+			{Label: "New Game", Value: "new"},
+			{Label: "Load Game", Value: "load"},
+			{Label: "Quit", Value: "quit"},
+		}
+
+		choice := ui.ShowMenu("GoGolf", options)
+
+		switch options[choice].Value {
+		case "new":
+			name := ui.PromptString("Enter your golfer's name: ")
+			if name == "" {
+				name = "Player"
+			}
+			return game.New(name, 3)
+
+		case "load":
+			g := showLoadMenu(saveManager)
+			if g != nil {
+				return g
+			}
+
+		case "quit":
+			fmt.Println("Goodbye!")
+			os.Exit(0)
+		}
+	}
+}
+
+func showLoadMenu(saveManager *persistence.SaveManager) *game.Game {
+	slots := saveManager.ListSaveSlots()
+
+	if len(slots) == 0 {
+		fmt.Println("\nNo saved games found.")
+		fmt.Println("Press Enter to continue...")
+		ui.PromptString("")
+		return nil
+	}
+
+	options := make([]ui.MenuOption, 0, len(slots)+1)
+	for _, slot := range slots {
+		label := fmt.Sprintf("Slot %d: %s (saved %s)",
+			slot.Slot, slot.GolferName, slot.SavedAt.Format("Jan 2 15:04"))
+		options = append(options, ui.MenuOption{Label: label, Value: fmt.Sprintf("%d", slot.Slot)})
+	}
+	options = append(options, ui.MenuOption{Label: "Back", Value: "back"})
+
+	choice := ui.ShowMenu("Load Game", options)
+
+	if options[choice].Value == "back" {
+		return nil
+	}
+
+	slot := slots[choice].Slot
+	golfer, err := saveManager.Load(slot)
+	if err != nil {
+		fmt.Printf("\nError loading save: %v\n", err)
+		fmt.Println("Press Enter to continue...")
+		ui.PromptString("")
+		return nil
+	}
+
+	fmt.Printf("\nLoaded %s from slot %d\n", golfer.Name, slot)
+	return game.NewFromGolfer(golfer, 3)
+}
+
+func showSaveMenu(saveManager *persistence.SaveManager, golfer gogolf.Golfer) {
+	options := make([]ui.MenuOption, 0, persistence.MaxSaveSlots+1)
+
+	for slot := 1; slot <= persistence.MaxSaveSlots; slot++ {
+		label := fmt.Sprintf("Slot %d: ", slot)
+		if saveManager.SlotExists(slot) {
+			slots := saveManager.ListSaveSlots()
+			for _, s := range slots {
+				if s.Slot == slot {
+					label += fmt.Sprintf("%s (saved %s)", s.GolferName, s.SavedAt.Format("Jan 2 15:04"))
+					break
+				}
+			}
+		} else {
+			label += "Empty"
+		}
+		options = append(options, ui.MenuOption{Label: label, Value: fmt.Sprintf("%d", slot)})
+	}
+	options = append(options, ui.MenuOption{Label: "Back", Value: "back"})
+
+	choice := ui.ShowMenu("Save Game", options)
+
+	if options[choice].Value == "back" {
+		return
+	}
+
+	slot := choice + 1
+	err := saveManager.Save(slot, golfer)
+	if err != nil {
+		fmt.Printf("\nError saving game: %v\n", err)
+	} else {
+		fmt.Printf("\nGame saved to slot %d\n", slot)
+	}
+	fmt.Println("Press Enter to continue...")
+	ui.PromptString("")
+}
+
 func main() {
+	saveManager := persistence.NewSaveManager(getSaveDir())
+
+	g := showStartupMenu(saveManager)
+
 	renderer := ui.NewRenderer()
 	defer renderer.Terminal.ShowCursor()
 
@@ -96,8 +216,6 @@ func main() {
 	}
 
 	renderer.Terminal.HideCursor()
-
-	g := game.New("Player", 3)
 
 	for !g.IsRoundComplete() {
 		g.TeeUp()
@@ -144,6 +262,9 @@ func main() {
 	fmt.Printf("Final Score: %d (%+d)\n", g.ScoreCard.TotalStrokes(), g.ScoreCard.Score())
 	fmt.Printf("Money: %d\n\n", g.Golfer.Money)
 	displayPlayerStats(g.Golfer)
+
+	fmt.Println("\nWould you like to save your progress?")
+	showSaveMenu(saveManager, g.Golfer)
 }
 
 func displayPlayerStats(golfer gogolf.Golfer) {

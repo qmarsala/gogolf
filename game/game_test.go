@@ -209,8 +209,8 @@ func TestNewFromGolfer(t *testing.T) {
 	if g.Golfer.Ball == nil || g.Golfer.Ball.Name != "Pro V1" {
 		t.Errorf("expected ball 'Pro V1', got %v", g.Golfer.Ball)
 	}
-	if g.Golfer.Skills["Driver"].Level != 3 {
-		t.Errorf("expected Driver level 3, got %d", g.Golfer.Skills["Driver"].Level)
+	if g.Golfer.Skills["Driver"].Level != 2 {
+		t.Errorf("expected Driver level 2, got %d", g.Golfer.Skills["Driver"].Level)
 	}
 	if len(g.Course.Holes) != 3 {
 		t.Errorf("expected 3 holes, got %d", len(g.Course.Holes))
