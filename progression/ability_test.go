@@ -1,8 +1,7 @@
-package main
+package progression
 
 import "testing"
 
-// Test Ability creation with valid initial values
 func TestNewAbility(t *testing.T) {
 	ability := NewAbility("Strength")
 
@@ -19,17 +18,16 @@ func TestNewAbility(t *testing.T) {
 	}
 }
 
-// Test Ability.Value() returns correct value based on level
 func TestAbility_Value(t *testing.T) {
 	tests := []struct {
 		level         int
 		expectedValue int
 	}{
-		{1, 2},  // Level 1 = 2 value
-		{2, 4},  // Level 2 = 4 value
-		{3, 6},  // Level 3 = 6 value
-		{5, 10}, // Level 5 = 10 value
-		{9, 18}, // Level 9 = 18 value (max level)
+		{1, 2},
+		{2, 4},
+		{3, 6},
+		{5, 10},
+		{9, 18},
 	}
 
 	for _, tt := range tests {
@@ -43,7 +41,6 @@ func TestAbility_Value(t *testing.T) {
 	}
 }
 
-// Test Ability.AddExperience() increases experience
 func TestAbility_AddExperience(t *testing.T) {
 	ability := NewAbility("Control")
 
@@ -58,17 +55,15 @@ func TestAbility_AddExperience(t *testing.T) {
 	}
 }
 
-// Test Ability.AddExperience() triggers level up at threshold
 func TestAbility_AddExperience_LevelUp(t *testing.T) {
 	ability := NewAbility("Touch")
-	// Level 1 → 2 requires 100 XP
 
 	ability.AddExperience(99)
 	if ability.Level != 1 {
 		t.Errorf("At 99 XP, level = %v, want 1 (no level up yet)", ability.Level)
 	}
 
-	ability.AddExperience(1) // Total 100 XP
+	ability.AddExperience(1)
 	if ability.Level != 2 {
 		t.Errorf("At 100 XP, level = %v, want 2 (leveled up)", ability.Level)
 	}
@@ -78,7 +73,6 @@ func TestAbility_AddExperience_LevelUp(t *testing.T) {
 	}
 }
 
-// Test Ability.AddExperience() respects max level 9
 func TestAbility_AddExperience_MaxLevel(t *testing.T) {
 	ability := Ability{Name: "Mental", Level: 9, Experience: 0}
 
@@ -88,24 +82,21 @@ func TestAbility_AddExperience_MaxLevel(t *testing.T) {
 		t.Errorf("At max level, level = %v, want 9 (no level up beyond max)", ability.Level)
 	}
 
-	// Experience should still accumulate (or cap, depending on design choice)
-	// For now, let's assume it caps at 0 when at max level
 	if ability.Experience != 0 {
 		t.Errorf("At max level, experience = %v, want 0 (no XP accumulation)", ability.Experience)
 	}
 }
 
-// Test Ability.ExperienceToNextLevel() returns correct threshold
 func TestAbility_ExperienceToNextLevel(t *testing.T) {
 	tests := []struct {
 		level    int
 		expected int
 	}{
-		{1, 100},  // Level 1 → 2 = 100 XP
-		{2, 150},  // Level 2 → 3 = 150 XP
-		{3, 200},  // Level 3 → 4 = 200 XP
-		{8, 450},  // Level 8 → 9 = 450 XP
-		{9, 0},    // Level 9 (max) = 0 (no next level)
+		{1, 100},
+		{2, 150},
+		{3, 200},
+		{8, 450},
+		{9, 0},
 	}
 
 	for _, tt := range tests {
@@ -119,7 +110,6 @@ func TestAbility_ExperienceToNextLevel(t *testing.T) {
 	}
 }
 
-// Test Ability.CanLevelUp() returns true when enough XP
 func TestAbility_CanLevelUp(t *testing.T) {
 	ability := NewAbility("Strength")
 
@@ -143,23 +133,19 @@ func TestAbility_CanLevelUp(t *testing.T) {
 	}
 }
 
-// Test multiple level ups in sequence
 func TestAbility_MultipleLevelUps(t *testing.T) {
 	ability := NewAbility("Control")
 
-	// Level 1 → 2 (100 XP)
 	ability.AddExperience(100)
 	if ability.Level != 2 {
 		t.Errorf("After 100 XP, level = %v, want 2", ability.Level)
 	}
 
-	// Level 2 → 3 (150 XP)
 	ability.AddExperience(150)
 	if ability.Level != 3 {
 		t.Errorf("After 150 more XP, level = %v, want 3", ability.Level)
 	}
 
-	// Level 3 → 4 (200 XP)
 	ability.AddExperience(200)
 	if ability.Level != 4 {
 		t.Errorf("After 200 more XP, level = %v, want 4", ability.Level)

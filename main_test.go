@@ -2,6 +2,7 @@ package main
 
 import (
 	"gogolf/dice"
+	"gogolf/progression"
 	"testing"
 )
 
@@ -46,9 +47,8 @@ func TestGameLoopIntegration_DynamicTargetNumbers(t *testing.T) {
 		t.Errorf("Initial target number = %v, want %v", targetNumber, expectedInitial)
 	}
 
-	// Level up the Driver skill and Strength ability
-	golfer.Skills["Driver"] = Skill{Name: "Driver", Level: 3, Experience: 0}
-	golfer.Abilities["Strength"] = Ability{Name: "Strength", Level: 4, Experience: 0}
+	golfer.Skills["Driver"] = progression.Skill{Name: "Driver", Level: 3, Experience: 0}
+	golfer.Abilities["Strength"] = progression.Ability{Name: "Strength", Level: 4, Experience: 0}
 
 	// New target: skill.Value() = 6, ability.Value() = 8, total = 14
 	targetNumber = golfer.CalculateTargetNumber(driverClub, difficulty)

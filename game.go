@@ -2,6 +2,7 @@ package main
 
 import (
 	"gogolf/dice"
+	"gogolf/progression"
 	"math"
 	"math/rand/v2"
 )
@@ -214,7 +215,7 @@ func (g *Game) CompleteHole() int {
 	hole := g.GetCurrentHole()
 	strokes := g.StrokesThisHole()
 	g.Golfer.AwardHoleReward(hole.Par, strokes)
-	return CalculateHoleReward(hole.Par, strokes)
+	return progression.CalculateHoleReward(hole.Par, strokes)
 }
 
 func (g *Game) GetLastShotResult() *ShotResult {

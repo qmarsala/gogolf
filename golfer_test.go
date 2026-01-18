@@ -1,6 +1,9 @@
 package main
 
-import "testing"
+import (
+	"gogolf/progression"
+	"testing"
+)
 
 // Test NewGolfer creates a golfer with default skills and abilities
 func TestNewGolfer(t *testing.T) {
@@ -74,9 +77,8 @@ func TestGolfer_GetSkillForClub(t *testing.T) {
 func TestGolfer_CalculateTargetNumber(t *testing.T) {
 	golfer := NewGolfer("Test")
 
-	// Set specific levels for testing
-	golfer.Skills["Driver"] = Skill{Name: "Driver", Level: 3, Experience: 0}      // Value: 6
-	golfer.Abilities["Strength"] = Ability{Name: "Strength", Level: 4, Experience: 0} // Value: 8
+	golfer.Skills["Driver"] = progression.Skill{Name: "Driver", Level: 3, Experience: 0}
+	golfer.Abilities["Strength"] = progression.Ability{Name: "Strength", Level: 4, Experience: 0}
 
 	club := Club{Name: "Driver"}
 	difficulty := 0 // Fairway lie
@@ -93,8 +95,8 @@ func TestGolfer_CalculateTargetNumber(t *testing.T) {
 // Test Golfer.CalculateTargetNumber with difficulty modifiers
 func TestGolfer_CalculateTargetNumber_WithDifficulty(t *testing.T) {
 	golfer := NewGolfer("Test")
-	golfer.Skills["Driver"] = Skill{Name: "Driver", Level: 3, Experience: 0}      // Value: 6
-	golfer.Abilities["Strength"] = Ability{Name: "Strength", Level: 4, Experience: 0} // Value: 8
+	golfer.Skills["Driver"] = progression.Skill{Name: "Driver", Level: 3, Experience: 0}
+	golfer.Abilities["Strength"] = progression.Ability{Name: "Strength", Level: 4, Experience: 0}
 
 	club := Club{Name: "Driver"}
 
