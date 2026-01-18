@@ -108,7 +108,33 @@ func (g Golfer) SkillCheck(d DiceRoller, targetNumber int) SkillCheckResult {
 		RollTotal:  total,
 		Rolls:      rolls,
 		Margin:     margin,
-		Outcome:    DetermineOutcome(margin, isCritical),
+		Outcome:    determineOutcome(margin, isCritical),
+	}
+}
+
+func determineOutcome(margin int, isCritical bool) SkillCheckOutcome {
+	if isCritical {
+		if margin >= 0 {
+			return CriticalSuccess
+		}
+		return CriticalFailure
+	}
+
+	switch {
+	case margin >= 7:
+		return CriticalSuccess
+	case margin >= 4:
+		return Excellent
+	case margin >= 1:
+		return Good
+	case margin == 0:
+		return Marginal
+	case margin >= -3:
+		return Poor
+	case margin >= -6:
+		return Bad
+	default:
+		return CriticalFailure
 	}
 }
 
