@@ -119,6 +119,35 @@ func TestGolfer_CalculateTargetNumber_WithDifficulty(t *testing.T) {
 	}
 }
 
+func TestGolfer_CalculateTargetNumber_MinimumOfThree(t *testing.T) {
+	golfer := NewGolfer("Test")
+	golfer.Skills["Driver"] = Skill{Name: "Driver", Level: 1, Experience: 0}
+	golfer.Abilities["Strength"] = Ability{Name: "Strength", Level: 1, Experience: 0}
+
+	club := Club{Name: "Driver"}
+
+	tests := []struct {
+		difficulty int
+		expected   int
+		desc       string
+	}{
+		{-4, 3, "Deep Rough: 1 + 1 + (-4) = -2, clamped to 3"},
+		{-6, 3, "Extreme penalty: 1 + 1 + (-6) = -4, clamped to 3"},
+		{-1, 3, "First Cut: 1 + 1 + (-1) = 1, clamped to 3"},
+		{0, 3, "Fairway: 1 + 1 + 0 = 2, clamped to 3"},
+		{2, 4, "Tee: 1 + 1 + 2 = 4, no clamping needed"},
+	}
+
+	for _, tt := range tests {
+		targetNumber := golfer.CalculateTargetNumber(club, tt.difficulty)
+
+		if targetNumber != tt.expected {
+			t.Errorf("%s: CalculateTargetNumber(difficulty=%v) = %v, want %v",
+				tt.desc, tt.difficulty, targetNumber, tt.expected)
+		}
+	}
+}
+
 // Test Golfer.GetAbilityForClub maps clubs to correct abilities
 func TestGolfer_GetAbilityForClub(t *testing.T) {
 	golfer := NewGolfer("Test")
