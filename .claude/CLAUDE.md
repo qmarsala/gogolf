@@ -14,3 +14,5 @@ Refer to [IMPLEMENTATION_PLAN.md](./IMPLEMENTATION_PLAN.md) to understand the cu
 * Keep comments to a minimum
     * Remove unhelpful comments when encountered
     * Prefer self-documenting code, with no comments
+* Always make sure you are up to date with main before making new branches
+* Always make new branches and PR's when contributing
