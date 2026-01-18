@@ -2,10 +2,9 @@ package gogolf
 
 import (
 	"math"
-	"math/rand/v2"
 )
 
-func CalculateRotation(club Club, result SkillCheckResult, random *rand.Rand) float64 {
+func CalculateRotation(club Club, result SkillCheckResult, random RandomSource) float64 {
 	clubAcc := float64(club.AccuracyDegrees())
 
 	switch result.Outcome {

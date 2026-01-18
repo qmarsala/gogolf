@@ -1,7 +1,6 @@
 package gogolf
 
 import (
-	"gogolf/dice"
 	"gogolf/progression"
 	"math"
 )
@@ -98,7 +97,7 @@ func (g Golfer) GetBestClub(distance Yard) Club {
 	return c
 }
 
-func (g Golfer) SkillCheck(d dice.Dice, targetNumber int) SkillCheckResult {
+func (g Golfer) SkillCheck(d DiceRoller, targetNumber int) SkillCheckResult {
 	total, rolls := d.RollN(3)
 	margin := targetNumber - total
 	isCritical := rolls[0] == rolls[1] && rolls[0] == rolls[2]

@@ -13,7 +13,7 @@ type Game struct {
 	Ball             GolfBall
 	ScoreCard        ScoreCard
 	CurrentHoleIndex int
-	random           *rand.Rand
+	random           RandomSource
 	lastShotResult   *ShotResult
 }
 
@@ -46,7 +46,7 @@ func NewGame(playerName string, holeCount int) *Game {
 	return NewGameWithRandom(playerName, holeCount, rng)
 }
 
-func NewGameWithRandom(playerName string, holeCount int, rng *rand.Rand) *Game {
+func NewGameWithRandom(playerName string, holeCount int, rng RandomSource) *Game {
 	course, scoreCard := GenerateSimpleCourse(holeCount)
 	return &Game{
 		Golfer:           NewGolfer(playerName),
